@@ -4,10 +4,16 @@ import { Button, useTheme } from "react-native-paper";
 import { TextInput, Text } from "react-native-paper";
 import { fetchProducts } from "../helpers/Purchasehelper";
 
-
-
-
 const styles = StyleSheet.create({
+  container:{
+    display:"flex",
+    justifyContent:'flex-start',
+    alignItems:'flex-start',
+    width:'100%'
+  },
+  pagecontainer:{
+    width:"100%",
+  },
   heading: {
     padding: 10,
   },
@@ -83,15 +89,17 @@ function PurchaseOrderScreen({ route }) {
       <View
         style={{
           ...styles.product,
-          borderBottomColor: theme.colors.primary,
+          borderBottomColor:"silver" ,
+          paddingBottom:'3%',
+          backgroundColor:"#fafafa"
         }}
       >
         <View>
-          <Text variant="titleMedium">{item.name} </Text>
+          <Text variant="titleMedium" style={{Width:"80%",fontWeight:"400"}}>{item.name}</Text>
           <Text style={styles.price} variant="titleSmall">
             Price: {item.saleprice}{" "}
           </Text>
-          <Text variant="titleSmall">
+          <Text variant="titleSmall" style={{color:"#424242"}}>
             Total: {item.saleprice * item.units}{" "}
           </Text>
         </View>
@@ -103,7 +111,7 @@ function PurchaseOrderScreen({ route }) {
             value={item.units === 0 ? "" : item.units + ""}
             onChangeText={(text) => updateUnits(text, item.id)}
           />
-          <Text variant="labelLarge"> units</Text>
+          <Text variant="labelLarge" style={{fontWeight:"400"}}> units</Text> 
         </View>
       </View>
     );
@@ -119,12 +127,14 @@ function PurchaseOrderScreen({ route }) {
 
   return (
     <>
+    <View style={styles.container}>
+      <View style={styles.pagecontainer}>
       <View style={styles.heading}>
-        <Text style={{ marginBottom: 5 }} variant="titleLarge">
-          Outlet: {retailerName}
-        </Text>
-        <Text style={{ marginBottom: 5 }} variant="titleMedium">
-          Total Price: {`\u20B9`} {parseFloat(totalPrice).toFixed(2)}
+        <Text style={{ marginBottom: 5,color:"#616161" }} variant="titleLarge">
+          Outlet:<Text style={{color:"#212121"}}> {retailerName}
+</Text>        </Text>
+        <Text style={{ marginBottom: 5,color:"#616161" }} variant="titleMedium">
+          Total Price: <Text style={{color:"#212121"}}>{`\u20B9`} {parseFloat(totalPrice).toFixed(2)}</Text> 
         </Text>
       </View>
 
@@ -134,6 +144,8 @@ function PurchaseOrderScreen({ route }) {
         placeholder="Search products"
         onChangeText={(text) => setSearchFilter(text)}
       />
+      </View>
+      </View>
       <FlatList
         removeClippedSubviews={false}
         keyExtractor={productKeyExtractor}
