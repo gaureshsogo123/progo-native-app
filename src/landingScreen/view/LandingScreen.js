@@ -1,64 +1,56 @@
-import React, { useState } from 'react'
+import React, { useState } from "react";
 
 import {
-    FlatList,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
-    TouchableOpacity,
-    
-  } from "react-native";
-import { TextInput } from 'react-native-paper';
-  
-  
+  FlatList,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Dimensions
+} from "react-native";
+import { TextInput } from "react-native-paper";
 
-  
+const {height} = Dimensions.get("screen")
 
 
-export default function LandingScreen({navigation}) {
+export default function LandingScreen({ navigation }) {
+  const info = [
+    { id: 1, name: "Ganesh Stores" },
+    { id: 2, name: "Krishna Stores" },
+    { id: 3, name: "Raja Kirana Shop" },
+    { id: 4, name: "Raja Kirana Shop" },
+  ];
+  const [data, setData] = useState(info);
 
-    const info = [
-        { id: 1, name: "Ganesh Stores" },
-  { id: 2, name: "Krishna Stores" },
-  { id: 3, name: "Raja Kirana Shop" },
-  { id: 4, name: "Raja Kirana Shop" },
-    ]
-    const [data, setData] = useState(info);
-
-    const handlePress = ((item)=>{
-        navigation.navigate(`purchaseorder`, {
-            retailerName: item.name,
-            retailerId: item.id,
-          });
-      
-    })
+  const handlePress = (item) => {
+    navigation.navigate(`purchaseorder`, {
+      retailerName: item.name,
+      retailerId: item.id,
+    });
+  };
   return (
     <>
       <View style={styles.container}>
         <View style={styles.pagecontainer}>
-        <Text
-            style={{ fontWeight: "700", fontSize: 18, paddingBottom: "5%" }}
+          <Text
+            style={{ fontWeight: "600", fontSize: 18, paddingBottom: "2%",marginLeft:"2%" }}
           >
             Vignesh Foods
           </Text>
-         
+
           <TextInput style={styles.input} placeholder="Search Supplier" />
- 
-         
         </View>
       </View>
-
-      
 
       <FlatList
         data={data}
         renderItem={({ item }) => {
           return (
-            <TouchableOpacity onPress={()=>handlePress(item)}>
+            <TouchableOpacity onPress={() => handlePress(item)}>
               <View style={styles.list}>
-                <Text style={{ fontSize: 15, fontWeight: "600" }}>
+                <Text style={{ fontSize: 15, fontWeight: "400" }}>
                   {item.name}
                 </Text>
               </View>
@@ -66,41 +58,41 @@ export default function LandingScreen({navigation}) {
           );
         }}
       />
-  
     </>
-
-  )
+  );
 }
- 
+
 const styles = StyleSheet.create({
-    container: {
-        justifyContent: "flex-start",
-        alignItems: "flex-start",
-        width: "100%",
-      },
-      pagecontainer: {
-        width: "100%",
-        padding: 10,
-      },
-      input:{
-        width: "100%",
-    height: 60,
-    borderRadius: 10,
-      },
-      list:{
-      width: "95%",
+  container: {
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    width: "100%",
+  },
+  pagecontainer: {
+    width: "100%",
+    padding: 10,
+  },
+  input: {
+    width: "100%",
+    height: height-"70%",
+    borderRadius:5
+  },
+  list: {
+    width: "95%",
     height: "auto",
     padding: 20,
     borderRadius: 15,
     marginBottom: "3%",
-    alignItems: "center",
     marginLeft: "3%",
     backgroundColor: "#fafafa",
-    borderColor: "silver",
-    borderWidth: 1,
-      }
-})
-
-
-
-  
+    marginTop:"2%",
+    shadowColor: "#000",
+shadowOffset: {
+	width: 0,
+	height: 2,
+},
+shadowOpacity: 0.23,
+shadowRadius: 2.62,
+elevation:4
+  },
+});

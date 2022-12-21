@@ -3,7 +3,7 @@ import { View,Text } from 'react-native'
 
 export const Signout = ({navigation}) => {
     useEffect(()=>{
-        navigation.navigate("mobilenum")
+        navigation.navigate("signin")
     },[]);
   return (
     <View>

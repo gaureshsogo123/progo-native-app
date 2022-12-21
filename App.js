@@ -3,7 +3,9 @@ import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import BottomNav from './src/layout/BottomNav';
-import { MobilenumScreen, OtpScreen } from './src/Signin/view/Signin';
+
+import PurchaseOrderScreen from './src/purchaseorder/view/PurchaseOrderScreen';
+import SignIn from './src/Signin/view/Signin';
 
 const Stack = createNativeStackNavigator();
 
@@ -14,18 +16,20 @@ export default function App() {
     <NavigationContainer>
             <Stack.Navigator>
               <Stack.Screen
-              name='mobilenum'
-              component={MobilenumScreen}
+              name='signin'
+              component={SignIn}
               options={{ headerShown: false }}/>
-              <Stack.Screen
-              name='otpscreen'
-              component={OtpScreen}
-              options={{ headerShown: false }}/>
+              
               <Stack.Screen
                 name="bottomnav"
                 component={BottomNav}
                 options={{ headerShown: false }}
               />
+              <Stack.Screen
+                name="purchaseorder"
+                component={PurchaseOrderScreen}
+              />
+
             </Stack.Navigator>
           </NavigationContainer>
        
