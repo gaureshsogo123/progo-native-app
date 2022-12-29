@@ -1,46 +1,89 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
   FlatList,
   Text,
   TouchableOpacity,
-  Dimensions
+  Dimensions,
+  RefreshControl,
 } from "react-native";
-import { TextInput, useTheme,Modal,
-  Portal,Provider,  Button} from "react-native-paper";
+import {
+  TextInput,
+  useTheme,
+  Modal,
+  Portal,
+  Provider,
+  Button,
+} from "react-native-paper";
 import { AntDesign } from "@expo/vector-icons";
 import DropdownSelect from "../../component/DropdownSelect";
 import DatePicker from "../../component/DatePicker";
+import { format, subDays, toDate } from "date-fns";
+import {
+  editOrderStatus,
+  getOrders,
+  getOrderStatus,
+} from "../helper/OrderHelper";
+import { useAuthContext } from "../../context/UserAuthContext";
 
+const { height } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
 
-const {height} = Dimensions.get("screen")
-
-
-
-export default function Orders() {
+export default function Orders({ navigation, route }) {
   const containerStyle = {
     backgroundColor: "#eeeeee",
     width: "100%",
-    minHeight: 300,
+    minHeight: (height * 30) / 100,
     position: "absolute",
     bottom: 0,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   };
 
+  const statusContainerStyle = {
+    backgroundColor: "#eeeeee",
+    width: "90%",
+    marginLeft: "6%",
+    display: "flex",
+    justifyContent: "center",
+  };
+  const { user } = useAuthContext();
+
+  useEffect(() => {
+    const unsubscribeFocus = navigation.addListener("focus", () => {
+      fetchOrders(user, startDate, endDate, status);
+    });
+    const unsubscribeBlur = navigation.addListener("blur", () => {
+      setShown(false);
+    });
+    return () => {
+      unsubscribeFocus();
+      unsubscribeBlur();
+    };
+  }, []);
+
+  useEffect(() => {
+    fetchOrders(user, startDate, endDate, status);
+  }, [user.userId, startDate, endDate, status]);
+
+  const fetchOrders = async (user, startDate, endDate, status) => {
+    setRefreshing(true);
+    try {
+      const result = await getOrders(user.userId, startDate, endDate, status);
+      if (!result.error) {
+        setOrders(result.data);
+        setErrors({ ...errors, getOrders: "" });
+      } else setErrors({ ...errors, getOrders: "Failed to fetch orders" });
+    } catch (error) {
+      setErrors({ ...errors, getOrders: "Failed to fetch orders" });
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const theme = useTheme();
-  const data = [
-    { name: "Ganesh Stores" },
-    { name: "Krishna tores" },
-    { name: "Krishna tores" },
-    { name: "Krishna tores" },
-    { name: "Krishna tores" },
-    { name: "Krishna tores" },
-    { name: "Krishna tores" },
-    { name: "Krishna tores" },
-  ];
+  
 
   const statuses = [
     { key: 1, value: "Placed" },
@@ -50,164 +93,264 @@ export default function Orders() {
     { key: 0, value: "All" },
   ];
 
-  const cities =[
-    { key: 1, value: "Mumbai" },
-    { key: 2, value: "Delhi" },
-    { key: 3, value: "Chennai" },
-  ]
 
-  const[status,setStatus]=useState("");
-  const[startDate,setStartDate]=useState(new Date());
-  const[endDate,setEndDate]=useState(new Date());
-  const[shown,setShown]=useState(false);
-  const[selectedCity,setSelectedCity]=useState("");
+
+  const [status, setStatus] = useState("All");
+  const [startDate, setStartDate] = useState("10-15-2022");
+  const [endDate, setEndDate] = useState(format(new Date(), "MM-dd-yyyy"));
+  const [shown, setShown] = useState(false);
+  const [selectedCity, setSelectedCity] = useState("All");
+  const [orders, setOrders] = useState([]);
+  const [editStatusdata, setEditStatusdata] = useState({});
+  const [statuslist, setStatuslist] = useState([]);
+  const [see, setSee] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [refreshing, setRefreshing] = useState(true);
+
+  const updateStatus = (orderid, orderstatus) => {
+    setEditStatusdata({
+      ...editStatusdata,
+      orderid: orderid,
+      status: orderstatus,
+    });
+    setSee(true);
+  };
+
+  useEffect(() => {
+    async function fetchstatus() {
+      const res = await getOrderStatus();
+      setStatuslist(res.data);
+    }
+    fetchstatus();
+  }, []);
+
+  const handlepress = (item) => {
+    navigation.navigate("UpdateOrder", {
+      data: item,
+    });
+  };
+
+  const statusModalPress = async (orderstatus) => {
+    const statusId = statuslist.find(
+      (status) => status.orderstatus === orderstatus
+    ).orderstatusid;
+    try {
+      await editOrderStatus(editStatusdata.orderid, statusId, orderstatus).then(
+        (res) => fetchOrders(user, startDate, endDate, status)
+      );
+    } catch (error) {
+      Alert.alert("Error", "There was an error");
+    } finally {
+      setSee(false);
+    }
+  };
 
   return (
     <>
       <View style={styles.container}>
         <View style={styles.pagecontainer}>
           <TextInput style={styles.input} placeholder="Search Suppliers" />
-          
+
           <View style={styles.filtericon}>
-            <TouchableOpacity  onPress={()=>setShown(true)}>
-          <AntDesign name="filter" size={22} color="#6a1b9a" />
-                <Text style={{ fontSize: 10, color: "#6a1b9a" }}>Filters</Text>
-                </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShown(true)}>
+              <AntDesign name="filter" size={22} color="#6a1b9a" />
+              <Text style={{ fontSize: 10, color: "#6a1b9a" }}>Filters</Text>
+            </TouchableOpacity>
           </View>
 
           <View
-            style={{ width: "100%", borderBottomWidth: 1, marginTop: 10,borderColor:"silver" }}
+            style={{
+              width: "100%",
+              borderBottomWidth: 1,
+              marginTop: 10,
+              borderColor: "silver",
+            }}
           ></View>
         </View>
       </View>
 
-<>
-      <FlatList
-        data={data}
-        renderItem={({ item }) => {
-          return (
-            <View style={styles.listcontainer}>
-              <Text style={{ fontWeight: "400", paddingBottom: 10,fontSize:16 }}>
-                {item.name}
-              </Text>
-              <Text style={{ fontWeight: "400",color:'#757575' }}>
-                Order Date : 26 Oct 2022               </Text>
-              <View style={styles.rightitems}>
-                <Text style={{ paddingTop: 10,paddingBottom:10,color:'#757575' }}>Amt : Rs.100</Text>
-                <View style={{         
-                 padding: 5,
-                borderRadius: 5,
-                backgroundColor: theme.colors.secondaryContainer,
-}}>
-                  <Text style={{padding:5,color:"#424242"}}>Status: Placed</Text>
-                  
-                </View>
-                {/*<TouchableOpacity>
+      <>
+        <FlatList
+          data={orders}
+          renderItem={({ item }) => {
+            return (
+              <TouchableOpacity
+                style={styles.listcontainer}
+                onPress={() => handlepress(item)}
+              >
+                <Text
+                  style={{
+                    fontWeight: "400",
+                    paddingBottom: (height * 1) / 100,
+                    fontSize: (height * 1.8) / 100,
+                  }}
+                >
+                  {item.distributorname}
+                </Text>
+                <Text style={{ fontWeight: "400", color: "#757575" }}>
+                  Order Date : {format(new Date(item.orderdate), "dd-MM-yyyy")}
+                </Text>
+                <View style={styles.rightitems}>
+                  <Text
+                    style={{
+                      paddingTop: (height * 2) / 100,
+                      paddingBottom: (height * 1) / 100,
+                      color: "#757575",
+                    }}
+                  >
+                    Amt : {`\u20B9`} {parseFloat(item.totalamount).toFixed(2)}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => updateStatus(item.orderid, item.orderstatus)}
+                    style={{
+                      textAlignVertical: "center",
+                      padding: 5,
+                      borderRadius: 5,
+                      backgroundColor: theme.colors.secondaryContainer,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        padding: 5,
+                        color: "#424242",
+                        fontWeight: "400",
+                      }}
+                    >
+                      Status: {item.orderstatus}
+                      <AntDesign size={10} name="caretdown" color="gray" />
+                    </Text>
+                  </TouchableOpacity>
+                  {/*<TouchableOpacity>
                   <AntDesign name="edit" size={25} style={{ paddingTop: 10 }} />
           </TouchableOpacity>*/}
-              </View>
-            </View>
-          );
-        }}
-      />
-
-
-
-        
+                </View>
+              </TouchableOpacity>
+            );
+          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => fetchOrders(user, startDate, endDate, status)}
+            />
+          }
+        />
       </>
 
       <>
-            <Provider>
-              <Portal>
-                <Modal
-                  visible={shown}
-                  onDismiss={() => setShown(false)}
-                  contentContainerStyle={containerStyle}
+        <Provider>
+          <Portal>
+            <Modal
+              visible={see}
+              onDismiss={() => setSee(false)}
+              contentContainerStyle={statusContainerStyle}
+            >
+              <View style={{ marginLeft: (width * 2) / 100 }}>
+                {statuslist.map((val, i) => {
+                  return (
+                    <TouchableOpacity
+                      key={i}
+                      style={{
+                        paddingTop: (height * 2) / 100,
+                        paddingBottom: (height * 2) / 100,
+                      }}
+                      onPress={() => statusModalPress(val.orderstatus)}
+                    >
+                      <Text style={{ fontWeight: "500" }}>
+                        {val.orderstatus}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </Modal>
+          </Portal>
+        </Provider>
+      </>
+
+      <>
+        <Provider>
+          <Portal>
+            <Modal
+              visible={shown}
+              onDismiss={() => setShown(false)}
+              contentContainerStyle={containerStyle}
+            >
+              <View style={styles.datecontainer}>
+                <Text
+                  variant="titleMedium"
+                  style={{ textAlignVertical: "center" }}
                 >
+                  From :{" "}
+                </Text>
+                <DatePicker
+                  date={startDate}
+                  setDate={setStartDate}
+                  text={"From"}
+                  showFlag={true}
+                />
+                <Text
+                  variant="titleMedium"
+                  style={{ textAlignVertical: "center" }}
+                >
+                  To :{" "}
+                </Text>
+                <DatePicker
+                  date={endDate}
+                  setDate={setEndDate}
+                  text={"To"}
+                  showFlag={true}
+                />
+              </View>
 
-<View style={styles.datecontainer}>
-                    <Text
-                      variant="titleMedium"
-                      style={{ textAlignVertical: "center" }}
-                    >
-                      From :{" "}
-                    </Text>
-                    <DatePicker
-                      date={startDate}
-                      setDate={setStartDate}
-                      text={"From"}
-                      showFlag={true}
-                    />
-                    <Text
-                      variant="titleMedium"
-                      style={{ textAlignVertical: "center" }}
-                    >
-                      To :{" "}
-                    </Text>
-                    <DatePicker
-                      date={endDate}
-                      setDate={setEndDate}
-                      text={"To"}
-                      showFlag={true}
-                    />
-                  </View>
+              <View style={styles.locationcontainer}>
+                <Text
+                  variant="titleMedium"
+                  style={{ textAlignVertical: "center" }}
+                >
+                  Status :
+                </Text>
+                <View style={{ marginLeft: "4%" }}>
+                  <DropdownSelect
+                    options={statuses}
+                    setValue={setStatus}
+                    placeholder={status}
+                  />
+                </View>
+              </View>
 
+              {/* <View style={styles.locationcontainer}>
+                <Text
+                  variant="titleMedium"
+                  style={{ textAlignVertical: "center" }}
+                >
+                  City :
+                </Text>
+                <View style={{ marginLeft: "4%" }}>
+                  <DropdownSelect
+                    options={statuses}
+                    setValue={setStatus}
+                    placeholder={status}
+                  />
+                </View>
+        </View>*/}
 
-                  <View style={styles.locationcontainer}>
-                      <Text
-                        variant="titleMedium"
-                        style={{ textAlignVertical: "center" }}
-                      >
-                        Status :
-                      </Text>
-                      <View style={{ marginLeft: "4%" }}>
-                        <DropdownSelect
-                          options={statuses}
-                          setValue={setStatus}
-                          placeholder={status}
-                        />
-                      </View>
-                    </View>
-                    
-
-                    <View style={styles.locationcontainer}>
-                      <Text
-                        variant="titleMedium"
-                        style={{ textAlignVertical: "center" }}
-                      >
-                        City :
-                      </Text>
-                      <View style={{ marginLeft: "4%" }}>
-                        <DropdownSelect
-                          options={statuses}
-                          setValue={setStatus}
-                          placeholder={status}
-                        />
-                      </View>
-                    </View>
-                    
-
-
-
-                  <Button
-                    mode="contained"
-                    style={{
-                      borderRadius: 3,
-                      width: "95%",
-                      marginLeft: "3%",
-                      marginTop: "5%",
-                      marginBottom:"2%",
-                      
-                    }}
-                    onPress={() => setShown(false)}
-                  >
-                    View Result
-                  </Button> 
-                </Modal>
-              </Portal>
-            </Provider>
-          </>
-
+              <Button
+                mode="contained"
+                style={{
+                  borderRadius: 3,
+                  width: "95%",
+                  marginLeft: "3%",
+                  marginTop: "5%",
+                  marginBottom: "2%",
+                }}
+                onPress={() => setShown(false)}
+              >
+                View Result
+              </Button>
+            </Modal>
+          </Portal>
+        </Provider>
+      </>
     </>
   );
 }
@@ -217,62 +360,60 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     alignItems: "flex-start",
     width: "100%",
-    padding:10,
+    padding: 10,
   },
   pagecontainer: {
     width: "100%",
   },
   input: {
     width: "88%",
-    height: height-"60%",
-    marginBottom: 8,
-    borderRadius:5
+    height: (height * 6) / 100,
+    marginBottom: (height * 1.5) / 100,
+    borderRadius: 5,
   },
   listcontainer: {
     width: "95%",
-    minHeight:120,
+    minHeight: (height * 15) / 100,
     backgroundColor: "#fafafa",
     borderRadius: 12,
     marginLeft: "3%",
-    padding: 10,
-    marginBottom: "3%",
+    padding: "2%",
+    marginBottom: (height * 1.8) / 100,
     position: "relative",
-    paddingTop:"5%",
-    marginTop:"2%",
+    paddingTop: (height * 2) / 100,
+    marginTop: (height * 1.8) / 100,
     shadowColor: "#000",
-shadowOffset: {
-	width: 0,
-	height: 2,
-},
-shadowOpacity: 0.23,
-shadowRadius: 2.62,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
 
-elevation: 4,
-    
+    elevation: 4,
   },
   rightitems: {
     position: "absolute",
-    right: 10,
-    paddingTop:"5%"
+    right: (width * 2) / 100,
   },
-  filtericon:{
+  filtericon: {
     position: "absolute",
     right: 0,
     width: "10%",
-    top: 4,
+    top: (height * 1) / 100,
   },
   datecontainer: {
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
-    padding:"3%",
+    padding: "3%",
   },
   locationcontainer: {
     display: "flex",
     flexDirection: "row",
     padding: "3%",
     width: "100%",
-    paddingTop:"5%",
-    paddingBottom:'5%'
-  }
+    paddingTop: (height * 2) / 100,
+    paddingBottom: (height * 2) / 100,
+  },
 });

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
 
 import {
   FlatList,
@@ -8,21 +9,34 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Dimensions
+  Dimensions,
 } from "react-native";
 import { TextInput } from "react-native-paper";
+import { useAuthContext } from "../../context/UserAuthContext";
+import { getDistributors } from "../helper/LandingScreenHelper";
 
-const {height} = Dimensions.get("screen")
-
+const { height } = Dimensions.get("screen");
 
 export default function LandingScreen({ navigation }) {
-  const info = [
-    { id: 1, name: "Ganesh Stores" },
-    { id: 2, name: "Krishna Stores" },
-    { id: 3, name: "Raja Kirana Shop" },
-    { id: 4, name: "Raja Kirana Shop" },
-  ];
-  const [data, setData] = useState(info);
+  const { user } = useAuthContext();
+
+  const [distributors, setDistributors] = useState([]);
+  const [filterText, setFilterText] = useState("");
+
+  useEffect(() => {
+    getDistributors(user.userId).then((res) => {
+      if (!res.error) {
+        setDistributors(res.data);
+      }
+    });
+  });
+
+  const filterDistributor = distributors.filter((item) => {
+    if (item.name === "") {
+      return item;
+    }
+    return item.name.toLowerCase().includes(filterText);
+  });
 
   const handlePress = (item) => {
     navigation.navigate(`purchaseorder`, {
@@ -35,17 +49,27 @@ export default function LandingScreen({ navigation }) {
       <View style={styles.container}>
         <View style={styles.pagecontainer}>
           <Text
-            style={{ fontWeight: "600", fontSize: 18, paddingBottom: "2%",marginLeft:"2%" }}
+            style={{
+              fontWeight: "600",
+              fontSize: 18,
+              paddingBottom: "2%",
+              marginLeft: "2%",
+            }}
           >
-            Vignesh Foods
+            {user.userName}
           </Text>
 
-          <TextInput style={styles.input} placeholder="Search Supplier" />
+          <TextInput
+            style={styles.input}
+            placeholder="Search Supplier"
+            value={filterText}
+            onChangeText={(text) => setFilterText(text.toLocaleLowerCase())}
+          />
         </View>
       </View>
 
       <FlatList
-        data={data}
+        data={filterDistributor}
         renderItem={({ item }) => {
           return (
             <TouchableOpacity onPress={() => handlePress(item)}>
@@ -74,8 +98,8 @@ const styles = StyleSheet.create({
   },
   input: {
     width: "100%",
-    height: height-"70%",
-    borderRadius:5
+    height: (height * 6) / 100,
+    borderRadius: 5,
   },
   list: {
     width: "95%",
@@ -85,14 +109,14 @@ const styles = StyleSheet.create({
     marginBottom: "3%",
     marginLeft: "3%",
     backgroundColor: "#fafafa",
-    marginTop:"2%",
+    marginTop: "2%",
     shadowColor: "#000",
-shadowOffset: {
-	width: 0,
-	height: 2,
-},
-shadowOpacity: 0.23,
-shadowRadius: 2.62,
-elevation:4
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    elevation: 4,
   },
 });

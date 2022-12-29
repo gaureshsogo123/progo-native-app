@@ -2,11 +2,17 @@ import React, { useEffect, useState } from "react";
 import { View, StyleSheet, Alert, Dimensions } from "react-native";
 import {
   Button,
-  TextInput,
   Text,
   useTheme,
   HelperText,
 } from "react-native-paper";
+
+import { TextInput as MaterialTextInput } from "react-native-paper";
+
+import { useAuthContext } from "../../context/UserAuthContext";
+import { signIn,signUp } from "../helper/SigninHelper";
+
+const { height } = Dimensions.get("screen");
 
 
 const styles = StyleSheet.create({
@@ -22,42 +28,64 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   textInput: {
-    height: height - 60,
-    width: 300,
+    width: "70%",
     padding: 0,
     fontSize: 15,
-    marginBottom:"6%"
   },
   reset: {
     textAlign: "left",
   },
   button: {
-    width: 300,
+    width: "70%",
     borderRadius: 5,
   },
   head: {
     fontFamily: "serif",
     fontWeight: "500",
-    fontSize: 35,
+    fontSize: height*4/100,
   },
 });
 
-const { height } = Dimensions.get("screen");
 
 function SignIn({ navigation }) {
+  
   const theme = useTheme();
   const [mobileNumber, setMobileNumber] = useState();
   const [pin, setPin] = useState();
   const [errors, setErrors] = useState({});
 
+  const { loginUser, isLoggedIn } = useAuthContext()
+
+  useEffect(() => {
+    if (isLoggedIn()) navigation.navigate("bottomnav");
+  },[]);
+
+  const validateMobile = () => {
+    const regex = new RegExp(/^\d{10}$/);
+    return regex.test(mobileNumber);
+  };
+
   
+  const resetInputs = () => {
+    setMobileNumber("");
+    setPin("")
+    setErrors({});
+  };
 
-
-
-  
   const handleSignIn = () => {
-    navigation.navigate('bottomnav')
-      };
+    setErrors({});
+    signIn({ mobile_no: mobileNumber, pin: pin })
+      .then((res) => {
+        if (!res.error) {
+          loginUser(res.data);
+          navigation.navigate("bottomnav");
+          resetInputs();
+        } else {
+          Alert.alert("Error", "Please Enter a Proper Details");
+        }
+      })
+      .catch((err) => setErrors({ ...errors, pin: err.message }));
+  };
 
   // to reset forgotten pin when otp function is set up
   // const handleResetPIN = () => {
@@ -79,7 +107,7 @@ function SignIn({ navigation }) {
             backgroundColor: theme.colors.background,
           }}
         >
-          <TextInput
+          <MaterialTextInput
             style={styles.textInput}
             mode="outlined"
             label={
@@ -97,9 +125,12 @@ function SignIn({ navigation }) {
                 setErrors({ ...errors, mobile: "Only numbers allowed" });
               }
             }}
-          ></TextInput>
-           <View>
-            <TextInput
+          />
+          <HelperText type="error" visible={errors.mobile}>
+            {errors.mobile}{" "}
+          </HelperText>
+          
+            <MaterialTextInput
               style={styles.textInput}
               mode="outlined"
               label={
@@ -113,14 +144,20 @@ function SignIn({ navigation }) {
                 setErrors({ ...errors, otp: "" });
                 setPin(e);
               }}
-            ></TextInput>
-          </View>
+            />
+          
           {/* 
           When OTP is set up
           <Button mode="text" onPress={handleResetPIN} style={styles.reset}>
             Forgot PIN
           </Button> */}
-          
+          <HelperText
+            style={{ textAlign: "center" }}
+            type="error"
+            visible={errors.pin}
+          >
+            {errors.pin}{" "}
+          </HelperText>
           <Button style={styles.button} mode="contained" onPress={handleSignIn}>
             Sign In
           </Button>
@@ -128,6 +165,7 @@ function SignIn({ navigation }) {
       </>
     );
   
+
 }
 
 export default SignIn;

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { View,Text,StyleSheet } from "react-native"
+import { View,StyleSheet } from "react-native"
+import { Text } from "react-native-paper";
 import DatePicker from "../../component/DatePicker";
 import DropdownSelect from "../../component/DropdownSelect";
 import Table from "./Table";
@@ -57,7 +58,7 @@ export const OrderReport = (()=>{
                     </View>
 
 
-                    <View style={{display:'flex',flexDirection:'row',marginTop:'3%'}}>
+                  {/*  <View style={{display:'flex',flexDirection:'row',marginTop:'3%'}}>
                     <Text
                         variant="titleMedium"
                         style={{ textAlignVertical: "center" }}
@@ -72,7 +73,7 @@ export const OrderReport = (()=>{
                         />
                   
 
-                    </View>
+    </View>*/}
             </View>
             <Text style={{textAlign:"center",fontWeight:'500',fontSize:15,marginTop:'2%',marginBottom:'3%'}}>Order Report</Text>
             <Table/>
