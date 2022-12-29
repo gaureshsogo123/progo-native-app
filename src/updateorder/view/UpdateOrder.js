@@ -2,17 +2,17 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, StyleSheet, View } from "react-native";
 import { Button, useTheme } from "react-native-paper";
 import { TextInput, Text } from "react-native-paper";
-import { fetchProducts } from "../helpers/Purchasehelper";
+import { fetchProducts } from "../../purchaseorder/helpers/Purchasehelper";
 
 const styles = StyleSheet.create({
-  container:{
-    display:"flex",
-    justifyContent:'flex-start',
-    alignItems:'flex-start',
-    width:'100%'
+  container: {
+    display: "flex",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    width: "100%",
   },
-  pagecontainer:{
-    width:"100%",
+  pagecontainer: {
+    width: "100%",
   },
   heading: {
     padding: 10,
@@ -47,10 +47,10 @@ const styles = StyleSheet.create({
   },
 });
 
-function PurchaseOrderScreen({ route,navigation }) {
+function UpdateOrder({ route, navigation }) {
   const theme = useTheme();
 
-  const {retailerId ,retailerName,distributorId } = route.params;
+  const { data } = route.params;
   const [products, setProducts] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [searchFilter, setSearchFilter] = useState("");
@@ -61,17 +61,17 @@ function PurchaseOrderScreen({ route,navigation }) {
       setProducts(products.data);
     };
     getProducts();
-  }, [retailerId]);
+  }, [data.userid]);
 
   useEffect(() => {
     calculateTotal();
   }, [products]);
 
-  const handlePress = ()=>{
-    navigation.navigate("My Orders",{
-      screen:"Orders",
-    })
-  }
+  const handlePress = () => {
+    navigation.navigate("My Orders", {
+      screen: "Orders",
+    });
+  };
 
   const updateUnits = (amount, id) => {
     setProducts((products) => {
@@ -95,17 +95,22 @@ function PurchaseOrderScreen({ route,navigation }) {
       <View
         style={{
           ...styles.product,
-          borderBottomColor:"silver" ,
-          paddingBottom:'3%',
-          backgroundColor:"#fafafa"
+          borderBottomColor: "silver",
+          paddingBottom: "3%",
+          backgroundColor: "#fafafa",
         }}
       >
         <View>
-          <Text variant="titleMedium" style={{Width:"80%",fontWeight:"400"}}>{item.name}</Text>
+          <Text
+            variant="titleMedium"
+            style={{ Width: "80%", fontWeight: "400" }}
+          >
+            {item.name}
+          </Text>
           <Text style={styles.price} variant="titleSmall">
             Price: {item.saleprice}{" "}
           </Text>
-          <Text variant="titleSmall" style={{color:"#424242"}}>
+          <Text variant="titleSmall" style={{ color: "#424242" }}>
             Total: {item.saleprice * item.units}{" "}
           </Text>
         </View>
@@ -117,7 +122,10 @@ function PurchaseOrderScreen({ route,navigation }) {
             value={item.units === 0 ? "" : item.units + ""}
             onChangeText={(text) => updateUnits(text, item.id)}
           />
-          <Text variant="labelLarge" style={{fontWeight:"400"}}> units</Text> 
+          <Text variant="labelLarge" style={{ fontWeight: "400" }}>
+            {" "}
+            units
+          </Text>
         </View>
       </View>
     );
@@ -133,24 +141,34 @@ function PurchaseOrderScreen({ route,navigation }) {
 
   return (
     <>
-    <View style={styles.container}>
-      <View style={styles.pagecontainer}>
-      <View style={styles.heading}>
-        <Text style={{ marginBottom: 5,color:"#616161" }} variant="titleLarge">
-          Outlet:<Text style={{color:"#212121"}}> {retailerName}
-</Text>        </Text>
-        <Text style={{ marginBottom: 5,color:"#616161" }} variant="titleMedium">
-          Total Price: <Text style={{color:"#212121"}}>{`\u20B9`} {parseFloat(totalPrice).toFixed(2)}</Text> 
-        </Text>
-      </View>
+      <View style={styles.container}>
+        <View style={styles.pagecontainer}>
+          <View style={styles.heading}>
+            <Text
+              style={{ marginBottom: 5, color: "#616161" }}
+              variant="titleLarge"
+            >
+              Outlet:
+              <Text style={{ color: "#212121" }}> {data.distributorname}</Text>{" "}
+            </Text>
+            <Text
+              style={{ marginBottom: 5, color: "#616161" }}
+              variant="titleMedium"
+            >
+              Total Price:{" "}
+              <Text style={{ color: "#212121" }}>
+                {`\u20B9`} {parseFloat(totalPrice).toFixed(2)}
+              </Text>
+            </Text>
+          </View>
 
-      <TextInput
-        value={searchFilter}
-        mode="flat"
-        placeholder="Search products"
-        onChangeText={(text) => setSearchFilter(text)}
-      />
-      </View>
+          <TextInput
+            value={searchFilter}
+            mode="flat"
+            placeholder="Search products"
+            onChangeText={(text) => setSearchFilter(text)}
+          />
+        </View>
       </View>
       <FlatList
         removeClippedSubviews={false}
@@ -159,10 +177,10 @@ function PurchaseOrderScreen({ route,navigation }) {
         renderItem={renderProduct}
       />
       <Button mode="contained" style={styles.orderButton} onPress={handlePress}>
-        Place Order
+        Update Order
       </Button>
     </>
   );
 }
 
-export default PurchaseOrderScreen;
+export default UpdateOrder;
