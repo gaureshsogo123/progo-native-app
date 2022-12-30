@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, StyleSheet, View } from "react-native";
 import { Button, useTheme } from "react-native-paper";
 import { TextInput, Text } from "react-native-paper";
-import { fetchProducts } from "../../purchaseorder/helpers/Purchasehelper";
+import { fetchProducts } from "../../purchaseorder/helper/Purchasehelper";
 
 const styles = StyleSheet.create({
   container: {

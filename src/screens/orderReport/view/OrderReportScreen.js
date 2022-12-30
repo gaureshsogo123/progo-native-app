@@ -1,21 +1,17 @@
 import { useState } from "react";
 import { View,StyleSheet } from "react-native"
 import { Text } from "react-native-paper";
-import DatePicker from "../../component/DatePicker";
-import DropdownSelect from "../../component/DropdownSelect";
+import DatePicker from "../../../component/DatePicker";
 import Table from "./Table";
+
+
 
 export const OrderReport = (()=>{
     const[startDate,setStartDate]=useState(new Date());
     const[endDate,setEndDate]=useState(new Date());
-    const[city,setCity]=useState("")
 
 
-    const cities =[
-        { key: 1, value: "Mumbai" },
-        { key: 2, value: "Delhi" },
-        { key: 3, value: "Chennai" },
-      ]
+    
     
     return(
         <View style={styles.container}>

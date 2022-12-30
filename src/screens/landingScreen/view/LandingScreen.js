@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import React, { useEffect, useState } from "react";
 
 import {
@@ -12,18 +12,18 @@ import {
   Dimensions,
 } from "react-native";
 import { TextInput } from "react-native-paper";
-import { useAuthContext } from "../../context/UserAuthContext";
+import { useAuthContext } from "../../../context/UserAuthContext";
 import { getDistributors } from "../helper/LandingScreenHelper";
 
 const { height } = Dimensions.get("screen");
 
 export default function LandingScreen({ navigation }) {
   const { user } = useAuthContext();
-
   const [distributors, setDistributors] = useState([]);
   const [filterText, setFilterText] = useState("");
 
   useEffect(() => {
+    
     getDistributors(user.userId).then((res) => {
       if (!res.error) {
         setDistributors(res.data);

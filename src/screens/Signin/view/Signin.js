@@ -9,8 +9,8 @@ import {
 
 import { TextInput as MaterialTextInput } from "react-native-paper";
 
-import { useAuthContext } from "../../context/UserAuthContext";
-import { signIn,signUp } from "../helper/SigninHelper";
+import { useAuthContext } from "../../../context/UserAuthContext";
+import { signIn} from "../helper/SigninHelper";
 
 const { height } = Dimensions.get("screen");
 
@@ -78,7 +78,7 @@ function SignIn({ navigation }) {
       .then((res) => {
         if (!res.error) {
           loginUser(res.data);
-          navigation.navigate("bottomnav");
+         // navigation.navigate("bottomnav")
           resetInputs();
         } else {
           Alert.alert("Error", "Please Enter a Proper Details");

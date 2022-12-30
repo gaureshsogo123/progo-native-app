@@ -1,12 +1,15 @@
-import axiosInstance from "../../axiosInstance"
+import { format } from "date-fns";
+import axiosInstance from "../../../axiosInstance"
 
-export const getOrders = async (userId,fromdate,todate,status)=>{
+export const getOrders = async (userId,fdate,tdate,status)=>{
+  const fromDate = format(fdate,"MM-dd-yyyy");
+  const toDate = format(tdate,"MM-dd-yyyy");
     return axiosInstance
        .post("/order/retailerOrders",{
-        user_id : userId,
-        fromDate: fromdate,
-        toDate: todate,
-        status: status,  
+       user_id: userId,
+        fromDate,
+        toDate,
+        status:status,  
        })
        .then((res) => {
         return { data: res.data.data };
@@ -41,4 +44,8 @@ export const editOrderStatus = async (orderId, orderStatusId, orderStatus) => {
       return { message: err.message };
     });
 };
+
+
+
+
 
