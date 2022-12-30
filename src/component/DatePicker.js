@@ -18,9 +18,9 @@ function DatePicker({ date, setDate, text, showFlag = false }) {
     setFlag(true);
   }
 
-{ /* let day = date.getDate();
+let day = date.getDate();
   let month = date.getMonth() + 1;
-let year = date.getFullYear();*/}
+let year = date.getFullYear();
 
   return (
     <View>
@@ -35,7 +35,7 @@ let year = date.getFullYear();*/}
       >
         <TouchableOpacity onPress={showDatePicker}>
           <Text variant="bodyLarge">
-            {flag ? date : text}
+            {flag ? `${month}-${day}-${year}` : text}
           </Text>
         </TouchableOpacity>
 

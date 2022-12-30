@@ -2,8 +2,8 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { NavigationContainer } from "@react-navigation/native";
 import BottomNav from "./layout/BottomNav";
-import SignIn from "./Signin/view/Signin";
 import { useAuthContext } from "./context/UserAuthContext";
+import SignIn from "./screens/Signin/view/Signin";
 
 const Stack = createNativeStackNavigator();
 

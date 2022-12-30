@@ -17,15 +17,15 @@ import {
   Button,
 } from "react-native-paper";
 import { AntDesign } from "@expo/vector-icons";
-import DropdownSelect from "../../component/DropdownSelect";
-import DatePicker from "../../component/DatePicker";
+import DropdownSelect from "../../../component/DropdownSelect";
+import DatePicker from "../../../component/DatePicker";
 import { format, subDays, toDate } from "date-fns";
 import {
   editOrderStatus,
   getOrders,
   getOrderStatus,
 } from "../helper/OrderHelper";
-import { useAuthContext } from "../../context/UserAuthContext";
+import { useAuthContext } from "../../../context/UserAuthContext";
 
 const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
@@ -63,6 +63,11 @@ export default function Orders({ navigation, route }) {
     };
   }, []);
 
+  const seeresult = ()=>{
+    setShown(false);
+    fetchOrders(user, startDate, endDate, status);
+  }
+
   useEffect(() => {
     fetchOrders(user, startDate, endDate, status);
   }, [user.userId, startDate, endDate, status]);
@@ -93,11 +98,16 @@ export default function Orders({ navigation, route }) {
     { key: 0, value: "All" },
   ];
 
+const date = new Date();
+
+const month = date.getMonth(10);
+const day = date.getDay(15);
+const year = date.getFullYear(2022);
 
 
   const [status, setStatus] = useState("All");
-  const [startDate, setStartDate] = useState("10-15-2022");
-  const [endDate, setEndDate] = useState(format(new Date(), "MM-dd-yyyy"));
+  const [startDate, setStartDate] = useState(subDays(new Date(), 2));
+  const [endDate, setEndDate] = useState(new Date());
   const [shown, setShown] = useState(false);
   const [selectedCity, setSelectedCity] = useState("All");
   const [orders, setOrders] = useState([]);
@@ -106,6 +116,10 @@ export default function Orders({ navigation, route }) {
   const [see, setSee] = useState(false);
   const [errors, setErrors] = useState({});
   const [refreshing, setRefreshing] = useState(true);
+  const [textinput,setTextinput]=useState("");
+
+
+
 
   const updateStatus = (orderid, orderstatus) => {
     setEditStatusdata({
@@ -130,6 +144,13 @@ export default function Orders({ navigation, route }) {
     });
   };
 
+  const filterorders = orders.filter((val)=>{
+    if(val.distributorname === ""){
+      return val;
+    }
+    return val.distributorname.toLowerCase().includes(textinput);
+  })
+
   const statusModalPress = async (orderstatus) => {
     const statusId = statuslist.find(
       (status) => status.orderstatus === orderstatus
@@ -149,7 +170,7 @@ export default function Orders({ navigation, route }) {
     <>
       <View style={styles.container}>
         <View style={styles.pagecontainer}>
-          <TextInput style={styles.input} placeholder="Search Suppliers" />
+          <TextInput style={styles.input} placeholder="Search Suppliers" value={textinput} onChangeText={(val)=>setTextinput(val.toLocaleLowerCase())}/>
 
           <View style={styles.filtericon}>
             <TouchableOpacity onPress={() => setShown(true)}>
@@ -171,7 +192,7 @@ export default function Orders({ navigation, route }) {
 
       <>
         <FlatList
-          data={orders}
+          data={filterorders}
           renderItem={({ item }) => {
             return (
               <TouchableOpacity
@@ -343,7 +364,7 @@ export default function Orders({ navigation, route }) {
                   marginTop: "5%",
                   marginBottom: "2%",
                 }}
-                onPress={() => setShown(false)}
+                onPress={seeresult}
               >
                 View Result
               </Button>

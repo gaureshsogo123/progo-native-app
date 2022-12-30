@@ -1,14 +1,10 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { AntDesign } from "@expo/vector-icons";
 import React from "react";
-import LandingScreen from "../landingScreen/view/LandingScreen";
-import PurchaseOrderScreen from "../purchaseorder/view/PurchaseOrderScreen";
-import Orders from "../orders/view/Orders";
-import { OrderReport } from "../orderReport/view/OrderReport";
-import { Logout } from "../component/Signout";
 import HomeNavigator from "./navigators/HomeNavigator";
 import OrdersNavigator from "./navigators/OrdersNavigator";
 import MenuNavigator from "./navigators/MenuNavigator";
+import { OrderReport } from "../screens/orderReport/view/OrderReportScreen";
 
 const Tab = createBottomTabNavigator();
 

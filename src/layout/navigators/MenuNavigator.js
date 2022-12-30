@@ -1,7 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Signout from "../../component/Signout";
 import Menu from "../../Menu";
-import UpdatePin from "../../Signin/view/UpdatePin";
+import UpdatePin from "../../screens/Signin/view/UpdatePin";
 
 
 const MenuStack = createNativeStackNavigator();

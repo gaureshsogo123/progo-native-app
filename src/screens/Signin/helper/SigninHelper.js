@@ -1,4 +1,4 @@
-import axiosInstance from "../../axiosInstance";
+import axiosInstance from "../../../axiosInstance";
 
 export const signIn = async ({ mobile_no, pin }) => {
     return axiosInstance
