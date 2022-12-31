@@ -38,8 +38,8 @@ export default function LandingScreen({ navigation }) {
 
   const handlePress = (item) => {
     navigation.navigate(`purchaseorder`, {
-      retailerName: item.name,
-      retailerId: item.id,
+      distributorName: item.name,
+      distributorId: item.userid,
     });
   };
   return (

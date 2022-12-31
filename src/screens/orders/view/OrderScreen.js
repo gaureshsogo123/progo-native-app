@@ -181,6 +181,7 @@ export default function Orders({ navigation }) {
               paddingTop: (height * 2) / 100,
               paddingBottom: (height * 1) / 100,
               color: "#757575",
+              textAlign: "right",
             }}
           >
             Amt : {`\u20B9`} {parseFloat(item.totalamount).toFixed(2)}
@@ -322,7 +323,7 @@ export default function Orders({ navigation }) {
                 >
                   Status :
                 </Text>
-                <View style={{ marginLeft: "4%" }}>
+                <View>
                   <DropdownSelect
                     options={statuses}
                     setValue={setStatus}
@@ -410,6 +411,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     padding: "3%",
     width: "100%",
+    justifyContent: "space-between",
     paddingTop: (height * 2) / 100,
     paddingBottom: (height * 2) / 100,
   },

@@ -66,7 +66,7 @@ function UpdateOrder({ route, navigation }) {
   const [discount, setDiscount] = useState(0);
 
   const [products, setProducts] = useState([]);
-  const [orderDetails, setOrderDetails] = useState([]);
+  const [orderDetails, setOrderDetails] = useState();
   const [totalPrice, setTotalPrice] = useState(0);
   const [searchFilter, setSearchFilter] = useState("");
 
@@ -99,7 +99,7 @@ function UpdateOrder({ route, navigation }) {
         navigation.navigate("Orders", { screen: "OrdersList" });
       } else setErrors({ ...errors, updateOrder: result.error });
     } catch (error) {
-      Alert.alert("Error", error.message);
+      Alert.alert("Error", "There was an error");
     }
   };
 
@@ -207,7 +207,7 @@ function UpdateOrder({ route, navigation }) {
     );
   }, [searchFilter, products]);
 
-  const productKeyExtractor = useCallback((product) => product.id);
+  const productKeyExtractor = useCallback((product) => product.id, []);
 
   return (
     <>
@@ -252,9 +252,21 @@ function UpdateOrder({ route, navigation }) {
           <RefreshControl refreshing={refreshing} onRefresh={getProducts} />
         }
       />
-      <Button mode="contained" style={styles.orderButton} onPress={updateOrder}>
-        Update Order
-      </Button>
+
+      {orderDetails &&
+        (orderDetails[0]?.orderstatus.toLowerCase() === "placed" ? (
+          <Button
+            onPress={updateOrder}
+            mode="contained"
+            style={styles.orderButton}
+          >
+            Update Order
+          </Button>
+        ) : (
+          <Button mode="contained" style={styles.orderButton}>
+            Order {orderDetails[0]?.orderstatus.toLowerCase()}
+          </Button>
+        ))}
     </>
   );
 }
