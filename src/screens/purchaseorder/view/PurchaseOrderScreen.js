@@ -1,22 +1,30 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { FlatList, RefreshControl, StyleSheet, View,Alert } from "react-native";
-import { Button, useTheme,HelperText } from "react-native-paper";
+import {
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  View,
+  Alert,
+} from "react-native";
+import { Button, useTheme, HelperText } from "react-native-paper";
 import { TextInput, Text } from "react-native-paper";
 import { useAuthContext } from "../../../context/UserAuthContext";
-import { calculateTotal, fetchProducts, saveOrder } from "../helper/Purchasehelper";
+import {
+  calculateTotal,
+  fetchProducts,
+  saveOrder,
+} from "../helper/Purchasehelper";
 import Product from "./Product";
 
-
-
 const styles = StyleSheet.create({
-  container:{
-    display:"flex",
-    justifyContent:'flex-start',
-    alignItems:'flex-start',
-    width:'100%'
+  container: {
+    display: "flex",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    width: "100%",
   },
-  pagecontainer:{
-    width:"100%",
+  pagecontainer: {
+    width: "100%",
   },
   heading: {
     padding: 10,
@@ -51,19 +59,18 @@ const styles = StyleSheet.create({
   },
 });
 
-function PurchaseOrderScreen({ route,navigation }) {
+function PurchaseOrderScreen({ route, navigation }) {
   const theme = useTheme();
 
-  const {distributorId , distributorName } = route.params;
+  const { distributorId, distributorName } = route.params;
 
-  const{user}=useAuthContext();
+  const { user } = useAuthContext();
   const [refreshing, setRefreshing] = useState(true);
   const [products, setProducts] = useState([]);
   const [errors, setErrors] = useState({});
   const [discount, setDiscount] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
   const [searchFilter, setSearchFilter] = useState("");
-
 
   const placeOrder = async () => {
     setErrors({ ...errors, saveOrder: "" });
@@ -78,7 +85,7 @@ function PurchaseOrderScreen({ route,navigation }) {
         distributorId,
         discount,
         totalPrice,
-        orderProducts,
+        orderProducts
       );
       if (!result.error) {
         Alert.alert("Success", "Your order has been successfully placed!");
@@ -139,60 +146,53 @@ function PurchaseOrderScreen({ route,navigation }) {
   }, []);
 
   const filteredProducts = useMemo(() => {
-    return products.filter((product) =>
+    return products?.filter((product) =>
       product.productname.toLowerCase().includes(searchFilter.toLowerCase())
     );
   }, [searchFilter, products]);
 
   const productKeyExtractor = useCallback((product) => product.productid, []);
 
-  
-    return (
-      <>
-        <View style={styles.heading}>
-          <Text style={{ marginBottom: 5 }} variant="titleLarge">
-            <Text style={{ color: "gray", fontSize: 18 }}>Outlet :</Text>{" "}
-            {distributorName}
-          </Text>
-          <Text style={{ marginBottom: 5 }} variant="titleMedium">
-            <Text style={{ color: "gray", fontSize: 18 }}>Total Amount :</Text>{" "}
-            {`\u20B9`} {parseFloat(totalPrice).toFixed(2)}
-          </Text>
-        </View>
+  return (
+    <>
+      <View style={styles.heading}>
+        <Text style={{ marginBottom: 5 }} variant="titleLarge">
+          <Text style={{ color: "gray", fontSize: 18 }}>Outlet :</Text>{" "}
+          {distributorName}
+        </Text>
+        <Text style={{ marginBottom: 5 }} variant="titleMedium">
+          <Text style={{ color: "gray", fontSize: 18 }}>Total Amount :</Text>{" "}
+          {`\u20B9`} {parseFloat(totalPrice).toFixed(2)}
+        </Text>
+      </View>
 
-        <TextInput
-          value={searchFilter}
-          mode="flat"
-          placeholder="Search Products"
-          onChangeText={(text) => setSearchFilter(text)}
-        />
-        {errors.products && (
-          <HelperText visible={errors.products} type="error">
-            {errors.products}{" "}
-          </HelperText>
-        )}
-        <FlatList
-          removeClippedSubviews={false}
-          keyExtractor={productKeyExtractor}
-          data={filteredProducts}
-          renderItem={renderProduct}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => getProducts()}
-            />
-          }
-        />
-
-        <Button
-          onPress={placeOrder}
-          mode="contained"
-          style={styles.orderButton}
-        >
-          Place Order
-        </Button>
-      </>
-
+      <TextInput
+        value={searchFilter}
+        mode="flat"
+        placeholder="Search Products"
+        onChangeText={(text) => setSearchFilter(text)}
+      />
+      {errors.products && (
+        <HelperText visible={errors.products} type="error">
+          {errors.products}{" "}
+        </HelperText>
+      )}
+      <FlatList
+        removeClippedSubviews={false}
+        keyExtractor={productKeyExtractor}
+        data={filteredProducts}
+        renderItem={renderProduct}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => getProducts()}
+          />
+        }
+      />
+      <Button onPress={placeOrder} mode="contained" style={styles.orderButton}>
+        Place Order
+      </Button>
+    </>
   );
 }
 

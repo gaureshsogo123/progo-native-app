@@ -1,19 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet, Alert, Dimensions } from "react-native";
-import {
-  Button,
-  Text,
-  useTheme,
-  HelperText,
-} from "react-native-paper";
+import { Button, Text, useTheme, HelperText } from "react-native-paper";
 
 import { TextInput as MaterialTextInput } from "react-native-paper";
 
 import { useAuthContext } from "../../../context/UserAuthContext";
-import { signIn} from "../helper/SigninHelper";
+import { signIn } from "../helper/SigninHelper";
 
 const { height } = Dimensions.get("screen");
-
 
 const styles = StyleSheet.create({
   sogoBg: {
@@ -42,46 +36,56 @@ const styles = StyleSheet.create({
   head: {
     fontFamily: "serif",
     fontWeight: "500",
-    fontSize: height*4/100,
+    fontSize: (height * 4) / 100,
   },
 });
 
-
 function SignIn({ navigation }) {
-  
   const theme = useTheme();
   const [mobileNumber, setMobileNumber] = useState();
   const [pin, setPin] = useState();
   const [errors, setErrors] = useState({});
 
-  const { loginUser, isLoggedIn } = useAuthContext()
+  const { loginUser, isLoggedIn } = useAuthContext();
 
   useEffect(() => {
     if (isLoggedIn()) navigation.navigate("bottomnav");
-  },[]);
+  }, []);
 
   const validateMobile = () => {
     const regex = new RegExp(/^\d{10}$/);
     return regex.test(mobileNumber);
   };
 
-  
   const resetInputs = () => {
     setMobileNumber("");
-    setPin("")
+    setPin("");
     setErrors({});
   };
 
   const handleSignIn = () => {
     setErrors({});
+    if (!validateMobile()) {
+      setErrors((prev) => ({
+        ...prev,
+        mobile: "Please enter valid mobile number",
+      }));
+      return;
+    }
     signIn({ mobile_no: mobileNumber, pin: pin })
       .then((res) => {
         if (!res.error) {
+          if (res.data.rolename !== "Retailer") {
+            Alert.alert(
+              "Error",
+              `This is a ${res.data.rolename} no. Please log in with a retailer account.`
+            );
+            return;
+          }
           loginUser(res.data);
-         // navigation.navigate("bottomnav")
           resetInputs();
         } else {
-          Alert.alert("Error", "Please Enter a Proper Details");
+          Alert.alert("Error", res.error);
         }
       })
       .catch((err) => setErrors({ ...errors, pin: err.message }));
@@ -92,80 +96,77 @@ function SignIn({ navigation }) {
   //   navigation.push("UpdatePin", { mobile_no: "", signUp: false });
   // };
 
-  
-    return (
-      <>
-        <View style={styles.sogoBg}>
-          <Text variant="displayMedium" style={styles.head}>
-            {" "}
-            BOGO
-          </Text>
-        </View>
-        <View
-          style={{
-            ...styles.container,
-            backgroundColor: theme.colors.background,
-          }}
-        >
-          <MaterialTextInput
-            style={styles.textInput}
-            mode="outlined"
-            label={
-              <Text style={{ backgroundColor: "white", color: "gray" }}>
-                Phone Number
-              </Text>
+  return (
+    <>
+      <View style={styles.sogoBg}>
+        <Text variant="displayMedium" style={styles.head}>
+          {" "}
+          BOGO
+        </Text>
+      </View>
+      <View
+        style={{
+          ...styles.container,
+          backgroundColor: theme.colors.background,
+        }}
+      >
+        <MaterialTextInput
+          style={styles.textInput}
+          mode="outlined"
+          label={
+            <Text style={{ backgroundColor: "white", color: "gray" }}>
+              Phone Number
+            </Text>
+          }
+          keyboardType={"numeric"}
+          value={mobileNumber}
+          onChangeText={(e) => {
+            if (/^\d[0-9]*$/.test(e) || e === "") {
+              setMobileNumber(e);
+              setErrors({ ...errors, mobile: "" });
+            } else {
+              setErrors({ ...errors, mobile: "Only numbers allowed" });
             }
-            keyboardType={"numeric"}
-            value={mobileNumber}
-            onChangeText={(e) => {
-              if (/^\d[0-9]*$/.test(e) || e === "") {
-                setMobileNumber(e);
-                setErrors({ ...errors, mobile: "" });
-              } else {
-                setErrors({ ...errors, mobile: "Only numbers allowed" });
-              }
-            }}
-          />
-          <HelperText type="error" visible={errors.mobile}>
-            {errors.mobile}{" "}
-          </HelperText>
-          
-            <MaterialTextInput
-              style={styles.textInput}
-              mode="outlined"
-              label={
-                <Text style={{ backgroundColor: "white", color: "gray" }}>
-                  Enter PIN
-                </Text>
-              }
-              value={pin}
-              secureTextEntry={true}
-              onChangeText={(e) => {
-                setErrors({ ...errors, otp: "" });
-                setPin(e);
-              }}
-            />
-          
-          {/* 
+          }}
+        />
+        <HelperText type="error" visible={errors.mobile}>
+          {errors.mobile}{" "}
+        </HelperText>
+
+        <MaterialTextInput
+          style={styles.textInput}
+          mode="outlined"
+          label={
+            <Text style={{ backgroundColor: "white", color: "gray" }}>
+              Enter PIN
+            </Text>
+          }
+          value={pin}
+          secureTextEntry={true}
+          onChangeText={(e) => {
+            setErrors({ ...errors, otp: "" });
+            setPin(e);
+          }}
+        />
+
+        {/* 
           When OTP is set up
           <Button mode="text" onPress={handleResetPIN} style={styles.reset}>
             Forgot PIN
           </Button> */}
-          <HelperText
-            style={{ textAlign: "center" }}
-            type="error"
-            visible={errors.pin}
-          >
-            {errors.pin}{" "}
-          </HelperText>
-          <Button style={styles.button} mode="contained" onPress={handleSignIn}>
-            Sign In
-          </Button>
-        </View>
-      </>
-    );
-  
-
+        <HelperText
+          style={{ textAlign: "center" }}
+          type="error"
+          visible={errors.pin}
+        >
+          {errors.pin}{" "}
+        </HelperText>
+        <Button style={styles.button} mode="contained" onPress={handleSignIn}>
+          Sign In
+        </Button>
+      </View>
+    </>
+  );
 }
 
 export default SignIn;

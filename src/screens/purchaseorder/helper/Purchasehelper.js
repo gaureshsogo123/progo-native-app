@@ -6,7 +6,6 @@ export const calculateTotal = (products) => {
   return total;
 };
 
-
 export const fetchProducts = async (
   userId,
   categoryId,
@@ -24,7 +23,6 @@ export const fetchProducts = async (
     })
     .then((res) => {
       const products = res.data.data;
-      console.log("products",products)
       return { data: products };
     })
     .catch((err) => {
@@ -54,12 +52,9 @@ export const saveOrder = async (
       products,
     })
     .then((res) => {
-      console.log("save oeder",res.data.data);
       return { data: res.data.data };
     })
     .catch((err) => {
-      console.log("err",err.message)
       return { error: err.message };
     });
 };
-

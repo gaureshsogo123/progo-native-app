@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import {
   View,
   StyleSheet,
@@ -19,7 +19,7 @@ import {
 import { AntDesign } from "@expo/vector-icons";
 import DropdownSelect from "../../../component/DropdownSelect";
 import DatePicker from "../../../component/DatePicker";
-import { format, subDays, toDate } from "date-fns";
+import { format, subDays } from "date-fns";
 import {
   editOrderStatus,
   getOrders,
@@ -30,30 +30,50 @@ import { useAuthContext } from "../../../context/UserAuthContext";
 const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
 
-export default function Orders({ navigation, route }) {
-  const containerStyle = {
-    backgroundColor: "#eeeeee",
-    width: "100%",
-    minHeight: (height * 30) / 100,
-    position: "absolute",
-    bottom: 0,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  };
+const containerStyle = {
+  backgroundColor: "#eeeeee",
+  width: "100%",
+  minHeight: (height * 30) / 100,
+  position: "absolute",
+  bottom: 0,
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
+};
 
-  const statusContainerStyle = {
-    backgroundColor: "#eeeeee",
-    width: "90%",
-    marginLeft: "6%",
-    display: "flex",
-    justifyContent: "center",
-  };
+const statusContainerStyle = {
+  backgroundColor: "#eeeeee",
+  width: "90%",
+  marginLeft: "6%",
+  display: "flex",
+  justifyContent: "center",
+};
+
+const statuses = [
+  { key: 1, value: "Placed" },
+  { key: 2, value: "Accepted" },
+  { key: 3, value: "In-Process" },
+  { key: 4, value: "Completed" },
+  { key: 0, value: "All" },
+];
+
+export default function Orders({ navigation }) {
   const { user } = useAuthContext();
+  const theme = useTheme();
+
+  const [status, setStatus] = useState("All");
+  const [startDate, setStartDate] = useState(subDays(new Date(), 2));
+  const [endDate, setEndDate] = useState(new Date());
+  const [shown, setShown] = useState(false);
+  const [orders, setOrders] = useState([]);
+  const [editStatusdata, setEditStatusdata] = useState({});
+  const [statuslist, setStatuslist] = useState([]);
+  const [see, setSee] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [refreshing, setRefreshing] = useState(true);
+  const [textinput, setTextinput] = useState("");
 
   useEffect(() => {
-    const unsubscribeFocus = navigation.addListener("focus", () => {
-      fetchOrders(user, startDate, endDate, status);
-    });
+    const unsubscribeFocus = navigation.addListener("focus", fetchOrders);
     const unsubscribeBlur = navigation.addListener("blur", () => {
       setShown(false);
     });
@@ -61,18 +81,17 @@ export default function Orders({ navigation, route }) {
       unsubscribeFocus();
       unsubscribeBlur();
     };
-  }, []);
+  }, [user, startDate, endDate, status]);
 
-  const seeresult = ()=>{
+  const seeResult = () => {
     setShown(false);
-    fetchOrders(user, startDate, endDate, status);
-  }
+  };
 
   useEffect(() => {
-    fetchOrders(user, startDate, endDate, status);
+    fetchOrders();
   }, [user.userId, startDate, endDate, status]);
 
-  const fetchOrders = async (user, startDate, endDate, status) => {
+  const fetchOrders = async () => {
     setRefreshing(true);
     try {
       const result = await getOrders(user.userId, startDate, endDate, status);
@@ -86,36 +105,6 @@ export default function Orders({ navigation, route }) {
       setRefreshing(false);
     }
   };
-
-  const theme = useTheme();
-  
-
-  const statuses = [
-    { key: 1, value: "Placed" },
-    { key: 2, value: "Accepted" },
-    { key: 3, value: "In-Process" },
-    { key: 4, value: "Completed" },
-    { key: 0, value: "All" },
-  ];
-
-
-
-
-  const [status, setStatus] = useState("All");
-  const [startDate, setStartDate] = useState(subDays(new Date(), 2));
-  const [endDate, setEndDate] = useState(new Date());
-  const [shown, setShown] = useState(false);
-  const [selectedCity, setSelectedCity] = useState("All");
-  const [orders, setOrders] = useState([]);
-  const [editStatusdata, setEditStatusdata] = useState({});
-  const [statuslist, setStatuslist] = useState([]);
-  const [see, setSee] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [refreshing, setRefreshing] = useState(true);
-  const [textinput,setTextinput]=useState("");
-
-
-
 
   const updateStatus = (orderid, orderstatus) => {
     setEditStatusdata({
@@ -136,16 +125,20 @@ export default function Orders({ navigation, route }) {
 
   const handlepress = (item) => {
     navigation.navigate("UpdateOrder", {
-      data: item,
+      order: item,
     });
   };
 
-  const filterorders = orders.filter((val)=>{
-    if(val.distributorname === ""){
-      return val;
-    }
-    return val.distributorname.toLowerCase().includes(textinput);
-  })
+  const filterorders = useMemo(
+    () =>
+      orders?.filter((val) => {
+        if (val.distributorname === "") {
+          return val;
+        }
+        return val.distributorname.toLowerCase().includes(textinput);
+      }),
+    [orders, textinput]
+  );
 
   const statusModalPress = async (orderstatus) => {
     const statusId = statuslist.find(
@@ -153,7 +146,7 @@ export default function Orders({ navigation, route }) {
     ).orderstatusid;
     try {
       await editOrderStatus(editStatusdata.orderid, statusId, orderstatus).then(
-        (res) => fetchOrders(user, startDate, endDate, status)
+        () => fetchOrders(user, startDate, endDate, status)
       );
     } catch (error) {
       Alert.alert("Error", "There was an error");
@@ -162,11 +155,71 @@ export default function Orders({ navigation, route }) {
     }
   };
 
+  const orderKeyExtractor = (order) => order.orderid;
+
+  const renderOrder = useCallback(({ item }) => {
+    return (
+      <TouchableOpacity
+        style={styles.listcontainer}
+        onPress={() => handlepress(item)}
+      >
+        <Text
+          style={{
+            fontWeight: "400",
+            paddingBottom: (height * 1) / 100,
+            fontSize: (height * 1.8) / 100,
+          }}
+        >
+          {item.distributorname}
+        </Text>
+        <Text style={{ fontWeight: "400", color: "#757575" }}>
+          Order Date : {format(new Date(item.orderdate), "dd-MM-yyyy")}
+        </Text>
+        <View style={styles.rightitems}>
+          <Text
+            style={{
+              paddingTop: (height * 2) / 100,
+              paddingBottom: (height * 1) / 100,
+              color: "#757575",
+              textAlign: "right",
+            }}
+          >
+            Amt : {`\u20B9`} {parseFloat(item.totalamount).toFixed(2)}
+          </Text>
+          <TouchableOpacity
+            onPress={() => updateStatus(item.orderid, item.orderstatus)}
+            style={{
+              textAlignVertical: "center",
+              padding: 5,
+              borderRadius: 5,
+              backgroundColor: theme.colors.secondaryContainer,
+            }}
+          >
+            <Text
+              style={{
+                padding: 5,
+                color: "#424242",
+                fontWeight: "400",
+              }}
+            >
+              Status: {item.orderstatus}
+              <AntDesign size={10} name="caretdown" color="gray" />
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    );
+  }, []);
   return (
     <>
       <View style={styles.container}>
         <View style={styles.pagecontainer}>
-          <TextInput style={styles.input} placeholder="Search Suppliers" value={textinput} onChangeText={(val)=>setTextinput(val.toLocaleLowerCase())}/>
+          <TextInput
+            style={styles.input}
+            placeholder="Search Suppliers"
+            value={textinput}
+            onChangeText={(val) => setTextinput(val.toLocaleLowerCase())}
+          />
 
           <View style={styles.filtericon}>
             <TouchableOpacity onPress={() => setShown(true)}>
@@ -189,66 +242,10 @@ export default function Orders({ navigation, route }) {
       <>
         <FlatList
           data={filterorders}
-          renderItem={({ item }) => {
-            return (
-              <TouchableOpacity
-                style={styles.listcontainer}
-                onPress={() => handlepress(item)}
-              >
-                <Text
-                  style={{
-                    fontWeight: "400",
-                    paddingBottom: (height * 1) / 100,
-                    fontSize: (height * 1.8) / 100,
-                  }}
-                >
-                  {item.distributorname}
-                </Text>
-                <Text style={{ fontWeight: "400", color: "#757575" }}>
-                  Order Date : {format(new Date(item.orderdate), "dd-MM-yyyy")}
-                </Text>
-                <View style={styles.rightitems}>
-                  <Text
-                    style={{
-                      paddingTop: (height * 2) / 100,
-                      paddingBottom: (height * 1) / 100,
-                      color: "#757575",
-                    }}
-                  >
-                    Amt : {`\u20B9`} {parseFloat(item.totalamount).toFixed(2)}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => updateStatus(item.orderid, item.orderstatus)}
-                    style={{
-                      textAlignVertical: "center",
-                      padding: 5,
-                      borderRadius: 5,
-                      backgroundColor: theme.colors.secondaryContainer,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        padding: 5,
-                        color: "#424242",
-                        fontWeight: "400",
-                      }}
-                    >
-                      Status: {item.orderstatus}
-                      <AntDesign size={10} name="caretdown" color="gray" />
-                    </Text>
-                  </TouchableOpacity>
-                  {/*<TouchableOpacity>
-                  <AntDesign name="edit" size={25} style={{ paddingTop: 10 }} />
-          </TouchableOpacity>*/}
-                </View>
-              </TouchableOpacity>
-            );
-          }}
+          keyExtractor={orderKeyExtractor}
+          renderItem={renderOrder}
           refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => fetchOrders(user, startDate, endDate, status)}
-            />
+            <RefreshControl refreshing={refreshing} onRefresh={fetchOrders} />
           }
         />
       </>
@@ -335,22 +332,6 @@ export default function Orders({ navigation, route }) {
                 </View>
               </View>
 
-              {/* <View style={styles.locationcontainer}>
-                <Text
-                  variant="titleMedium"
-                  style={{ textAlignVertical: "center" }}
-                >
-                  City :
-                </Text>
-                <View style={{ marginLeft: "4%" }}>
-                  <DropdownSelect
-                    options={statuses}
-                    setValue={setStatus}
-                    placeholder={status}
-                  />
-                </View>
-        </View>*/}
-
               <Button
                 mode="contained"
                 style={{
@@ -360,7 +341,7 @@ export default function Orders({ navigation, route }) {
                   marginTop: "5%",
                   marginBottom: "2%",
                 }}
-                onPress={seeresult}
+                onPress={seeResult}
               >
                 View Result
               </Button>
@@ -430,7 +411,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     padding: "3%",
     width: "100%",
-    justifyContent:"space-between",
+    justifyContent: "space-between",
     paddingTop: (height * 2) / 100,
     paddingBottom: (height * 2) / 100,
   },

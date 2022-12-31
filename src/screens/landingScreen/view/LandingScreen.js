@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 
 import {
@@ -23,13 +22,12 @@ export default function LandingScreen({ navigation }) {
   const [filterText, setFilterText] = useState("");
 
   useEffect(() => {
-    
     getDistributors(user.userId).then((res) => {
       if (!res.error) {
         setDistributors(res.data);
       }
     });
-  },[user.userId]);
+  }, [user.userId]);
 
   const filterDistributor = distributors.filter((item) => {
     if (item.name === "") {
