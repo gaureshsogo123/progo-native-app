@@ -1,63 +1,65 @@
-export const fetchProducts = async () => {
-    return Promise.resolve({
-      data: [
-        {
-          id: 1,
-          name: "Milk bottle",
-          mrp: 40,
-          saleprice: 35,
-          units: 2,
-        },
-        {
-          id: 2,
-          name: "Coconut bottle",
-          mrp: 40,
-          saleprice: 35,
-          units: 3,
-        },
-        {
-          id: 3,
-          name: "Haldi bottle",
-          mrp: 40,
-          saleprice: 35,
-          units: 0,
-        },
-        {
-          id: 4,
-          name: "Chicken Masala",
-          mrp: 40,
-          saleprice: 35,
-          units: 1,
-        },
-        {
-          id: 5,
-          name: "Mustard oil",
-          mrp: 40,
-          saleprice: 35,
-          units: 0,
-        },
-        {
-          id: 6,
-          name: "Wheat",
-          mrp: 40,
-          saleprice: 35,
-          units: 0,
-        },
-        {
-          id: 7,
-          name: "Potato",
-          mrp: 40,
-          saleprice: 35,
-          units: 0,
-        },
-        {
-          id: 8,
-          name: "sugar",
-          mrp: 40,
-          saleprice: 35,
-          units: 0,
-        },
-      ],
+export const calculateTotal = (products) => {
+  let total = 0;
+  products.forEach((product) => {
+    total += product.price * (product.quantity || 0);
+  });
+  return total;
+};
+
+
+export const fetchProducts = async (
+  userId,
+  categoryId,
+  searchText,
+  pageNumber = 1,
+  pageSize = 500
+) => {
+  return axiosInstance
+    .post("/product", {
+      user_id: userId,
+      category_id: categoryId,
+      search_text: searchText,
+      page_number: pageNumber,
+      page_size: pageSize,
+    })
+    .then((res) => {
+      const products = res.data.data;
+      console.log("products",products)
+      return { data: products };
+    })
+    .catch((err) => {
+      return { error: err.message };
     });
-  };
-  
+};
+
+export const saveOrder = async (
+  userId,
+  totalItems,
+  orderTotal,
+  paymentMethod,
+  distributorId,
+  discount,
+  subTotal,
+  products
+) => {
+  return axiosInstance
+    .post("/order/saveOrderRetailer", {
+      userId,
+      totalItems,
+      orderTotal: orderTotal.toFixed(2),
+      paymentMethod,
+      discount,
+      subTotal: subTotal.toFixed(2),
+      distributorId,
+      products,
+    })
+    .then((res) => {
+      console.log("save oeder",res.data.data);
+      return { data: res.data.data };
+    })
+    .catch((err) => {
+      console.log("err",err.message)
+      return { error: err.message };
+    });
+};
+

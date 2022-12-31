@@ -98,11 +98,7 @@ export default function Orders({ navigation, route }) {
     { key: 0, value: "All" },
   ];
 
-const date = new Date();
 
-const month = date.getMonth(10);
-const day = date.getDay(15);
-const year = date.getFullYear(2022);
 
 
   const [status, setStatus] = useState("All");
@@ -330,7 +326,7 @@ const year = date.getFullYear(2022);
                 >
                   Status :
                 </Text>
-                <View style={{ marginLeft: "4%" }}>
+                <View>
                   <DropdownSelect
                     options={statuses}
                     setValue={setStatus}
@@ -434,6 +430,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     padding: "3%",
     width: "100%",
+    justifyContent:"space-between",
     paddingTop: (height * 2) / 100,
     paddingBottom: (height * 2) / 100,
   },
