@@ -29,7 +29,7 @@ export default function LandingScreen({ navigation }) {
         setDistributors(res.data);
       }
     });
-  });
+  },[user.userId]);
 
   const filterDistributor = distributors.filter((item) => {
     if (item.name === "") {
@@ -40,8 +40,8 @@ export default function LandingScreen({ navigation }) {
 
   const handlePress = (item) => {
     navigation.navigate(`purchaseorder`, {
-      retailerName: item.name,
-      retailerId: item.id,
+      distributorName: item.name,
+      distributorId: item.userid,
     });
   };
   return (

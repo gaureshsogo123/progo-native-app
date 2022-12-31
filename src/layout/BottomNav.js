@@ -4,7 +4,6 @@ import React from "react";
 import HomeNavigator from "./navigators/HomeNavigator";
 import OrdersNavigator from "./navigators/OrdersNavigator";
 import MenuNavigator from "./navigators/MenuNavigator";
-import { OrderReport } from "../screens/orderReport/view/OrderReportScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -15,12 +14,16 @@ const defaultTabOptions = {
 
 function BottomNav() {
   return (
-    <Tab.Navigator>
+    <Tab.Navigator
+    screenOptions={{
+      tabBarHideOnKeyboard:true
+    }}
+    >
       <Tab.Screen
         name="Home"
         component={HomeNavigator}
         options={{
-          tabBarIcon: () => <BottomIconContainer name="home" />,
+          tabBarIcon: (tabInfo) => <BottomIconContainer name="home" color={tabInfo.focused?"blue":"black"} />,
           headerShown: false,
           ...defaultTabOptions,
         }}
@@ -29,25 +32,19 @@ function BottomNav() {
         name="My Orders"
         component={OrdersNavigator}
         options={{
-          tabBarIcon: () => <BottomIconContainer name="book" />,
+          tabBarIcon: (tabInfo) => <BottomIconContainer name="book" color={tabInfo.focused?"blue":"black"}/>,
           headerShown: false,
           ...defaultTabOptions,
 
         }}
       />
-       <Tab.Screen
-        name="Order Report"
-        component={OrderReport}
-        options={{
-          tabBarIcon: () => <BottomIconContainer name="filetext1" />,
-        }}
-      />
+       
      <Tab.Screen
         name="Menu"
         component={MenuNavigator}
         options={{
-          tabBarIcon: () => (
-            <BottomIconContainer name="menufold"  />
+          tabBarIcon: (tabInfo) => (
+            <BottomIconContainer name="menufold"  color={tabInfo.focused?"blue":"black"}/>
           ),
           headerShown: false,
           ...defaultTabOptions,
@@ -58,8 +55,8 @@ function BottomNav() {
   );
 }
 
-const BottomIconContainer = ({ name }) => {
-  return <AntDesign name={name} size={22} color="black" />;
+const BottomIconContainer = ({ name,color }) => {
+  return <AntDesign name={name} size={22} color={color} />;
 };
 
 export default BottomNav;
