@@ -101,7 +101,7 @@ function UpdatePin({ navigation, route }) {
           secureTextEntry={true}
           onChangeText={(e) => {
             if (pin !== e) {
-              setErrors({ ...errors, confirm: "Passcodes do not match" });
+              setErrors({ ...errors, confirm: "PINs do not match" });
             } else {
               setErrors({ ...errors, confirm: "" });
             }
