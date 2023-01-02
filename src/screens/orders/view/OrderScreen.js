@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Dimensions,
   RefreshControl,
+  Alert,
 } from "react-native";
 import {
   TextInput,
@@ -145,9 +146,16 @@ export default function Orders({ navigation }) {
       (status) => status.orderstatus === orderstatus
     ).orderstatusid;
     try {
-      await editOrderStatus(editStatusdata.orderid, statusId, orderstatus).then(
-        () => fetchOrders(user, startDate, endDate, status)
+      const res = await editOrderStatus(
+        editStatusdata.orderid,
+        statusId,
+        orderstatus
       );
+      if (!res.error) {
+        fetchOrders();
+      } else {
+        Alert.alert("Error", res.error);
+      }
     } catch (error) {
       Alert.alert("Error", "There was an error");
     } finally {
