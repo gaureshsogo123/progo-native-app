@@ -132,7 +132,6 @@ export default function Orders({ navigation }) {
   useEffect(() => {
     async function fetchstatus() {
       const res = await getOrderStatus();
-      console.log("Statuslist", res.data);
       setStatuslist(res.data);
     }
     fetchstatus();
