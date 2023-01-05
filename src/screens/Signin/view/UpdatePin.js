@@ -90,7 +90,7 @@ function UpdatePin({ navigation, route }) {
           </HelperText>
         )}
         <MaterialTextInput
-          style={styles.textInput}
+          style={styles.pintextinput}
           mode="outlined"
           label={
             <Text style={{ backgroundColor: "white", color: "gray" }}>
@@ -141,6 +141,12 @@ const styles = StyleSheet.create({
     padding: 0,
     fontSize: 15,
     marginBottom: "5%",
+  },
+  pintextinput:{
+    width: "70%",
+    padding: 0,
+    fontSize: 15,
+    marginBottom: "2%",
   },
   reset: {
     textAlign: "left",
