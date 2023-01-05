@@ -7,6 +7,7 @@ const AuthContext = createContext();
 const AuthContextProvider = ({ children }) => {
   const [user, setUser] = useState();
   const [connected, setConnected] = useState(false);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -18,7 +19,7 @@ const AuthContextProvider = ({ children }) => {
       user.city = await AsyncStorage.getItem("city");
       setUser(user);
     };
-    getUser();
+    getUser().then(() => setInitialLoadComplete(true));
   }, []);
 
   useEffect(() => {
@@ -64,10 +65,10 @@ const AuthContextProvider = ({ children }) => {
         isLoggedIn,
         loginUser,
         logoutUser,
-        connected
+        connected,
       }}
     >
-      {children}
+      {initialLoadComplete && children}
     </AuthContext.Provider>
   );
 };

@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "progo-native-app",
-    "slug": "progo-native-app",
-    "version": "1.0.0",
+    "name": "Bogo",
+    "slug": "bogo-mobile-app",
+    "version": "0.1.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/app-icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
@@ -14,20 +14,27 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/app-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.buyer.sogo",
+      "permissions": []
+    },
+    "androidStatusBar": {
+      "barStyle": "dark-content"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./assets/app-icon.png"
+    },
+    "extra": {
+      "eas": {}
+    },
+    "owner": "pattabi"
   }
 }
