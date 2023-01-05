@@ -72,6 +72,7 @@ function SignIn({ navigation }) {
       }));
       return;
     }
+    
     signIn({ mobile_no: mobileNumber, pin: pin })
       .then((res) => {
         if (!res.error) {
@@ -82,13 +83,19 @@ function SignIn({ navigation }) {
             );
             return;
           }
+          
           loginUser(res.data);
           resetInputs();
         } else {
           Alert.alert("Error", res.error);
+          setErrors((prev) => ({
+            ...prev,
+            mobile: "Mobile Number Is not Registerd",
+          }));
+    
         }
       })
-      .catch((err) => setErrors({ ...errors, pin: err.message }));
+      .catch((err) => setErrors({ ...errors, pin:err.message }));
   };
 
   // to reset forgotten pin when otp function is set up

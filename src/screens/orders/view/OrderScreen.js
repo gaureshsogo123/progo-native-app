@@ -17,6 +17,8 @@ import {
   Button,
 } from "react-native-paper";
 import { AntDesign } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
+
 import DropdownSelect from "../../../component/DropdownSelect";
 import DatePicker from "../../../component/DatePicker";
 import { format, subDays } from "date-fns";
@@ -48,6 +50,16 @@ const statusContainerStyle = {
   justifyContent: "center",
 };
 
+const cancelStatusContainer = {
+  backgroundColor: "#fafafa",
+  width: "90%",
+  marginLeft: "6%",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: "8%",
+};
+
 const statuses = [
   { key: 1, value: "Placed" },
   { key: 2, value: "Accepted" },
@@ -71,6 +83,7 @@ export default function Orders({ navigation }) {
   const [errors, setErrors] = useState({});
   const [refreshing, setRefreshing] = useState(true);
   const [textinput, setTextinput] = useState("");
+  const [current, setCurrent] = useState(false);
 
   useEffect(() => {
     const unsubscribeFocus = navigation.addListener("focus", fetchOrders);
@@ -112,16 +125,24 @@ export default function Orders({ navigation }) {
       orderid: orderid,
       status: orderstatus,
     });
-    setSee(true);
+    setCurrent(true);
   };
 
   useEffect(() => {
     async function fetchstatus() {
       const res = await getOrderStatus();
+      console.log("Statuslist",res.data)
       setStatuslist(res.data);
     }
     fetchstatus();
   }, []);
+
+  const filterstatus = statuslist.filter((val)=>{
+    return val.orderstatus === "Cancelled"
+  })
+
+  
+
 
   const handlepress = (item) => {
     navigation.navigate("UpdateOrder", {
@@ -140,18 +161,19 @@ export default function Orders({ navigation }) {
     [orders, textinput]
   );
 
-  const statusModalPress = async (orderstatus) => {
-    const statusId = statuslist.find(
-      (status) => status.orderstatus === orderstatus
-    ).orderstatusid;
+  const statusModalPress = async () => {
+    const statusId = filterstatus.find((status)=>{
+      return status.orderstatus
+    })
+    
     try {
-      await editOrderStatus(editStatusdata.orderid, statusId, orderstatus).then(
+      await editOrderStatus(editStatusdata.orderid,statusId.orderstatusid,"Cancelled" ).then(
         () => fetchOrders(user, startDate, endDate, status)
       );
     } catch (error) {
       Alert.alert("Error", "There was an error");
     } finally {
-      setSee(false);
+      setCurrent(false);
     }
   };
 
@@ -166,8 +188,9 @@ export default function Orders({ navigation }) {
         <Text
           style={{
             fontWeight: "400",
-            paddingBottom: (height * 1) / 100,
+            paddingBottom: (height * 1.5) / 100,
             fontSize: (height * 1.8) / 100,
+            width: (width * 50) / 100,
           }}
         >
           {item.distributorname}
@@ -175,10 +198,11 @@ export default function Orders({ navigation }) {
         <Text style={{ fontWeight: "400", color: "#757575" }}>
           Order Date : {format(new Date(item.orderdate), "dd-MM-yyyy")}
         </Text>
+
         <View style={styles.rightitems}>
           <Text
             style={{
-              paddingTop: (height * 2) / 100,
+              paddingTop: (height * 3) / 100,
               paddingBottom: (height * 1) / 100,
               color: "#757575",
               textAlign: "right",
@@ -186,26 +210,38 @@ export default function Orders({ navigation }) {
           >
             Amt : {`\u20B9`} {parseFloat(item.totalamount).toFixed(2)}
           </Text>
-          <TouchableOpacity
-            onPress={() => updateStatus(item.orderid, item.orderstatus)}
-            style={{
-              textAlignVertical: "center",
-              padding: 5,
-              borderRadius: 5,
-              backgroundColor: theme.colors.secondaryContainer,
-            }}
-          >
-            <Text
+          <View style={{ display: "flex", flexDirection: "row" }}>
+            <TouchableOpacity
+              
               style={{
+                textAlignVertical: "center",
                 padding: 5,
-                color: "#424242",
-                fontWeight: "400",
+                borderRadius: 5,
+                backgroundColor: theme.colors.secondaryContainer,
               }}
             >
-              Status: {item.orderstatus}
-              <AntDesign size={10} name="caretdown" color="gray" />
-            </Text>
-          </TouchableOpacity>
+              <Text
+                style={{
+                  padding: 5,
+                  color: "#424242",
+                  fontWeight: "400",
+                }}
+              >
+                Status: {item.orderstatus}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                marginTop: (height * 1) / 100,
+                paddingLeft: (width * 1) / 100,
+              }}
+              onPress={()=>updateStatus(item.orderid,item.orderstatus)}
+            >
+              <Text>
+                <AntDesign name="delete" size={18} color="#424242" />
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </TouchableOpacity>
     );
@@ -223,7 +259,7 @@ export default function Orders({ navigation }) {
 
           <View style={styles.filtericon}>
             <TouchableOpacity onPress={() => setShown(true)}>
-              <AntDesign name="filter" size={22} color="#6a1b9a" />
+              <AntDesign name="filter" size={22} color="#6a1b9a" style={{marginLeft:width*1/100}}/>
               <Text style={{ fontSize: 10, color: "#6a1b9a" }}>Filters</Text>
             </TouchableOpacity>
           </View>
@@ -267,7 +303,7 @@ export default function Orders({ navigation }) {
                         paddingTop: (height * 2) / 100,
                         paddingBottom: (height * 2) / 100,
                       }}
-                      onPress={() => statusModalPress(val.orderstatus)}
+                      //onPress={() => statusModalPress(val.orderstatus)}
                     >
                       <Text style={{ fontWeight: "500" }}>
                         {val.orderstatus}
@@ -275,6 +311,41 @@ export default function Orders({ navigation }) {
                     </TouchableOpacity>
                   );
                 })}
+              </View>
+            </Modal>
+          </Portal>
+        </Provider>
+      </>
+
+      <>
+        <Provider>
+          <Portal>
+            <Modal
+              visible={current}
+              onDismiss={() => setCurrent(false)}
+              contentContainerStyle={cancelStatusContainer}
+            >
+              <View>
+                <Text>Do You Want to Cancel the Order ?</Text>
+                <View
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    marginTop: (height * 3) / 100,
+                  }}
+                >
+                  <TouchableOpacity onPress={statusModalPress}>
+                    <Text
+                      style={{ paddingRight: (width * 12) / 100, color: "red" }}
+                    >
+                      Yes
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={()=>setCurrent(false)}>
+                    <Text>No</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </Modal>
           </Portal>
@@ -414,5 +485,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingTop: (height * 2) / 100,
     paddingBottom: (height * 2) / 100,
+  },
+  cancell: {
+    position: "absolute",
+    right: 0,
   },
 });
