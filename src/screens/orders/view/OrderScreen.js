@@ -3,13 +3,13 @@ import {
   View,
   StyleSheet,
   FlatList,
-  Text,
   TouchableOpacity,
   Dimensions,
   RefreshControl,
   Alert,
 } from "react-native";
 import {
+  Text,
   TextInput,
   useTheme,
   Modal,
@@ -132,18 +132,11 @@ export default function Orders({ navigation }) {
   useEffect(() => {
     async function fetchstatus() {
       const res = await getOrderStatus();
-      console.log("Statuslist",res.data)
+      console.log("Statuslist", res.data);
       setStatuslist(res.data);
     }
     fetchstatus();
   }, []);
-
-  const filterstatus = statuslist.filter((val)=>{
-    return val.orderstatus === "Cancelled"
-  })
-
-  
-
 
   const handlepress = (item) => {
     navigation.navigate("UpdateOrder", {
@@ -163,20 +156,24 @@ export default function Orders({ navigation }) {
   );
 
   const statusModalPress = async () => {
-    const statusId = filterstatus.find((status)=>{
-      return status.orderstatus
-    })
-    
+    const statusId = statuslist.find(
+      (status) => status.orderstatus === "Cancelled"
+    ).orderstatusid;
+
     try {
       const res = await editOrderStatus(
         editStatusdata.orderid,
-        statusId.orderstatusid,
+        statusId,
         "Cancelled"
       );
       if (!res.error) {
         fetchOrders();
+        Alert.alert(
+          "Success",
+          `Your order with ID ${editStatusdata.orderid} has been cancelled.`
+        );
       } else {
-        Alert.alert("Error", res.error);
+        Alert.alert("Error", "There was an error");
       }
     } catch (error) {
       Alert.alert("Error", "There was an error");
@@ -194,33 +191,23 @@ export default function Orders({ navigation }) {
         onPress={() => handlepress(item)}
       >
         <Text
+          variant="titleMedium"
           style={{
-            fontWeight: "400",
-            paddingBottom: (height * 1.5) / 100,
-            fontSize: (height * 1.8) / 100,
-            width: (width * 50) / 100,
+            marginBottom: 5,
+            paddingBottom: 3,
+            width: "60%",
           }}
         >
           {item.distributorname}
         </Text>
-        <Text style={{ fontWeight: "400", color: "#757575" }}>
+        <Text style={{ marginBottom: 5 }}>Order ID: {item.orderid}</Text>
+        <Text>
           Order Date : {format(new Date(item.orderdate), "dd-MM-yyyy")}
         </Text>
 
         <View style={styles.rightitems}>
-          <Text
-            style={{
-              paddingTop: (height * 3) / 100,
-              paddingBottom: (height * 1) / 100,
-              color: "#757575",
-              textAlign: "right",
-            }}
-          >
-            Amt : {`\u20B9`} {parseFloat(item.totalamount).toFixed(2)}
-          </Text>
           <View style={{ display: "flex", flexDirection: "row" }}>
             <TouchableOpacity
-              
               style={{
                 textAlignVertical: "center",
                 padding: 5,
@@ -243,22 +230,34 @@ export default function Orders({ navigation }) {
                 marginTop: (height * 1) / 100,
                 paddingLeft: (width * 1) / 100,
               }}
-              onPress={()=>updateStatus(item.orderid,item.orderstatus)}
+              onPress={() => updateStatus(item.orderid, item.orderstatus)}
             >
               <Text>
                 <AntDesign name="delete" size={18} color="#424242" />
               </Text>
             </TouchableOpacity>
           </View>
+          <Text
+            variant="titleSmall"
+            style={{
+              paddingTop: 10,
+              textAlign: "right",
+            }}
+          >
+            Amt: {`\u20B9`} {parseFloat(item.totalamount).toFixed(2)}
+          </Text>
         </View>
       </TouchableOpacity>
     );
   }, []);
+
   return (
     <>
       <View style={styles.container}>
         <View style={styles.pagecontainer}>
           <TextInput
+            mode="outlined"
+            theme={{ roundness: 10 }}
             style={styles.input}
             placeholder="Search Suppliers"
             value={textinput}
@@ -267,7 +266,12 @@ export default function Orders({ navigation }) {
 
           <View style={styles.filtericon}>
             <TouchableOpacity onPress={() => setShown(true)}>
-              <AntDesign name="filter" size={22} color="#6a1b9a" style={{marginLeft:width*1/100}}/>
+              <AntDesign
+                name="filter"
+                size={22}
+                color="#6a1b9a"
+                style={{ marginLeft: (width * 1) / 100 }}
+              />
               <Text style={{ fontSize: 10, color: "#6a1b9a" }}>Filters</Text>
             </TouchableOpacity>
           </View>
@@ -350,7 +354,7 @@ export default function Orders({ navigation }) {
                       Yes
                     </Text>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={()=>setCurrent(false)}>
+                  <TouchableOpacity onPress={() => setCurrent(false)}>
                     <Text>No</Text>
                   </TouchableOpacity>
                 </View>
@@ -472,6 +476,7 @@ const styles = StyleSheet.create({
   rightitems: {
     position: "absolute",
     right: (width * 2) / 100,
+    paddingVertical: 15,
   },
   filtericon: {
     position: "absolute",

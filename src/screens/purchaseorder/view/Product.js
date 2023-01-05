@@ -38,13 +38,13 @@ function Product({ item, updateQuantity }) {
       }}
     >
       <View style={{ width: "70%" }}>
-        <Text variant="titleMedium"> {item.productname}</Text>
+        <Text variant="titleMedium">{item.productname}</Text>
         <Text style={styles.price} variant="titleSmall">
-          Price: {`\u20B9`} {parseFloat(item.price).toFixed(2)}{" "}
+          Price: {`\u20B9`} {Number(item.price).toFixed(2)}{" "}
         </Text>
         <Text variant="titleSmall">
           Amount: {`\u20B9`}{" "}
-          {parseFloat((item.price - item.discount) * item.quantity).toFixed(2)}{" "}
+          {Number((item.price - item.discount) * item.quantity).toFixed(2)}{" "}
         </Text>
       </View>
       <View style={styles.unitSection}>
