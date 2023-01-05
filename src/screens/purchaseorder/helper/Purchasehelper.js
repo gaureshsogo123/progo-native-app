@@ -1,11 +1,3 @@
-export const calculateTotal = (products) => {
-  let total = 0;
-  products.forEach((product) => {
-    total += product.price * (product.quantity || 0);
-  });
-  return total;
-};
-
 export const fetchProducts = async (
   userId,
   categoryId,
@@ -44,10 +36,10 @@ export const saveOrder = async (
     .post("/order/saveOrderRetailer", {
       userId,
       totalItems,
-      orderTotal: orderTotal.toFixed(2),
+      orderTotal: Number(orderTotal).toFixed(2),
       paymentMethod,
       discount,
-      subTotal: subTotal.toFixed(2),
+      subTotal: Number(subTotal).toFixed(2),
       distributorId,
       products,
     })
@@ -55,6 +47,6 @@ export const saveOrder = async (
       return { data: res.data.data };
     })
     .catch((err) => {
-      return { error: err.message };
+      return { error: err.response?.data?.message || err.message };
     });
 };

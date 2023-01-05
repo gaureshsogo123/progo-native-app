@@ -59,6 +59,8 @@ export default function LandingScreen({ navigation }) {
 
           <TextInput
             style={styles.input}
+            mode="outlined"
+            theme={{ roundness: 10 }}
             placeholder="Search Supplier"
             value={filterText}
             onChangeText={(text) => setFilterText(text.toLocaleLowerCase())}

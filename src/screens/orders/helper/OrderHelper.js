@@ -39,7 +39,6 @@ export const editOrderStatus = async (orderId, orderStatusId, orderStatus) => {
       orderStatus,
     })
     .then((res) => {
-      console.log("editstatus",res.data.data)
       return { data: res.data.data };
     })
     .catch((err) => {
