@@ -131,8 +131,12 @@ export default function Orders({ navigation }) {
 
   useEffect(() => {
     async function fetchstatus() {
-      const res = await getOrderStatus();
-      setStatuslist(res.data);
+      try {
+        const res = await getOrderStatus();
+        setStatuslist(res.data);
+      } catch (error) {
+        //
+      }
     }
     fetchstatus();
   }, []);

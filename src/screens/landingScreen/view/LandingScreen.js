@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 
 import {
   FlatList,
-  SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -11,6 +9,7 @@ import {
   Dimensions,
 } from "react-native";
 import { TextInput } from "react-native-paper";
+import OfflineProtected from "../../../component/OfflineProtected";
 import { useAuthContext } from "../../../context/UserAuthContext";
 import { getDistributors } from "../helper/LandingScreenHelper";
 
@@ -22,11 +21,15 @@ export default function LandingScreen({ navigation }) {
   const [filterText, setFilterText] = useState("");
 
   useEffect(() => {
-    getDistributors(user.userId).then((res) => {
-      if (!res.error) {
-        setDistributors(res.data);
-      }
-    });
+    getDistributors(user.userId)
+      .then((res) => {
+        if (!res.error) {
+          setDistributors(res.data);
+        }
+      })
+      .catch((err) => {
+        //
+      });
   }, [user.userId]);
 
   const filterDistributor = distributors.filter((item) => {
