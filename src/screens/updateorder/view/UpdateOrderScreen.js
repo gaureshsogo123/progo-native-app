@@ -221,7 +221,7 @@ function UpdateOrder({ route, navigation }) {
     );
   }, [searchFilter, products]);
 
-  const productKeyExtractor = useCallback((product) => product.id, []);
+  const productKeyExtractor = useCallback((product) => product.productid, []);
 
   return (
     <>

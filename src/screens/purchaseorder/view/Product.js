@@ -23,6 +23,7 @@ const styles = StyleSheet.create({
   },
   unitInput: {
     width: 70,
+    height: 40,
     textAlign: "center",
     paddingHorizontal: 1,
     paddingBottom: 1,
@@ -34,7 +35,9 @@ function Product({ item, updateQuantity }) {
     <View
       style={{
         ...styles.product,
-        borderBottomColor: theme.colors.primary,
+        borderBottomColor: "silver",
+        paddingBottom: "3%",
+        backgroundColor: "#fafafa",
       }}
     >
       <View style={{ width: "70%" }}>
