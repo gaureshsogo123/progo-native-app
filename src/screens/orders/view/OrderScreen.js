@@ -243,7 +243,7 @@ export default function Orders({ navigation }) {
               textAlign: "right",
             }}
           >
-            Amt: {`\u20B9`} {parseFloat(item.totalamount).toFixed(2)}
+            Amt: {`\u20B9`} {Number(item.totalamount).toFixed(2)}
           </Text>
         </View>
       </TouchableOpacity>
