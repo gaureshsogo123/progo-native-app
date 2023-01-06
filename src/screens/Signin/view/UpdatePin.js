@@ -18,6 +18,7 @@ function UpdatePin({ navigation, route }) {
     const regex = new RegExp(/^\d{10}$/);
     return regex.test(mobile_no);
   };
+
   const callUpdatePin = async () => {
     try {
       if (!validateMobile) {
@@ -142,7 +143,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginBottom: "5%",
   },
-  pintextinput:{
+  pintextinput: {
     width: "70%",
     padding: 0,
     fontSize: 15,

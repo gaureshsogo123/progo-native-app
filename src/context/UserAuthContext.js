@@ -68,7 +68,7 @@ const AuthContextProvider = ({ children }) => {
         connected,
       }}
     >
-      {initialLoadComplete && children}
+      {initialLoadComplete === true && children}
     </AuthContext.Provider>
   );
 };
