@@ -3,13 +3,13 @@ import {
   View,
   StyleSheet,
   FlatList,
-  Text,
   TouchableOpacity,
   Dimensions,
   RefreshControl,
   Alert,
 } from "react-native";
 import {
+  Text,
   TextInput,
   useTheme,
   Modal,
@@ -169,13 +169,17 @@ export default function Orders({ navigation }) {
     try {
       const res = await editOrderStatus(
         editStatusdata.orderid,
-        statusId.orderstatusid,
+        statusId,
         "Cancelled"
       );
       if (!res.error) {
         fetchOrders();
+        Alert.alert(
+          "Success",
+          `Your order with ID ${editStatusdata.orderid} has been cancelled.`
+        );
       } else {
-        Alert.alert("Error", res.error);
+        Alert.alert("Error", "There was an error");
       }
     } catch (error) {
       Alert.alert("Error", "There was an error");
@@ -198,30 +202,21 @@ export default function Orders({ navigation }) {
         onPress={() => handlepress(item)}
       >
         <Text
+          variant="titleMedium"
           style={{
-            fontWeight: "400",
-            paddingBottom: (height * 1.5) / 100,
-            fontSize: (height * 1.8) / 100,
-            width: (width * 50) / 100,
+            marginBottom: 5,
+            paddingBottom: 3,
+            width: "60%",
           }}
         >
           {item.distributorname}
         </Text>
-        <Text style={{ fontWeight: "400", color: "#757575" }}>
+        <Text style={{ marginBottom: 5 }}>Order ID: {item.orderid}</Text>
+        <Text>
           Order Date : {format(new Date(item.orderdate), "dd-MM-yyyy")}
         </Text>
 
         <View style={styles.rightitems}>
-          <Text
-            style={{
-              paddingTop: (height * 3) / 100,
-              paddingBottom: (height * 1) / 100,
-              color: "#757575",
-              textAlign: "right",
-            }}
-          >
-            Amt : {`\u20B9`} {parseFloat(item.totalamount).toFixed(2)}
-          </Text>
           <View style={{ display: "flex", flexDirection: "row" }}>
             <TouchableOpacity
               style={{
@@ -253,31 +248,53 @@ export default function Orders({ navigation }) {
               </Text>
             </TouchableOpacity>
           </View>
+          <Text
+            variant="titleSmall"
+            style={{
+              paddingTop: 10,
+              textAlign: "right",
+            }}
+          >
+            Amt: {`\u20B9`} {Number(item.totalamount).toFixed(2)}
+          </Text>
         </View>
       </TouchableOpacity>
     );
   }, []);
+
   return (
     <>
       <View style={styles.container}>
         <View style={styles.pagecontainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Search Suppliers"
-            value={textinput}
-            onChangeText={(val) => setTextinput(val.toLocaleLowerCase())}
-          />
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+            }}
+          >
+            <TextInput
+              mode="outlined"
+              theme={{ roundness: 10 }}
+              style={styles.input}
+              placeholder="Search Suppliers"
+              value={textinput}
+              onChangeText={(val) => setTextinput(val.toLocaleLowerCase())}
+            />
 
-          <View style={styles.filtericon}>
-            <TouchableOpacity onPress={() => setShown(true)}>
-              <AntDesign
-                name="filter"
-                size={22}
-                color="#6a1b9a"
-                style={{ marginLeft: (width * 1) / 100 }}
-              />
-              <Text style={{ fontSize: 10, color: "#6a1b9a" }}>Filters</Text>
-            </TouchableOpacity>
+            <View style={styles.filtericon}>
+              <TouchableOpacity onPress={() => setShown(true)}>
+                <AntDesign
+                  name="filter"
+                  size={25}
+                  color={theme.colors.primary}
+                  style={{ marginLeft: (width * 1) / 100 }}
+                />
+                <Text style={{ fontSize: 12, color: theme.colors.primary }}>
+                  Filters
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           <View
@@ -528,6 +545,7 @@ export default function Orders({ navigation }) {
                   marginLeft: "3%",
                   marginTop: "5%",
                   marginBottom: "2%",
+                  backgroundColor: theme.colors.primary,
                 }}
                 onPress={seeResult}
               >
@@ -581,12 +599,13 @@ const styles = StyleSheet.create({
   rightitems: {
     position: "absolute",
     right: (width * 2) / 100,
+    paddingVertical: 15,
   },
   filtericon: {
-    position: "absolute",
-    right: 0,
-    width: "10%",
-    top: (height * 1) / 100,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 7,
   },
   datecontainer: {
     display: "flex",

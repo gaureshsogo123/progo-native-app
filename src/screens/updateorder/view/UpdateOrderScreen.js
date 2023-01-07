@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { Button, TextInput, Text } from "react-native-paper";
 import { useAuthContext } from "../../../context/UserAuthContext";
+import calculateTotal from "../../purchaseorder/helper/calculateTotal";
 import { fetchProducts } from "../../purchaseorder/helper/Purchasehelper";
 import { getOrderDetails, editOrder } from "../helper/UpdateOrderHelper";
 
@@ -45,12 +46,18 @@ const styles = StyleSheet.create({
   unitInput: {
     width: 70,
     textAlign: "center",
+    height: 40,
     paddingHorizontal: 1,
     paddingBottom: 1,
   },
   orderButton: {
     borderRadius: 3,
     paddingVertical: 5,
+  },
+  flexContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
 });
 
@@ -67,7 +74,11 @@ function UpdateOrder({ route, navigation }) {
 
   const [products, setProducts] = useState([]);
   const [orderDetails, setOrderDetails] = useState();
-  const [totalPrice, setTotalPrice] = useState(0);
+  const [orderAggregateData, setOrderAggregateData] = useState({
+    totalPrice: 0,
+    totalItems: 0,
+    totalProducts: 0,
+  });
   const [searchFilter, setSearchFilter] = useState("");
 
   useEffect(() => {
@@ -75,27 +86,39 @@ function UpdateOrder({ route, navigation }) {
   }, [order.orderid]);
 
   useEffect(() => {
-    calculateTotal();
+    setOrderAggregateData(calculateTotal(products));
   }, [products]);
 
   const updateOrder = async () => {
     setErrors({ ...errors, saveOrder: "" });
     const orderProducts = products.filter((product) => product.quantity !== 0);
-    if (orderProducts.length === 0) return;
+    if (orderProducts.length === 0) {
+      Alert.alert(
+        "Empty cart!",
+        "Empty order cannot be placed. Please add some products to update the order or cancel if you no longer wish to fulfill this order"
+      );
+      return;
+    }
     try {
       const result = await editOrder(
         user.userId,
         orderProducts.length,
-        parseFloat(totalPrice - (totalPrice * discount) / 100).toFixed(2),
+        Number(
+          orderAggregateData.totalPrice -
+            (orderAggregateData.totalPrice * discount) / 100
+        ).toFixed(2),
         "cash",
-        parseFloat(totalPrice).toFixed(2),
+        Number(orderAggregateData.totalPrice).toFixed(2),
         orderProducts,
         discount,
         order.orderid,
         distributorid
       );
       if (!result.error) {
-        Alert.alert("Success", "Your order has been successfully updated!");
+        Alert.alert(
+          "Success",
+          `Your order with ID - ${result.data[0]?.orderid} has been successfully updated!`
+        );
         navigation.navigate("Orders", { screen: "OrdersList" });
       } else setErrors({ ...errors, updateOrder: result.error });
     } catch (error) {
@@ -141,14 +164,6 @@ function UpdateOrder({ route, navigation }) {
     });
   };
 
-  const calculateTotal = () => {
-    let total = 0;
-    products.forEach((product) => {
-      total += product.price * (product.quantity || 0);
-    });
-    setTotalPrice(parseFloat(total).toFixed(2));
-  };
-
   const renderProduct = useCallback(({ item }) => {
     return (
       <View
@@ -167,11 +182,10 @@ function UpdateOrder({ route, navigation }) {
             {item.productname}
           </Text>
           <Text style={styles.price} variant="titleSmall">
-            Price: {`\u20B9`} {item.price}{" "}
+            Price: {`\u20B9`} {Number(item.price).toFixed(2)}{" "}
           </Text>
           <Text variant="titleSmall" style={{ color: "#424242" }}>
-            Total: {`\u20B9`}{" "}
-            {parseFloat(item.price * item.quantity).toFixed(2)}{" "}
+            Total: {`\u20B9`} {Number(item.price * item.quantity).toFixed(2)}{" "}
           </Text>
         </View>
         <View style={styles.unitSection}>
@@ -207,37 +221,43 @@ function UpdateOrder({ route, navigation }) {
     );
   }, [searchFilter, products]);
 
-  const productKeyExtractor = useCallback((product) => product.id, []);
+  const productKeyExtractor = useCallback((product) => product.productid, []);
 
   return (
     <>
       <View style={styles.container}>
         <View style={styles.pagecontainer}>
           <View style={styles.heading}>
-            <Text
-              style={{ marginBottom: 5, color: "#616161" }}
-              variant="titleLarge"
-            >
-              {errors.updateOrder}
-              Outlet:
-              <Text style={{ color: "#212121" }}>
+            <View style={styles.flexContainer}>
+              <Text variant="titleMedium">
+                <Text style={{ color: "gray" }}>Outlet: </Text>
                 {order.distributorname}
-              </Text>{" "}
-            </Text>
-            <Text
-              style={{ marginBottom: 5, color: "#616161" }}
-              variant="titleMedium"
-            >
-              Total Price:{" "}
-              <Text style={{ color: "#212121" }}>
-                {`\u20B9`} {parseFloat(totalPrice).toFixed(2)}
               </Text>
-            </Text>
+              <Text variant="titleMedium">ID: {order.orderid}</Text>
+            </View>
+            <View style={styles.flexContainer}>
+              <Text variant="titleMedium">
+                <Text style={{ color: "gray" }}>Products:</Text>{" "}
+                {orderAggregateData.totalProducts}
+              </Text>
+              <Text variant="titleMedium">
+                <Text style={{ color: "gray" }}>Items:</Text>{" "}
+                {orderAggregateData.totalItems}
+              </Text>
+            </View>
+            <View style={styles.flexContainer}>
+              <Text variant="titleMedium">
+                <Text style={{ color: "gray" }}>Total Amount:</Text> {`\u20B9`}{" "}
+                {Number(orderAggregateData.totalPrice).toFixed(2)}
+              </Text>
+            </View>
           </View>
 
           <TextInput
             value={searchFilter}
-            mode="flat"
+            mode="outlined"
+            theme={{ roundness: 10 }}
+            style={{ marginHorizontal: 8, marginBottom: 5 }}
             placeholder="Search products"
             onChangeText={(text) => setSearchFilter(text)}
           />

@@ -4,26 +4,30 @@ import React from "react";
 import HomeNavigator from "./navigators/HomeNavigator";
 import OrdersNavigator from "./navigators/OrdersNavigator";
 import MenuNavigator from "./navigators/MenuNavigator";
+import { useTheme } from "react-native-paper";
 
 const Tab = createBottomTabNavigator();
 
-const defaultTabOptions = {
-  tabBarHideOnKeyboard: true,
-};
-
-
 function BottomNav() {
+  const theme = useTheme();
+
+  const defaultTabOptions = {
+    tabBarHideOnKeyboard: true,
+    tabBarActiveTintColor: theme.colors.primary,
+  };
   return (
     <Tab.Navigator
-    screenOptions={{
-      tabBarHideOnKeyboard:true
-    }}
+      screenOptions={{
+        tabBarHideOnKeyboard: true,
+      }}
     >
       <Tab.Screen
         name="Home"
         component={HomeNavigator}
         options={{
-          tabBarIcon: (tabInfo) => <BottomIconContainer name="home" color={tabInfo.focused?"blue":"black"} />,
+          tabBarIcon: (tabInfo) => (
+            <BottomIconContainer name="home" {...tabInfo} />
+          ),
           headerShown: false,
           ...defaultTabOptions,
         }}
@@ -32,31 +36,38 @@ function BottomNav() {
         name="My Orders"
         component={OrdersNavigator}
         options={{
-          tabBarIcon: (tabInfo) => <BottomIconContainer name="book" color={tabInfo.focused?"blue":"black"}/>,
-          headerShown: false,
-          ...defaultTabOptions,
-
-        }}
-      />
-       
-     <Tab.Screen
-        name="Menu"
-        component={MenuNavigator}
-        options={{
           tabBarIcon: (tabInfo) => (
-            <BottomIconContainer name="menufold"  color={tabInfo.focused?"blue":"black"}/>
+            <BottomIconContainer name="book" {...tabInfo} />
           ),
           headerShown: false,
           ...defaultTabOptions,
         }}
       />
 
+      <Tab.Screen
+        name="Menu"
+        component={MenuNavigator}
+        options={{
+          tabBarIcon: (tabInfo) => (
+            <BottomIconContainer name="menufold" {...tabInfo} />
+          ),
+          headerShown: false,
+          ...defaultTabOptions,
+        }}
+      />
     </Tab.Navigator>
   );
 }
 
-const BottomIconContainer = ({ name,color }) => {
-  return <AntDesign name={name} size={22} color={color} />;
+const BottomIconContainer = ({ name, focused }) => {
+  const theme = useTheme();
+  return (
+    <AntDesign
+      name={name}
+      size={22}
+      color={focused ? theme.colors.primary : "black"}
+    />
+  );
 };
 
 export default BottomNav;

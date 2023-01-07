@@ -9,11 +9,8 @@ import {
 import { Button, useTheme, HelperText } from "react-native-paper";
 import { TextInput, Text } from "react-native-paper";
 import { useAuthContext } from "../../../context/UserAuthContext";
-import {
-  calculateTotal,
-  fetchProducts,
-  saveOrder,
-} from "../helper/Purchasehelper";
+import { fetchProducts, saveOrder } from "../helper/Purchasehelper";
+import calculateTotal from "../helper/calculateTotal";
 import Product from "./Product";
 
 const styles = StyleSheet.create({
@@ -57,6 +54,11 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     paddingVertical: 5,
   },
+  flexContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
 });
 
 function PurchaseOrderScreen({ route, navigation }) {
@@ -69,30 +71,47 @@ function PurchaseOrderScreen({ route, navigation }) {
   const [products, setProducts] = useState([]);
   const [errors, setErrors] = useState({});
   const [discount, setDiscount] = useState(0);
-  const [totalPrice, setTotalPrice] = useState(0);
+  const [orderAggregateData, setOrderAggregateData] = useState({
+    totalPrice: 0,
+    totalItems: 0,
+    totalProducts: 0,
+  });
   const [searchFilter, setSearchFilter] = useState("");
 
   const placeOrder = async () => {
     setErrors({ ...errors, saveOrder: "" });
     const orderProducts = products.filter((product) => product.quantity !== 0);
-    if (orderProducts.length === 0) return;
+    if (orderProducts.length === 0) {
+      Alert.alert(
+        "Empty cart!",
+        "Empty order cannot be placed. Please add some products to place an order"
+      );
+      return;
+    }
     try {
       const result = await saveOrder(
         user.userId,
         orderProducts.length,
-        totalPrice - (totalPrice * discount) / 100,
+        orderAggregateData.totalPrice -
+          (orderAggregateData.totalPrice * discount) / 100,
         "cash",
         distributorId,
         discount,
-        totalPrice,
+        orderAggregateData.totalPrice,
         orderProducts
       );
       if (!result.error) {
-        Alert.alert("Success", "Your order has been successfully placed!");
+        Alert.alert(
+          "Success",
+          `Your order has been successfully placed with order ID: ${result.data[0]?.orderid}`
+        );
         navigation.pop(1);
         navigation.navigate("My Orders", { screen: "Orders" });
-      } else setErrors({ ...errors, saveOrder: result.error });
+      } else {
+        Alert.alert("Error", result.error);
+      }
     } catch (error) {
+      Alert.alert("Error", error.message);
       setErrors({ ...errors, saveOrder: "Failed to save order" });
     }
   };
@@ -129,7 +148,7 @@ function PurchaseOrderScreen({ route, navigation }) {
   };
 
   useEffect(() => {
-    setTotalPrice(calculateTotal(products));
+    setOrderAggregateData(calculateTotal(products));
   }, [products]);
 
   const updateQuantity = (amount, id) => {
@@ -156,19 +175,35 @@ function PurchaseOrderScreen({ route, navigation }) {
   return (
     <>
       <View style={styles.heading}>
-        <Text style={{ marginBottom: 5 }} variant="titleLarge">
-          <Text style={{ color: "gray", fontSize: 18 }}>Outlet :</Text>{" "}
-          {distributorName}
-        </Text>
-        <Text style={{ marginBottom: 5 }} variant="titleMedium">
-          <Text style={{ color: "gray", fontSize: 18 }}>Total Amount :</Text>{" "}
-          {`\u20B9`} {parseFloat(totalPrice).toFixed(2)}
-        </Text>
+        <View style={styles.flexContainer}>
+          <Text variant="titleMedium">
+            <Text style={{ color: "gray" }}>Outlet: </Text>
+            {distributorName}
+          </Text>
+        </View>
+        <View style={styles.flexContainer}>
+          <Text variant="titleMedium">
+            <Text style={{ color: "gray" }}>Products:</Text>{" "}
+            {orderAggregateData.totalProducts}
+          </Text>
+          <Text variant="titleMedium">
+            <Text style={{ color: "gray" }}>Items:</Text>{" "}
+            {orderAggregateData.totalItems}
+          </Text>
+        </View>
+        <View style={styles.flexContainer}>
+          <Text variant="titleMedium">
+            <Text style={{ color: "gray" }}>Total Amount:</Text> {`\u20B9`}{" "}
+            {Number(orderAggregateData.totalPrice).toFixed(2)}
+          </Text>
+        </View>
       </View>
 
       <TextInput
         value={searchFilter}
-        mode="flat"
+        mode="outlined"
+        theme={{ roundness: 10 }}
+        style={{ marginHorizontal: 8, marginBottom: 5 }}
         placeholder="Search Products"
         onChangeText={(text) => setSearchFilter(text)}
       />

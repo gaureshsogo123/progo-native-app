@@ -23,6 +23,7 @@ const styles = StyleSheet.create({
   },
   unitInput: {
     width: 70,
+    height: 40,
     textAlign: "center",
     paddingHorizontal: 1,
     paddingBottom: 1,
@@ -34,17 +35,19 @@ function Product({ item, updateQuantity }) {
     <View
       style={{
         ...styles.product,
-        borderBottomColor: theme.colors.primary,
+        borderBottomColor: "silver",
+        paddingBottom: "3%",
+        backgroundColor: "#fafafa",
       }}
     >
       <View style={{ width: "70%" }}>
-        <Text variant="titleMedium"> {item.productname}</Text>
+        <Text variant="titleMedium">{item.productname}</Text>
         <Text style={styles.price} variant="titleSmall">
-          Price: {`\u20B9`} {parseFloat(item.price).toFixed(2)}{" "}
+          Price: {`\u20B9`} {Number(item.price).toFixed(2)}{" "}
         </Text>
         <Text variant="titleSmall">
           Amount: {`\u20B9`}{" "}
-          {parseFloat((item.price - item.discount) * item.quantity).toFixed(2)}{" "}
+          {Number((item.price - item.discount) * item.quantity).toFixed(2)}{" "}
         </Text>
       </View>
       <View style={styles.unitSection}>
