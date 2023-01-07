@@ -34,13 +34,13 @@ const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
 
 const containerStyle = {
-  backgroundColor: "#eeeeee",
-  width: "100%",
-  minHeight: (height * 30) / 100,
-  position: "absolute",
-  bottom: 0,
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
+  display: "flex",
+  backgroundColor: "white",
+  minHeight: (height * 20) / 100,
+  width: "95%",
+  justifyContent: "center",
+  marginLeft: "3%",
+  borderRadius: 10,
 };
 
 const statusContainerStyle = {
@@ -85,6 +85,9 @@ export default function Orders({ navigation }) {
   const [refreshing, setRefreshing] = useState(true);
   const [textinput, setTextinput] = useState("");
   const [current, setCurrent] = useState(false);
+  const [checkstatus, setCheckstatus] = useState(false);
+  const [active, setActive] = useState(null);
+  const [checkdate, setCheckdate] = useState(false);
 
   useEffect(() => {
     const unsubscribeFocus = navigation.addListener("focus", fetchOrders);
@@ -132,18 +135,14 @@ export default function Orders({ navigation }) {
   useEffect(() => {
     async function fetchstatus() {
       const res = await getOrderStatus();
-      console.log("Statuslist",res.data)
       setStatuslist(res.data);
     }
     fetchstatus();
   }, []);
 
-  const filterstatus = statuslist.filter((val)=>{
-    return val.orderstatus === "Cancelled"
-  })
-
-  
-
+  const filterstatus = statuslist.filter((val) => {
+    return val.orderstatus === "Cancelled";
+  });
 
   const handlepress = (item) => {
     navigation.navigate("UpdateOrder", {
@@ -163,10 +162,10 @@ export default function Orders({ navigation }) {
   );
 
   const statusModalPress = async () => {
-    const statusId = filterstatus.find((status)=>{
-      return status.orderstatus
-    })
-    
+    const statusId = filterstatus.find((status) => {
+      return status.orderstatus;
+    });
+
     try {
       const res = await editOrderStatus(
         editStatusdata.orderid,
@@ -183,6 +182,11 @@ export default function Orders({ navigation }) {
     } finally {
       setCurrent(false);
     }
+  };
+
+  const statusHandlePress = (status, i) => {
+    setStatus(status);
+    setActive(i);
   };
 
   const orderKeyExtractor = (order) => order.orderid;
@@ -220,7 +224,6 @@ export default function Orders({ navigation }) {
           </Text>
           <View style={{ display: "flex", flexDirection: "row" }}>
             <TouchableOpacity
-              
               style={{
                 textAlignVertical: "center",
                 padding: 5,
@@ -243,7 +246,7 @@ export default function Orders({ navigation }) {
                 marginTop: (height * 1) / 100,
                 paddingLeft: (width * 1) / 100,
               }}
-              onPress={()=>updateStatus(item.orderid,item.orderstatus)}
+              onPress={() => updateStatus(item.orderid, item.orderstatus)}
             >
               <Text>
                 <AntDesign name="delete" size={18} color="#424242" />
@@ -267,7 +270,12 @@ export default function Orders({ navigation }) {
 
           <View style={styles.filtericon}>
             <TouchableOpacity onPress={() => setShown(true)}>
-              <AntDesign name="filter" size={22} color="#6a1b9a" style={{marginLeft:width*1/100}}/>
+              <AntDesign
+                name="filter"
+                size={22}
+                color="#6a1b9a"
+                style={{ marginLeft: (width * 1) / 100 }}
+              />
               <Text style={{ fontSize: 10, color: "#6a1b9a" }}>Filters</Text>
             </TouchableOpacity>
           </View>
@@ -350,7 +358,7 @@ export default function Orders({ navigation }) {
                       Yes
                     </Text>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={()=>setCurrent(false)}>
+                  <TouchableOpacity onPress={() => setCurrent(false)}>
                     <Text>No</Text>
                   </TouchableOpacity>
                 </View>
@@ -368,7 +376,7 @@ export default function Orders({ navigation }) {
               onDismiss={() => setShown(false)}
               contentContainerStyle={containerStyle}
             >
-              <View style={styles.datecontainer}>
+              {/* <View style={styles.datecontainer}>
                 <Text
                   variant="titleMedium"
                   style={{ textAlignVertical: "center" }}
@@ -393,9 +401,9 @@ export default function Orders({ navigation }) {
                   text={"To"}
                   showFlag={true}
                 />
-              </View>
+              </View>*/}
 
-              <View style={styles.locationcontainer}>
+              {/* <View style={styles.locationcontainer}>
                 <Text
                   variant="titleMedium"
                   style={{ textAlignVertical: "center" }}
@@ -409,7 +417,108 @@ export default function Orders({ navigation }) {
                     placeholder={status}
                   />
                 </View>
+              </View>*/}
+
+              <View
+                style={{
+                  padding: "4%",
+                  borderBottomColor: "silver",
+                  borderBottomWidth: 1,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  flexDirection: "row",
+                  width: "100%",
+                }}
+                onStartShouldSetResponder={() => setCheckstatus(!checkstatus)}
+              >
+                <Text style={{ color: checkstatus ? "#2e7d32" : null }}>
+                  Select Status
+                </Text>
+                <AntDesign
+                  name={checkstatus ? "up" : "down"}
+                  size={17}
+                  color={checkstatus ? "#2e7d32" : "gray"}
+                />
               </View>
+
+              {checkstatus
+                ? statuslist.map((val, i) => {
+                    return (
+                      <TouchableOpacity
+                        onPress={() => statusHandlePress(val.orderstatus, i)}
+                        style={{ marginLeft: "6%" }}
+                      >
+                        <Text
+                          style={{
+                            paddingBottom: (height * 2) / 100,
+                            paddingTop: (height * 1) / 100,
+                            color: active == i ? "#2e7d32" : "#616161",
+                          }}
+                          key={i}
+                        >
+                          {val.orderstatus}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })
+                : null}
+
+              <View
+                style={{
+                  padding: "4%",
+                  borderBottomColor: "silver",
+                  borderBottomWidth: 1,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  flexDirection: "row",
+                  width: "100%",
+                }}
+                onStartShouldSetResponder={() => setCheckdate(!checkdate)}
+              >
+                <Text style={{ color: checkdate ? "#2e7d32" : null }}>
+                  Select Date
+                </Text>
+                <AntDesign
+                  name={checkdate ? "up" : "down"}
+                  size={17}
+                  color={checkdate ? "#2e7d32" : "gray"}
+                />
+              </View>
+
+              {checkdate ? (
+                <View style={styles.datecontainer}>
+                  <Text
+                    variant="titleMedium"
+                    style={{
+                      textAlignVertical: "center",
+                      fontSize: (height * 1.5) / 100,
+                    }}
+                  >
+                    From :{" "}
+                  </Text>
+                  <DatePicker
+                    date={startDate}
+                    setDate={setStartDate}
+                    text={"From"}
+                    showFlag={true}
+                  />
+                  <Text
+                    variant="titleMedium"
+                    style={{
+                      textAlignVertical: "center",
+                      fontSize: (height * 1.5) / 100,
+                    }}
+                  >
+                    To :{" "}
+                  </Text>
+                  <DatePicker
+                    date={endDate}
+                    setDate={setEndDate}
+                    text={"To"}
+                    showFlag={true}
+                  />
+                </View>
+              ) : null}
 
               <Button
                 mode="contained"
@@ -484,6 +593,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     padding: "3%",
+    backgroundColor: "#f5f5f5",
   },
   locationcontainer: {
     display: "flex",
