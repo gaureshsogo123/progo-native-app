@@ -7,6 +7,7 @@ import {
   Text,
   useTheme,
 } from "react-native-paper";
+import statuses from "../../../constants/statusOptions";
 import DatePicker from "../../../component/DatePicker";
 import DropdownContainer from "../../../component/DropdownContainer";
 
@@ -40,7 +41,6 @@ function OrderFilters({
   setStartDate,
   setEndDate,
   setShown,
-  statuslist,
   setStatus,
 }) {
   const theme = useTheme();
@@ -63,9 +63,9 @@ function OrderFilters({
         >
           <DropdownContainer header="Select status">
             <>
-              {statuslist?.map((val, i) => (
+              {statuses?.map((val, i) => (
                 <TouchableOpacity
-                  onPress={() => statusHandlePress(val.orderstatus, i)}
+                  onPress={() => statusHandlePress(val.value, i)}
                   key={i}
                   style={{
                     paddingLeft: "6%",
@@ -77,12 +77,10 @@ function OrderFilters({
                       paddingBottom: (height * 2) / 100,
                       paddingTop: (height * 1) / 100,
                       color:
-                        val.orderstatus === status
-                          ? theme.colors.primary
-                          : "#616161",
+                        val.value === status ? theme.colors.primary : "#616161",
                     }}
                   >
-                    {val.orderstatus}
+                    {val.value}
                   </Text>
                 </TouchableOpacity>
               ))}
