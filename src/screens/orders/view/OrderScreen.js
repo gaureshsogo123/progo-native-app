@@ -136,7 +136,6 @@ export default function Orders({ navigation }) {
     const statusId = filterstatus.find((status) => {
       return status.orderstatus;
     });
-    console.log("sttusId", statusId);
     try {
       const res = await editOrderStatus(
         editStatusdata.orderid,
@@ -355,7 +354,6 @@ export default function Orders({ navigation }) {
         startDate={startDate}
         status={status}
         setShown={setShown}
-        statuslist={statuslist}
         endDate={endDate}
         shown={shown}
         setStartDate={setStartDate}
