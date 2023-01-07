@@ -258,25 +258,35 @@ export default function Orders({ navigation }) {
     <>
       <View style={styles.container}>
         <View style={styles.pagecontainer}>
-          <TextInput
-            mode="outlined"
-            theme={{ roundness: 10 }}
-            style={styles.input}
-            placeholder="Search Suppliers"
-            value={textinput}
-            onChangeText={(val) => setTextinput(val.toLocaleLowerCase())}
-          />
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+            }}
+          >
+            <TextInput
+              mode="outlined"
+              theme={{ roundness: 10 }}
+              style={styles.input}
+              placeholder="Search Suppliers"
+              value={textinput}
+              onChangeText={(val) => setTextinput(val.toLocaleLowerCase())}
+            />
 
-          <View style={styles.filtericon}>
-            <TouchableOpacity onPress={() => setShown(true)}>
-              <AntDesign
-                name="filter"
-                size={22}
-                color="#6a1b9a"
-                style={{ marginLeft: (width * 1) / 100 }}
-              />
-              <Text style={{ fontSize: 10, color: "#6a1b9a" }}>Filters</Text>
-            </TouchableOpacity>
+            <View style={styles.filtericon}>
+              <TouchableOpacity onPress={() => setShown(true)}>
+                <AntDesign
+                  name="filter"
+                  size={25}
+                  color={theme.colors.primary}
+                  style={{ marginLeft: (width * 1) / 100 }}
+                />
+                <Text style={{ fontSize: 12, color: theme.colors.primary }}>
+                  Filters
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           <View
@@ -426,6 +436,7 @@ export default function Orders({ navigation }) {
                   marginLeft: "3%",
                   marginTop: "5%",
                   marginBottom: "2%",
+                  backgroundColor: theme.colors.primary,
                 }}
                 onPress={seeResult}
               >
@@ -482,10 +493,10 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   filtericon: {
-    position: "absolute",
-    right: 0,
-    width: "10%",
-    top: (height * 1) / 100,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 7,
   },
   datecontainer: {
     display: "flex",

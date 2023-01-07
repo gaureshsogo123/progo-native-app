@@ -4,13 +4,14 @@ import {
   SafeAreaProvider,
   initialWindowMetrics,
 } from "react-native-safe-area-context";
-import { DefaultTheme, Provider as PaperProvider } from "react-native-paper";
+import { Provider as PaperProvider } from "react-native-paper";
+import theme from "./src/themes/theme";
 import OfflineProtected from "./src/component/OfflineProtected";
 
 export default function App() {
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-      <PaperProvider theme={DefaultTheme}>
+      <PaperProvider theme={theme}>
         <AuthContextProvider>
           <OfflineProtected>
             <Routes />
