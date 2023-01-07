@@ -165,11 +165,11 @@ export default function Orders({ navigation }) {
     const statusId = filterstatus.find((status) => {
       return status.orderstatus;
     });
-
+    console.log("sttusId",statusId);
     try {
       const res = await editOrderStatus(
         editStatusdata.orderid,
-        statusId,
+        statusId.orderstatusid,
         "Cancelled"
       );
       if (!res.error) {
