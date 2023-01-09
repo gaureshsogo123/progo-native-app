@@ -7,6 +7,7 @@ import {
   Dimensions,
   RefreshControl,
   Alert,
+  Keyboard,
 } from "react-native";
 import {
   Text,
@@ -127,7 +128,7 @@ export default function Orders({ navigation }) {
         if (val.distributorname === "") {
           return val;
         }
-        return val.distributorname.toLowerCase().includes(textinput);
+        return val.distributorname.toLowerCase().includes(textinput.toLowerCase());
       }),
     [orders, textinput]
   );
@@ -156,6 +157,15 @@ export default function Orders({ navigation }) {
     } finally {
       setCurrent(false);
     }
+  };
+
+  const filterHandlePress = (()=>{
+    setShown(true);
+    Keyboard.dismiss();
+  })
+  const statusHandlePress = (status, i) => {
+    setStatus(status);
+    setActive(i);
   };
 
   const orderKeyExtractor = (order) => order.orderid;
@@ -244,11 +254,11 @@ export default function Orders({ navigation }) {
               style={styles.input}
               placeholder="Search Suppliers"
               value={textinput}
-              onChangeText={(val) => setTextinput(val.toLocaleLowerCase())}
+              onChangeText={(val) => setTextinput(val)}
             />
 
             <View style={styles.filtericon}>
-              <TouchableOpacity onPress={() => setShown(true)}>
+              <TouchableOpacity onPress={filterHandlePress }>
                 <AntDesign
                   name="filter"
                   size={25}
@@ -276,6 +286,7 @@ export default function Orders({ navigation }) {
       <>
         <FlatList
           data={filterorders}
+          keyboardShouldPersistTaps={'handled'}
           keyExtractor={orderKeyExtractor}
           renderItem={renderOrder}
           refreshControl={
@@ -376,7 +387,6 @@ const styles = StyleSheet.create({
   },
   input: {
     width: "88%",
-    height: (height * 6) / 100,
     marginBottom: (height * 1.5) / 100,
     borderRadius: 5,
   },
