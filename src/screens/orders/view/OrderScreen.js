@@ -16,13 +16,8 @@ import {
   Modal,
   Portal,
   Provider,
-  Button,
 } from "react-native-paper";
 import { AntDesign } from "@expo/vector-icons";
-import { MaterialIcons } from "@expo/vector-icons";
-
-import DropdownSelect from "../../../component/DropdownSelect";
-import DatePicker from "../../../component/DatePicker";
 import { format, subDays } from "date-fns";
 import {
   editOrderStatus,
@@ -30,19 +25,10 @@ import {
   getOrderStatus,
 } from "../helper/OrderHelper";
 import { useAuthContext } from "../../../context/UserAuthContext";
+import OrderFilters from "./OrderFilters";
 
 const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
-
-const containerStyle = {
-  display: "flex",
-  backgroundColor: "white",
-  minHeight: (height * 20) / 100,
-  width: "95%",
-  justifyContent: "center",
-  marginLeft: "3%",
-  borderRadius: 10,
-};
 
 const statusContainerStyle = {
   backgroundColor: "#eeeeee",
@@ -62,19 +48,11 @@ const cancelStatusContainer = {
   padding: "8%",
 };
 
-const statuses = [
-  { key: 1, value: "Placed" },
-  { key: 2, value: "Accepted" },
-  { key: 3, value: "In-Process" },
-  { key: 4, value: "Completed" },
-  { key: 0, value: "All" },
-];
-
 export default function Orders({ navigation }) {
   const { user } = useAuthContext();
   const theme = useTheme();
 
-  const [status, setStatus] = useState("All");
+  const [status, setStatus] = useState("Placed");
   const [startDate, setStartDate] = useState(subDays(new Date(), 2));
   const [endDate, setEndDate] = useState(new Date());
   const [shown, setShown] = useState(false);
@@ -86,9 +64,6 @@ export default function Orders({ navigation }) {
   const [refreshing, setRefreshing] = useState(true);
   const [textinput, setTextinput] = useState("");
   const [current, setCurrent] = useState(false);
-  const [checkstatus, setCheckstatus] = useState(false);
-  const [active, setActive] = useState(null);
-  const [checkdate, setCheckdate] = useState(false);
 
   useEffect(() => {
     const unsubscribeFocus = navigation.addListener("focus", fetchOrders);
@@ -100,10 +75,6 @@ export default function Orders({ navigation }) {
       unsubscribeBlur();
     };
   }, [user, startDate, endDate, status]);
-
-  const seeResult = () => {
-    setShown(false);
-  };
 
   useEffect(() => {
     fetchOrders();
@@ -390,179 +361,16 @@ export default function Orders({ navigation }) {
         </Provider>
       </>
 
-      <>
-        <Provider>
-          <Portal>
-            <Modal
-              visible={shown}
-              onDismiss={() => setShown(false)}
-              contentContainerStyle={containerStyle}
-            >
-              {/* <View style={styles.datecontainer}>
-                <Text
-                  variant="titleMedium"
-                  style={{ textAlignVertical: "center" }}
-                >
-                  From :{" "}
-                </Text>
-                <DatePicker
-                  date={startDate}
-                  setDate={setStartDate}
-                  text={"From"}
-                  showFlag={true}
-                />
-                <Text
-                  variant="titleMedium"
-                  style={{ textAlignVertical: "center" }}
-                >
-                  To :{" "}
-                </Text>
-                <DatePicker
-                  date={endDate}
-                  setDate={setEndDate}
-                  text={"To"}
-                  showFlag={true}
-                />
-              </View>*/}
-
-              {/* <View style={styles.locationcontainer}>
-                <Text
-                  variant="titleMedium"
-                  style={{ textAlignVertical: "center" }}
-                >
-                  Status :
-                </Text>
-                <View>
-                  <DropdownSelect
-                    options={statuses}
-                    setValue={setStatus}
-                    placeholder={status}
-                  />
-                </View>
-              </View>*/}
-
-              <View
-                style={{
-                  padding: "4%",
-                  borderBottomColor: "silver",
-                  borderBottomWidth: 1,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  flexDirection: "row",
-                  width: "100%",
-                }}
-                onStartShouldSetResponder={() => setCheckstatus(!checkstatus)}
-              >
-                <Text style={{ color: checkstatus ? theme.colors.primary : null }}>
-                  Select Status
-                </Text>
-                <AntDesign
-                  name={checkstatus ? "up" : "down"}
-                  size={17}
-                  color={checkstatus ? theme.colors.primary : "gray"}
-                />
-              </View>
-
-              {checkstatus
-                ? statuslist.map((val, i) => {
-                    return (
-                      <TouchableOpacity
-                        onPress={() => statusHandlePress(val.orderstatus, i)}
-                        style={{ marginLeft: "6%" }}
-                      >
-                        <Text
-                          style={{
-                            paddingBottom: (height * 2) / 100,
-                            paddingTop: (height * 1) / 100,
-                            color: active == i ? theme.colors.primary : "#616161",
-                            fontWeight:active==i?"700":null
-                          }}
-                          key={i}
-                        >
-                          {val.orderstatus}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })
-                : null}
-
-              <View
-                style={{
-                  padding: "4%",
-                  borderBottomColor: "silver",
-                  borderBottomWidth: 1,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  flexDirection: "row",
-                  width: "100%",
-                  borderTopWidth:checkstatus?1:null,
-                  borderTopColor:checkstatus?"silver":null
-                }}
-                onStartShouldSetResponder={() => setCheckdate(!checkdate)}
-              >
-                <Text style={{ color: checkdate ? theme.colors.primary : null }}>
-                  Select Date
-                </Text>
-                <AntDesign
-                  name={checkdate ? "up" : "down"}
-                  size={17}
-                  color={checkdate ? theme.colors.primary : "gray"}
-                />
-              </View>
-
-              {checkdate ? (
-                <View style={styles.datecontainer}>
-                  <Text
-                    variant="titleMedium"
-                    style={{
-                      textAlignVertical: "center",
-                      fontSize: (height * 1.5) / 100,
-                    }}
-                  >
-                    From :{" "}
-                  </Text>
-                  <DatePicker
-                    date={startDate}
-                    setDate={setStartDate}
-                    text={"From"}
-                    showFlag={true}
-                  />
-                  <Text
-                    variant="titleMedium"
-                    style={{
-                      textAlignVertical: "center",
-                      fontSize: (height * 1.5) / 100,
-                    }}
-                  >
-                    To :{" "}
-                  </Text>
-                  <DatePicker
-                    date={endDate}
-                    setDate={setEndDate}
-                    text={"To"}
-                    showFlag={true}
-                  />
-                </View>
-              ) : null}
-
-              <Button
-                mode="contained"
-                style={{
-                  borderRadius: 3,
-                  width: "95%",
-                  marginLeft: "3%",
-                  marginTop: "5%",
-                  marginBottom: "2%",
-                  backgroundColor: theme.colors.primary,
-                }}
-                onPress={seeResult}
-              >
-                View Result
-              </Button>
-            </Modal>
-          </Portal>
-        </Provider>
-      </>
+      <OrderFilters
+        startDate={startDate}
+        status={status}
+        setShown={setShown}
+        endDate={endDate}
+        shown={shown}
+        setStartDate={setStartDate}
+        setEndDate={setEndDate}
+        setStatus={setStatus}
+      />
     </>
   );
 }
@@ -613,13 +421,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 7,
-  },
-  datecontainer: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    padding: "3%",
-    backgroundColor: "#f5f5f5",
   },
   locationcontainer: {
     display: "flex",
