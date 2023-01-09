@@ -13,12 +13,16 @@ import OfflineProtected from "../../../component/OfflineProtected";
 import { useAuthContext } from "../../../context/UserAuthContext";
 import { getDistributors } from "../helper/LandingScreenHelper";
 
+
+
 const { height } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
 
 export default function LandingScreen({ navigation }) {
   const { user } = useAuthContext();
   const [distributors, setDistributors] = useState([]);
   const [filterText, setFilterText] = useState("");
+
 
   useEffect(() => {
     getDistributors(user.userId)
@@ -36,7 +40,7 @@ export default function LandingScreen({ navigation }) {
     if (item.name === "") {
       return item;
     }
-    return item.name.toLowerCase().includes(filterText);
+    return item.name.toLowerCase().includes(filterText.toLocaleLowerCase());
   });
 
   const handlePress = (item) => {
@@ -66,17 +70,22 @@ export default function LandingScreen({ navigation }) {
             theme={{ roundness: 10 }}
             placeholder="Search Supplier"
             value={filterText}
-            onChangeText={(text) => setFilterText(text.toLocaleLowerCase())}
+            onChangeText={(text) => setFilterText(text)}
+            keyboardType={"name-phone-pad"}
           />
         </View>
       </View>
 
       <FlatList
         data={filterDistributor}
+        keyboardShouldPersistTaps={'handled'}
         renderItem={({ item }) => {
           return (
-            <TouchableOpacity onPress={() => handlePress(item)}>
-              <View style={styles.list}>
+            <TouchableOpacity
+              onPress={() => handlePress(item)}
+              style={styles.list}
+            >
+              <View>
                 <Text style={{ fontSize: 15, fontWeight: "400" }}>
                   {item.name}
                 </Text>
@@ -101,8 +110,6 @@ const styles = StyleSheet.create({
   },
   input: {
     width: "100%",
-    height: (height * 6) / 100,
-    borderRadius: 5,
   },
   list: {
     width: "95%",

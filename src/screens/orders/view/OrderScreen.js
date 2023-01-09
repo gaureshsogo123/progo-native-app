@@ -7,6 +7,7 @@ import {
   Dimensions,
   RefreshControl,
   Alert,
+  Keyboard,
 } from "react-native";
 import {
   Text,
@@ -156,7 +157,7 @@ export default function Orders({ navigation }) {
         if (val.distributorname === "") {
           return val;
         }
-        return val.distributorname.toLowerCase().includes(textinput);
+        return val.distributorname.toLowerCase().includes(textinput.toLowerCase());
       }),
     [orders, textinput]
   );
@@ -165,7 +166,6 @@ export default function Orders({ navigation }) {
     const statusId = filterstatus.find((status) => {
       return status.orderstatus;
     });
-    console.log("sttusId",statusId);
     try {
       const res = await editOrderStatus(
         editStatusdata.orderid,
@@ -188,6 +188,10 @@ export default function Orders({ navigation }) {
     }
   };
 
+  const filterHandlePress = (()=>{
+    setShown(true);
+    Keyboard.dismiss();
+  })
   const statusHandlePress = (status, i) => {
     setStatus(status);
     setActive(i);
@@ -279,11 +283,11 @@ export default function Orders({ navigation }) {
               style={styles.input}
               placeholder="Search Suppliers"
               value={textinput}
-              onChangeText={(val) => setTextinput(val.toLocaleLowerCase())}
+              onChangeText={(val) => setTextinput(val)}
             />
 
             <View style={styles.filtericon}>
-              <TouchableOpacity onPress={() => setShown(true)}>
+              <TouchableOpacity onPress={filterHandlePress }>
                 <AntDesign
                   name="filter"
                   size={25}
@@ -311,6 +315,7 @@ export default function Orders({ navigation }) {
       <>
         <FlatList
           data={filterorders}
+          keyboardShouldPersistTaps={'handled'}
           keyExtractor={orderKeyExtractor}
           renderItem={renderOrder}
           refreshControl={
@@ -448,13 +453,13 @@ export default function Orders({ navigation }) {
                 }}
                 onStartShouldSetResponder={() => setCheckstatus(!checkstatus)}
               >
-                <Text style={{ color: checkstatus ? "#2e7d32" : null }}>
+                <Text style={{ color: checkstatus ? theme.colors.primary : null }}>
                   Select Status
                 </Text>
                 <AntDesign
                   name={checkstatus ? "up" : "down"}
                   size={17}
-                  color={checkstatus ? "#2e7d32" : "gray"}
+                  color={checkstatus ? theme.colors.primary : "gray"}
                 />
               </View>
 
@@ -469,7 +474,8 @@ export default function Orders({ navigation }) {
                           style={{
                             paddingBottom: (height * 2) / 100,
                             paddingTop: (height * 1) / 100,
-                            color: active == i ? "#2e7d32" : "#616161",
+                            color: active == i ? theme.colors.primary : "#616161",
+                            fontWeight:active==i?"700":null
                           }}
                           key={i}
                         >
@@ -489,16 +495,18 @@ export default function Orders({ navigation }) {
                   justifyContent: "space-between",
                   flexDirection: "row",
                   width: "100%",
+                  borderTopWidth:checkstatus?1:null,
+                  borderTopColor:checkstatus?"silver":null
                 }}
                 onStartShouldSetResponder={() => setCheckdate(!checkdate)}
               >
-                <Text style={{ color: checkdate ? "#2e7d32" : null }}>
+                <Text style={{ color: checkdate ? theme.colors.primary : null }}>
                   Select Date
                 </Text>
                 <AntDesign
                   name={checkdate ? "up" : "down"}
                   size={17}
-                  color={checkdate ? "#2e7d32" : "gray"}
+                  color={checkdate ? theme.colors.primary : "gray"}
                 />
               </View>
 
@@ -571,7 +579,6 @@ const styles = StyleSheet.create({
   },
   input: {
     width: "88%",
-    height: (height * 6) / 100,
     marginBottom: (height * 1.5) / 100,
     borderRadius: 5,
   },
