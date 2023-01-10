@@ -128,7 +128,9 @@ export default function Orders({ navigation }) {
         if (val.distributorname === "") {
           return val;
         }
-        return val.distributorname.toLowerCase().includes(textinput.toLowerCase());
+        return val.distributorname
+          .toLowerCase()
+          .includes(textinput.toLowerCase());
       }),
     [orders, textinput]
   );
@@ -159,10 +161,10 @@ export default function Orders({ navigation }) {
     }
   };
 
-  const filterHandlePress = (()=>{
+  const filterHandlePress = () => {
     setShown(true);
     Keyboard.dismiss();
-  })
+  };
   const statusHandlePress = (status, i) => {
     setStatus(status);
     setActive(i);
@@ -258,14 +260,18 @@ export default function Orders({ navigation }) {
             />
 
             <View style={styles.filtericon}>
-              <TouchableOpacity onPress={filterHandlePress }>
+              <TouchableOpacity onPress={filterHandlePress}>
                 <AntDesign
                   name="filter"
                   size={25}
                   color={theme.colors.primary}
-                  style={{ marginLeft: (width * 1) / 100 }}
                 />
-                <Text style={{ fontSize: 12, color: theme.colors.primary }}>
+                <Text
+                  style={{
+                    fontSize: (height * 1.3) / 100,
+                    color: theme.colors.primary,
+                  }}
+                >
                   Filters
                 </Text>
               </TouchableOpacity>
@@ -286,7 +292,7 @@ export default function Orders({ navigation }) {
       <>
         <FlatList
           data={filterorders}
-          keyboardShouldPersistTaps={'handled'}
+          keyboardShouldPersistTaps={"handled"}
           keyExtractor={orderKeyExtractor}
           renderItem={renderOrder}
           refreshControl={
@@ -346,7 +352,11 @@ export default function Orders({ navigation }) {
                 >
                   <TouchableOpacity onPress={statusModalPress}>
                     <Text
-                      style={{ paddingRight: (width * 12) / 100, color: "red",fontSize:height*1.7/100 }}
+                      style={{
+                        paddingRight: (width * 12) / 100,
+                        color: "red",
+                        fontSize: (height * 1.7) / 100,
+                      }}
                     >
                       Yes
                     </Text>
