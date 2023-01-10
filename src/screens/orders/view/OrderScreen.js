@@ -346,7 +346,7 @@ export default function Orders({ navigation }) {
                 >
                   <TouchableOpacity onPress={statusModalPress}>
                     <Text
-                      style={{ paddingRight: (width * 12) / 100, color: "red" }}
+                      style={{ paddingRight: (width * 12) / 100, color: "red",fontSize:height*1.7/100 }}
                     >
                       Yes
                     </Text>
