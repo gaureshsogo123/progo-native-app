@@ -9,44 +9,17 @@ import {
   Alert,
   Keyboard,
 } from "react-native";
-import {
-  Text,
-  TextInput,
-  useTheme,
-  Modal,
-  Portal,
-  Provider,
-} from "react-native-paper";
+import { Text, TextInput, useTheme } from "react-native-paper";
 import { AntDesign } from "@expo/vector-icons";
-import { format, subDays } from "date-fns";
-import {
-  editOrderStatus,
-  getOrders,
-  getOrderStatus,
-} from "../helper/OrderHelper";
+import { subDays } from "date-fns";
+import { getOrders, getOrderStatus } from "../helper/OrderHelper";
 import { useAuthContext } from "../../../context/UserAuthContext";
 import OrderFilters from "./OrderFilters";
+import CancelOrderPopup from "./CancelOrderPopup";
+import Order from "./Order";
 
 const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
-
-const statusContainerStyle = {
-  backgroundColor: "#eeeeee",
-  width: "90%",
-  marginLeft: "6%",
-  display: "flex",
-  justifyContent: "center",
-};
-
-const cancelStatusContainer = {
-  backgroundColor: "#fafafa",
-  width: "90%",
-  marginLeft: "6%",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  padding: "8%",
-};
 
 export default function Orders({ navigation }) {
   const { user } = useAuthContext();
@@ -57,13 +30,11 @@ export default function Orders({ navigation }) {
   const [endDate, setEndDate] = useState(new Date());
   const [shown, setShown] = useState(false);
   const [orders, setOrders] = useState([]);
-  const [editStatusdata, setEditStatusdata] = useState({});
   const [statuslist, setStatuslist] = useState([]);
-  const [see, setSee] = useState(false);
   const [errors, setErrors] = useState({});
   const [refreshing, setRefreshing] = useState(true);
   const [textinput, setTextinput] = useState("");
-  const [current, setCurrent] = useState(false);
+  const [cancelOrderData, setCancelOrderData] = useState();
 
   useEffect(() => {
     const unsubscribeFocus = navigation.addListener("focus", fetchOrders);
@@ -95,13 +66,16 @@ export default function Orders({ navigation }) {
     }
   };
 
-  const updateStatus = (orderid, orderstatus) => {
-    setEditStatusdata({
-      ...editStatusdata,
+  const showCancelPopup = (orderid, orderstatus) => {
+    if (orderstatus === "Completed") {
+      Alert.alert("Completed", "Completed order cannot be cancelled");
+      return;
+    }
+    setCancelOrderData({
+      ...cancelOrderData,
       orderid: orderid,
       status: orderstatus,
     });
-    setCurrent(true);
   };
 
   useEffect(() => {
@@ -111,10 +85,6 @@ export default function Orders({ navigation }) {
     }
     fetchstatus();
   }, []);
-
-  const filterstatus = statuslist.filter((val) => {
-    return val.orderstatus === "Cancelled";
-  });
 
   const handlepress = (item) => {
     navigation.navigate("UpdateOrder", {
@@ -135,107 +105,20 @@ export default function Orders({ navigation }) {
     [orders, textinput]
   );
 
-  const statusModalPress = async () => {
-    const statusId = filterstatus.find((status) => {
-      return status.orderstatus;
-    });
-    try {
-      const res = await editOrderStatus(
-        editStatusdata.orderid,
-        statusId.orderstatusid,
-        "Cancelled"
-      );
-      if (!res.error) {
-        fetchOrders();
-        Alert.alert(
-          "Success",
-          `Your order with ID ${editStatusdata.orderid} has been cancelled.`
-        );
-      } else {
-        Alert.alert("Error", "There was an error");
-      }
-    } catch (error) {
-      Alert.alert("Error", "There was an error");
-    } finally {
-      setCurrent(false);
-    }
-  };
-
   const filterHandlePress = () => {
     setShown(true);
     Keyboard.dismiss();
-  };
-  const statusHandlePress = (status, i) => {
-    setStatus(status);
-    setActive(i);
   };
 
   const orderKeyExtractor = (order) => order.orderid;
 
   const renderOrder = useCallback(({ item }) => {
     return (
-      <TouchableOpacity
-        style={styles.listcontainer}
-        onPress={() => handlepress(item)}
-      >
-        <Text
-          variant="titleMedium"
-          style={{
-            marginBottom: 5,
-            paddingBottom: 3,
-            width: "60%",
-          }}
-        >
-          {item.distributorname}
-        </Text>
-        <Text style={{ marginBottom: 5 }}>Order ID: {item.orderid}</Text>
-        <Text>
-          Order Date : {format(new Date(item.orderdate), "dd-MM-yyyy")}
-        </Text>
-
-        <View style={styles.rightitems}>
-          <View style={{ display: "flex", flexDirection: "row" }}>
-            <TouchableOpacity
-              style={{
-                textAlignVertical: "center",
-                padding: 5,
-                borderRadius: 5,
-                backgroundColor: theme.colors.secondaryContainer,
-              }}
-            >
-              <Text
-                style={{
-                  padding: 5,
-                  color: "#424242",
-                  fontWeight: "400",
-                }}
-              >
-                Status: {item.orderstatus}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{
-                marginTop: (height * 1) / 100,
-                paddingLeft: (width * 1) / 100,
-              }}
-              onPress={() => updateStatus(item.orderid, item.orderstatus)}
-            >
-              <Text>
-                <AntDesign name="delete" size={18} color="#424242" />
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <Text
-            variant="titleSmall"
-            style={{
-              paddingTop: 10,
-              textAlign: "right",
-            }}
-          >
-            Amt: {`\u20B9`} {Number(item.totalamount).toFixed(2)}
-          </Text>
-        </View>
-      </TouchableOpacity>
+      <Order
+        item={item}
+        handlepress={handlepress}
+        showCancelPopup={showCancelPopup}
+      />
     );
   }, []);
 
@@ -289,88 +172,22 @@ export default function Orders({ navigation }) {
         </View>
       </View>
 
-      <>
-        <FlatList
-          data={filterorders}
-          keyboardShouldPersistTaps={"handled"}
-          keyExtractor={orderKeyExtractor}
-          renderItem={renderOrder}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={fetchOrders} />
-          }
-        />
-      </>
-
-      <>
-        <Provider>
-          <Portal>
-            <Modal
-              visible={see}
-              onDismiss={() => setSee(false)}
-              contentContainerStyle={statusContainerStyle}
-            >
-              <View style={{ marginLeft: (width * 2) / 100 }}>
-                {statuslist.map((val, i) => {
-                  return (
-                    <TouchableOpacity
-                      key={i}
-                      style={{
-                        paddingTop: (height * 2) / 100,
-                        paddingBottom: (height * 2) / 100,
-                      }}
-                      //onPress={() => statusModalPress(val.orderstatus)}
-                    >
-                      <Text style={{ fontWeight: "500" }}>
-                        {val.orderstatus}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </Modal>
-          </Portal>
-        </Provider>
-      </>
-
-      <>
-        <Provider>
-          <Portal>
-            <Modal
-              visible={current}
-              onDismiss={() => setCurrent(false)}
-              contentContainerStyle={cancelStatusContainer}
-            >
-              <View>
-                <Text>Do You Want to Cancel the Order ?</Text>
-                <View
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "center",
-                    marginTop: (height * 3) / 100,
-                  }}
-                >
-                  <TouchableOpacity onPress={statusModalPress}>
-                    <Text
-                      style={{
-                        paddingRight: (width * 12) / 100,
-                        color: "red",
-                        fontSize: (height * 1.7) / 100,
-                      }}
-                    >
-                      Yes
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => setCurrent(false)}>
-                    <Text>No</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </Modal>
-          </Portal>
-        </Provider>
-      </>
-
+      <FlatList
+        data={filterorders}
+        keyboardShouldPersistTaps={"handled"}
+        keyExtractor={orderKeyExtractor}
+        renderItem={renderOrder}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={fetchOrders} />
+        }
+      />
+      <CancelOrderPopup
+        shown={cancelOrderData?.orderid}
+        setCancelOrderData={setCancelOrderData}
+        onSuccess={fetchOrders}
+        order={cancelOrderData}
+        statusList={statuslist}
+      />
       <OrderFilters
         startDate={startDate}
         status={status}
