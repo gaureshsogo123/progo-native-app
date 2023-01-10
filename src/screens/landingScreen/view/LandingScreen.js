@@ -1,28 +1,19 @@
 import React, { useEffect, useState } from "react";
-
 import {
   FlatList,
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
-  Dimensions,
 } from "react-native";
 import { TextInput } from "react-native-paper";
-import OfflineProtected from "../../../component/OfflineProtected";
 import { useAuthContext } from "../../../context/UserAuthContext";
 import { getDistributors } from "../helper/LandingScreenHelper";
-
-
-
-const { height } = Dimensions.get("screen");
-const { width } = Dimensions.get("screen");
 
 export default function LandingScreen({ navigation }) {
   const { user } = useAuthContext();
   const [distributors, setDistributors] = useState([]);
   const [filterText, setFilterText] = useState("");
-
 
   useEffect(() => {
     getDistributors(user.userId)
@@ -78,7 +69,7 @@ export default function LandingScreen({ navigation }) {
 
       <FlatList
         data={filterDistributor}
-        keyboardShouldPersistTaps={'handled'}
+        keyboardShouldPersistTaps={"handled"}
         renderItem={({ item }) => {
           return (
             <TouchableOpacity

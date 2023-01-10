@@ -1,4 +1,4 @@
-import { TouchableOpacity, View, Dimensions, StyleSheet } from "react-native";
+import { View, Dimensions, StyleSheet, ScrollView } from "react-native";
 import {
   Modal,
   Portal,
@@ -7,9 +7,11 @@ import {
   Text,
   useTheme,
 } from "react-native-paper";
+import { useMemo } from "react";
 import statuses from "../../../constants/statusOptions";
 import DatePicker from "../../../component/DatePicker";
 import DropdownContainer from "../../../component/DropdownContainer";
+import SingleSelect from "../../../component/SingleSelect";
 
 const { height } = Dimensions.get("screen");
 
@@ -45,10 +47,6 @@ function OrderFilters({
 }) {
   const theme = useTheme();
 
-  const statusHandlePress = (status) => {
-    setStatus(status);
-  };
-
   const handleClose = () => {
     setShown(false);
   };
@@ -61,83 +59,79 @@ function OrderFilters({
           onDismiss={() => setShown(false)}
           contentContainerStyle={containerStyle}
         >
-          <DropdownContainer header="Select status">
-            <>
-              {statuses?.map((val, i) => (
-                <TouchableOpacity
-                  onPress={() => statusHandlePress(val.value, i)}
-                  key={i}
-                  style={{
-                    paddingLeft: "6%",
-                    backgroundColor: "rgb(240,240,240)",
-                  }}
-                >
+          <View style={{ maxHeight: (height * 70) / 100 }}>
+            <ScrollView>
+              <DropdownContainer header="Select status">
+                <SingleSelect
+                  data={statuses}
+                  value={status}
+                  labelField={"value"}
+                  setValue={setStatus}
+                />
+              </DropdownContainer>
+
+              <DropdownContainer header={"Select Date"}>
+                <View style={styles.datecontainer}>
                   <Text
+                    variant="titleMedium"
                     style={{
-                      paddingBottom: (height * 2) / 100,
-                      paddingTop: (height * 1) / 100,
-                      color:
-                        val.value === status ? theme.colors.primary : "#616161",
+                      textAlignVertical: "center",
+                      fontSize: (height * 1.5) / 100,
+                      color: "#616161",
                     }}
                   >
-                    {val.value}
+                    From :{" "}
                   </Text>
-                </TouchableOpacity>
-              ))}
-            </>
-          </DropdownContainer>
-
-          <DropdownContainer header={"Select Date"}>
-            <View style={styles.datecontainer}>
-              <Text
-                variant="titleMedium"
+                  {useMemo(
+                    () => (
+                      <DatePicker
+                        date={startDate}
+                        setDate={setStartDate}
+                        text={"From"}
+                        showFlag={true}
+                      />
+                    ),
+                    [startDate]
+                  )}
+                  <Text
+                    variant="titleMedium"
+                    style={{
+                      textAlignVertical: "center",
+                      fontSize: (height * 1.5) / 100,
+                      color: "#616161",
+                    }}
+                  >
+                    To :{" "}
+                  </Text>
+                  {useMemo(
+                    () => (
+                      <DatePicker
+                        date={endDate}
+                        setDate={setEndDate}
+                        text={"To"}
+                        showFlag={true}
+                      />
+                    ),
+                    [endDate]
+                  )}
+                </View>
+              </DropdownContainer>
+              <Button
+                mode="contained"
                 style={{
-                  textAlignVertical: "center",
-                  fontSize: (height * 1.5) / 100,
-                  color: "#616161",
+                  borderRadius: 3,
+                  width: "95%",
+                  marginLeft: "3%",
+                  marginTop: "5%",
+                  marginBottom: "2%",
+                  backgroundColor: theme.colors.primary,
                 }}
+                onPress={handleClose}
               >
-                From :{" "}
-              </Text>
-              <DatePicker
-                date={startDate}
-                setDate={setStartDate}
-                text={"From"}
-                showFlag={true}
-              />
-              <Text
-                variant="titleMedium"
-                style={{
-                  textAlignVertical: "center",
-                  fontSize: (height * 1.5) / 100,
-                  color: "#616161",
-                }}
-              >
-                To :{" "}
-              </Text>
-              <DatePicker
-                date={endDate}
-                setDate={setEndDate}
-                text={"To"}
-                showFlag={true}
-              />
-            </View>
-          </DropdownContainer>
-
-          <Button
-            mode="contained"
-            style={{
-              borderRadius: 3,
-              width: "95%",
-              marginLeft: "3%",
-              marginTop: "5%",
-              marginBottom: "2%",
-              backgroundColor: theme.colors.primary,
-            }}
-            onPress={handleClose}
-          >
-            View Result
-          </Button>
+                View Result
+              </Button>
+            </ScrollView>
+          </View>
         </Modal>
       </Portal>
     </Provider>
