@@ -174,10 +174,9 @@ function UpdateOrder({ route, navigation }) {
           backgroundColor: "#fafafa",
         }}
       >
-        <View>
+        <View style={{width:"70%"}}>
           <Text
             variant="titleMedium"
-            style={{ Width: "80%", fontWeight: "400" }}
           >
             {item.productname}
           </Text>
