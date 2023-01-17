@@ -14,9 +14,7 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true
     },
@@ -25,7 +23,7 @@
         "foregroundImage": "./assets/app-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.buyer.sogo",
+      "package": "com.buyer.bogo",
       "permissions": []
     },
     "androidStatusBar": {
