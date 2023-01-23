@@ -7,7 +7,7 @@ import {
   Alert,
   RefreshControl,
 } from "react-native";
-import { useTheme, Text, Button } from "react-native-paper";
+import { useTheme, Text, Button,HelperText } from "react-native-paper";
 import { getOrderDetail } from "../helper/OrderHelper";
 
 const styles = StyleSheet.create({
@@ -64,24 +64,28 @@ function OrderDetailScreen({ navigation, route }) {
   const [orderDetail, setOrderDetail] = useState([]);
 
   const [refreshing, setRefreshing] = useState(true);
+  const [errors,setErrors]=useState({});
 
-  const orderInfo = async () => {
+  const getOrderInfo = async () => {
     setRefreshing(true);
-    await getOrderDetail(order.distributorid, order.orderid)
-      .then((orders) => {
-        setOrderDetail(orders.data);
-        setRefreshing(false);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    try{
+      const result = await getOrderDetail(order.distributorid, order.orderid);
+      if(!result.error){
+        setOrderDetail(result.data);
+        setErrors({...errors,getorderinfo:""})
+      }else setErrors({...errors,getorderinfo:"Failed to fetch Products"})
+    }catch(err){
+      setErrors({...errors,getorderinfo:"Failed to fetch Products"})
+    }finally{
+      setRefreshing(false);
+    }
   };
 
   useEffect(() => {
-    orderInfo();
+    getOrderInfo();
   }, [order.distributorid, order.orderid]);
 
-  const renderOrderDetails = ({ item }) => {
+  const getProducts = ({ item }) => {
     return (
       <View
         style={{
@@ -200,15 +204,21 @@ function OrderDetailScreen({ navigation, route }) {
             </Button>
           ) : null}
         </View>
+        {errors.getorderinfo && (
+            <HelperText visible={errors.getorderinfo} type="error">
+              {errors.getorderinfo}{" "}
+            </HelperText>
+          )}
+    
       </View>
 
       <FlatList
         data={orderDetail}
-        renderItem={renderOrderDetails}
+        renderItem={getProducts}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => orderInfo()}
+            onRefresh={() => getOrderInfo()}
           />
         }
         keyExtractor={(item) => item.productid}
