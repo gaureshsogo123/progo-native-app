@@ -29,7 +29,7 @@ function Order({ item, showCancelPopup, handlepress }) {
 
       <View style={styles.rightitems}>
         <View style={{ display: "flex", flexDirection: "row" }}>
-          <TouchableOpacity
+          <View
             style={{
               textAlignVertical: "center",
               padding: 5,
@@ -46,7 +46,7 @@ function Order({ item, showCancelPopup, handlepress }) {
             >
               Status: {item.orderstatus}
             </Text>
-          </TouchableOpacity>
+          </View>
           <TouchableOpacity
             style={{
               marginTop: (height * 1) / 100,

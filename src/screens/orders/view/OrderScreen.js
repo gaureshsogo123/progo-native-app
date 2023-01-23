@@ -87,7 +87,7 @@ export default function Orders({ navigation }) {
   }, []);
 
   const handlepress = (item) => {
-    navigation.navigate("UpdateOrder", {
+    navigation.navigate("Order Details", {
       order: item,
     });
   };
@@ -148,6 +148,7 @@ export default function Orders({ navigation }) {
                   name="filter"
                   size={25}
                   color={theme.colors.primary}
+                  style={{alignSelf:"center"}}
                 />
                 <Text
                   style={{
@@ -247,7 +248,6 @@ const styles = StyleSheet.create({
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    padding: 7,
   },
   locationcontainer: {
     display: "flex",

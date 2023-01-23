@@ -48,11 +48,12 @@ const styles = StyleSheet.create({
     width: 70,
     textAlign: "center",
     paddingHorizontal: 1,
-    paddingBottom: 1,
+    paddingBottom: 1
   },
   orderButton: {
     borderRadius: 3,
     paddingVertical: 5,
+    backgroundColor:"#f9a374"
   },
   flexContainer: {
     display: "flex",

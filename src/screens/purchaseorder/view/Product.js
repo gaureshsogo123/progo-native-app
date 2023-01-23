@@ -27,6 +27,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: 1,
     paddingBottom: 1,
+    backgroundColor:"#fde3d5"
   },
 });
 function Product({ item, updateQuantity }) {

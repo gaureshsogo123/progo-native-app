@@ -81,7 +81,7 @@ function CancelOrderPopup({
                     textAlign: "center",
                     marginRight: (width * 12) / 100,
                     color: "red",
-                    fontSize: (height * 1.7) / 100,
+                    fontSize: (height * 1.9) / 100,
                   }}
                 >
                   Yes

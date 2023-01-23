@@ -4,10 +4,10 @@ const theme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    primary: "#1629cc",
+    primary: "#f9a374",
     background: "#FBFFFF",
-    secondary: "#5B6AED",
-    secondaryContainer: "#AFC2FF",
+    secondary: "#fde3d5",
+    secondaryContainer: "#fde3d5",
     surfaceVariant: "#C8DBFF",
   },
 };

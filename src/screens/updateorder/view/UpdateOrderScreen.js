@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { Button, TextInput, Text } from "react-native-paper";
 import { useAuthContext } from "../../../context/UserAuthContext";
+import theme from "../../../themes/theme";
 import calculateTotal from "../../purchaseorder/helper/calculateTotal";
 import { fetchProducts } from "../../purchaseorder/helper/Purchasehelper";
 import { getOrderDetails, editOrder } from "../helper/UpdateOrderHelper";
@@ -49,6 +50,7 @@ const styles = StyleSheet.create({
     height: 40,
     paddingHorizontal: 1,
     paddingBottom: 1,
+    backgroundColor:theme.colors.secondaryContainer
   },
   orderButton: {
     borderRadius: 3,

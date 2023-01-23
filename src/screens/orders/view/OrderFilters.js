@@ -22,7 +22,6 @@ const containerStyle = {
   width: "95%",
   justifyContent: "center",
   marginLeft: "3%",
-  borderRadius: 10,
 };
 
 const styles = StyleSheet.create({
@@ -59,7 +58,7 @@ function OrderFilters({
           onDismiss={() => setShown(false)}
           contentContainerStyle={containerStyle}
         >
-          <View style={{ maxHeight: (height * 70) / 100 }}>
+          <View style={{ maxHeight: (height * 70) / 100,backgroundColor:"#f5f5f5" }}>
             <ScrollView>
               <DropdownContainer header="Select status">
                 <SingleSelect
