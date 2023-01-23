@@ -45,3 +45,17 @@ export const editOrderStatus = async (orderId, orderStatusId, orderStatus) => {
       return { error: err?.response?.data?.message || err.message };
     });
 };
+
+
+export const getOrderDetail = (distributor_id, order_id) => {
+  return axiosInstance
+    .get(`order/${distributor_id}/${order_id}`)
+    .then((res) => {
+      return { error: false, data: res.data.data };
+    })
+    .catch((err) => {
+      toast.error(err.message);
+      return { error: err.message };
+    });
+};
+
