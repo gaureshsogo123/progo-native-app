@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useMemo } from "react";
 import { Dimensions, View, TouchableOpacity } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { Text, TextInput, useTheme } from "react-native-paper";
+import { Text, TextInput } from "react-native-paper";
 
 const { height } = Dimensions.get("screen");
 
@@ -20,8 +20,8 @@ function SingleSelect({
   selectedItemStyles = {},
   headerContainerStyles = {},
   headerStyles = {},
+  theme,
 }) {
-  const theme = useTheme();
   const [searchText, setSearchText] = useState("");
 
   const styles = {
