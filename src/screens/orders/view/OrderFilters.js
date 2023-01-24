@@ -58,7 +58,12 @@ function OrderFilters({
           onDismiss={() => setShown(false)}
           contentContainerStyle={containerStyle}
         >
-          <View style={{ maxHeight: (height * 70) / 100,backgroundColor:"#f5f5f5" }}>
+          <View
+            style={{
+              maxHeight: (height * 70) / 100,
+              backgroundColor: "#f5f5f5",
+            }}
+          >
             <ScrollView>
               <DropdownContainer header="Select status">
                 <SingleSelect
@@ -66,6 +71,7 @@ function OrderFilters({
                   value={status}
                   labelField={"value"}
                   setValue={setStatus}
+                  theme={theme}
                 />
               </DropdownContainer>
 
