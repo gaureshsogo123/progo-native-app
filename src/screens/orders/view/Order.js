@@ -19,7 +19,7 @@ function Order({ item, showCancelPopup, handlepress }) {
         style={{
           marginBottom: 5,
           paddingBottom: 3,
-          width: "60%",
+          width: "50%",
         }}
       >
         {item.distributorname}
