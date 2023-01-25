@@ -11,7 +11,8 @@ import { useAuthContext } from "../../../context/UserAuthContext";
 import theme from "../../../themes/theme";
 import calculateTotal from "../../purchaseorder/helper/calculateTotal";
 import { fetchProducts } from "../../purchaseorder/helper/Purchasehelper";
-import { getOrderDetails, editOrder } from "../helper/UpdateOrderHelper";
+import { getOrderDetailsRetailer } from "../../orders/helper/OrderHelper";
+import { editOrder } from "../helper/UpdateOrderHelper";
 
 const styles = StyleSheet.create({
   container: {
@@ -50,7 +51,7 @@ const styles = StyleSheet.create({
     height: 40,
     paddingHorizontal: 1,
     paddingBottom: 1,
-    backgroundColor:theme.colors.secondaryContainer
+    backgroundColor: theme.colors.secondaryContainer,
   },
   orderButton: {
     borderRadius: 3,
@@ -132,7 +133,10 @@ function UpdateOrder({ route, navigation }) {
     setRefreshing(true);
     try {
       const products = await fetchProducts(distributorid, 0, "ALL");
-      const orderDetails = await getOrderDetails(distributorid, order.orderid);
+      const orderDetails = await getOrderDetailsRetailer(
+        order.orderid,
+        user.userId
+      );
       if (orderDetails.data) {
         /* map product quantity, price to product quantity, price in order*/
         setOrderDetails(orderDetails.data);
@@ -176,12 +180,8 @@ function UpdateOrder({ route, navigation }) {
           backgroundColor: "#fafafa",
         }}
       >
-        <View style={{width:"70%"}}>
-          <Text
-            variant="titleMedium"
-          >
-            {item.productname}
-          </Text>
+        <View style={{ width: "70%" }}>
+          <Text variant="titleMedium">{item.productname}</Text>
           <Text style={styles.price} variant="titleSmall">
             Price: {`\u20B9`} {Number(item.price).toFixed(2)}{" "}
           </Text>
@@ -230,7 +230,7 @@ function UpdateOrder({ route, navigation }) {
         <View style={styles.pagecontainer}>
           <View style={styles.heading}>
             <View style={styles.flexContainer}>
-              <Text variant="titleMedium" style={{width:"80%"}}>
+              <Text variant="titleMedium" style={{ width: "80%" }}>
                 <Text style={{ color: "gray" }}>Supplier: </Text>
                 {order.distributorname}
               </Text>

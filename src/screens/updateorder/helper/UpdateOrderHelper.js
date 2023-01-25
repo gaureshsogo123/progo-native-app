@@ -1,16 +1,5 @@
 import axiosInstance from "../../../axiosInstance";
 
-export const getOrderDetails = async (distributorId, orderId) => {
-  try {
-    const { data } = await axiosInstance.get(
-      `/order/${distributorId}/${orderId}`
-    );
-    return { data: data.data };
-  } catch (error) {
-    return { error: error.message };
-  }
-};
-
 export const editOrder = async (
   userId,
   totalItems,

@@ -46,12 +46,11 @@ export const editOrderStatus = async (orderId, orderStatusId, orderStatus) => {
     });
 };
 
-
-export const getOrderDetailsRetailer = (orderId,retailerId) => {
+export const getOrderDetailsRetailer = async (orderId, retailerId) => {
   return axiosInstance
-    .post("order/retailerOrderDetails",{
+    .post("order/retailerOrderDetails", {
       orderId,
-      retailerId
+      retailerId,
     })
     .then((res) => {
       return { error: false, data: res.data.data };
@@ -60,4 +59,3 @@ export const getOrderDetailsRetailer = (orderId,retailerId) => {
       return { error: err.message };
     });
 };
-
