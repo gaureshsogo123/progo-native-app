@@ -177,7 +177,7 @@ function PurchaseOrderScreen({ route, navigation }) {
     <>
       <View style={styles.heading}>
         <View style={styles.flexContainer}>
-          <Text variant="titleMedium">
+          <Text variant="titleMedium" style={{width:"90%"}}>
             <Text style={{ color: "gray" }}>Supplier: </Text>
             {distributorName}
           </Text>

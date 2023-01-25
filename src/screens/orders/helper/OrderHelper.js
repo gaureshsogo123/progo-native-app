@@ -47,14 +47,16 @@ export const editOrderStatus = async (orderId, orderStatusId, orderStatus) => {
 };
 
 
-export const getOrderDetail = (distributor_id, order_id) => {
+export const getOrderDetailsRetailer = (orderId,retailerId) => {
   return axiosInstance
-    .get(`order/${distributor_id}/${order_id}`)
+    .post("order/retailerOrderDetails",{
+      orderId,
+      retailerId
+    })
     .then((res) => {
       return { error: false, data: res.data.data };
     })
     .catch((err) => {
-      toast.error(err.message);
       return { error: err.message };
     });
 };
