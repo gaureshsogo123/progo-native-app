@@ -8,7 +8,10 @@ import {
   RefreshControl,
 } from "react-native";
 import { useTheme, Text, Button,HelperText } from "react-native-paper";
-import { getOrderDetail } from "../helper/OrderHelper";
+import { useAuthContext } from "../../../context/UserAuthContext";
+import { getOrderDetailsRetailer } from "../helper/OrderHelper";
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -62,14 +65,15 @@ function OrderDetailScreen({ navigation, route }) {
   const theme = useTheme();
   const { order } = route.params;
   const [orderDetail, setOrderDetail] = useState([]);
-
   const [refreshing, setRefreshing] = useState(true);
   const [errors,setErrors]=useState({});
+
+  const {user} = useAuthContext();
 
   const getOrderInfo = async () => {
     setRefreshing(true);
     try{
-      const result = await getOrderDetail(order.distributorid, order.orderid);
+      const result = await getOrderDetailsRetailer(order.orderid,user.userId);
       if(!result.error){
         setOrderDetail(result.data);
         setErrors({...errors,getorderinfo:""})
@@ -83,7 +87,7 @@ function OrderDetailScreen({ navigation, route }) {
 
   useEffect(() => {
     getOrderInfo();
-  }, [order.distributorid, order.orderid]);
+  }, [user.userId, order.orderid]);
 
   const getProducts = ({ item }) => {
     return (
