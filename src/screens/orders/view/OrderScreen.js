@@ -25,7 +25,7 @@ export default function Orders({ navigation }) {
   const { user } = useAuthContext();
   const theme = useTheme();
 
-  const [status, setStatus] = useState("Placed");
+  const [status, setStatus] = useState("All");
   const [startDate, setStartDate] = useState(subDays(new Date(), 2));
   const [endDate, setEndDate] = useState(new Date());
   const [shown, setShown] = useState(false);
@@ -148,7 +148,7 @@ export default function Orders({ navigation }) {
                   name="filter"
                   size={25}
                   color={theme.colors.primary}
-                  style={{alignSelf:"center"}}
+                  style={{ alignSelf: "center" }}
                 />
                 <Text
                   style={{
