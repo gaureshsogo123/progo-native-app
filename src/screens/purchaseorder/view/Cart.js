@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
 
 function Cart() {
   const {cartProducts,cartSupplierName}=useAuthContext();
-
+  const theme = useTheme();
   const totalItems = cartProducts.reduce((acc, curr) => {
     acc = acc + Number(curr.quantity);
     return acc;
@@ -57,7 +57,6 @@ function Cart() {
     return acc;
   }, 0);
 
-  const theme = useTheme();
   return (
     <View style={styles.container}>
       <View style={styles.toppagecontainer}>

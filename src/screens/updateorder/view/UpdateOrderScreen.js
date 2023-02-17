@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -9,10 +9,11 @@ import {
 import { Button, TextInput, Text } from "react-native-paper";
 import { useAuthContext } from "../../../context/UserAuthContext";
 import theme from "../../../themes/theme";
-import calculateTotal from "../../purchaseorder/helper/calculateTotal";
-import { fetchProducts } from "../../purchaseorder/helper/Purchasehelper";
+import useDebounce from "../../../hooks/useDebounce";
+import { useProducts } from "../../purchaseorder/helper/useProducts";
 import { getOrderDetailsRetailer } from "../../orders/helper/OrderHelper";
 import { editOrder } from "../helper/UpdateOrderHelper";
+import Product from "../../purchaseorder/view/Product";
 
 const styles = StyleSheet.create({
   container: {
@@ -64,58 +65,61 @@ const styles = StyleSheet.create({
   },
 });
 
+const PAGE_SIZE = 15;
+
 function UpdateOrder({ route, navigation }) {
-  const {
-    order,
-    order: { distributorid },
-  } = route.params;
+  const { order } = route.params;
   const { user } = useAuthContext();
 
-  const [refreshing, setRefreshing] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [discount, setDiscount] = useState(0);
-
-  const [products, setProducts] = useState([]);
-  const [orderDetails, setOrderDetails] = useState();
-  const [orderAggregateData, setOrderAggregateData] = useState({
-    totalPrice: 0,
-    totalItems: 0,
-    totalProducts: 0,
-  });
+  const [cartItems, setCartItems] = useState([]);
   const [searchFilter, setSearchFilter] = useState("");
+  const debounceSearch = useDebounce(searchFilter);
+  const [categoryId, setCategoryId] = useState(0);
+  const [pageNo, setPageNo] = useState(1);
+  const {
+    products,
+    setProducts,
+    refreshing,
+    discount,
+    error: productsError,
+    hasMore,
+  } = useProducts(
+    order.distributorid,
+    pageNo,
+    PAGE_SIZE,
+    debounceSearch,
+    categoryId
+  );
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    getProducts();
-  }, [order.orderid]);
-
-  useEffect(() => {
-    setOrderAggregateData(calculateTotal(products));
-  }, [products]);
+    getCartProducts();
+  }, []);
 
   const updateOrder = async () => {
     setErrors({ ...errors, saveOrder: "" });
-    const orderProducts = products.filter((product) => product.quantity !== 0);
-    if (orderProducts.length === 0) {
+    if (cartItems.length === 0) {
       Alert.alert(
         "Empty cart!",
         "Empty order cannot be placed. Please add some products to update the order or cancel if you no longer wish to fulfill this order"
       );
       return;
     }
+    const total = cartItems.reduce(
+      (total, item) => total + item.quantity * item.price,
+      0
+    );
     try {
       const result = await editOrder(
         user.userId,
-        orderProducts.length,
-        Number(
-          orderAggregateData.totalPrice -
-            (orderAggregateData.totalPrice * discount) / 100
-        ).toFixed(2),
+        cartItems.length,
+        Number(total - (total * discount) / 100).toFixed(2),
         "cash",
-        Number(orderAggregateData.totalPrice).toFixed(2),
-        orderProducts,
+        Number(total).toFixed(2),
+        cartItems,
         discount,
         order.orderid,
-        distributorid
+        order.distributorid
       );
       if (!result.error) {
         Alert.alert(
@@ -129,98 +133,74 @@ function UpdateOrder({ route, navigation }) {
     }
   };
 
-  const getProducts = async () => {
-    setRefreshing(true);
+  useEffect(() => {
+    setProducts([]);
+    setPageNo(1);
+  }, [debounceSearch]);
+
+  const handleEndReached = () => {
+    if (hasMore) {
+      setPageNo((prev) => prev + 1);
+    }
+  };
+
+  const getCartProducts = async () => {
     try {
-      const products = await fetchProducts(distributorid, 0, "ALL");
       const orderDetails = await getOrderDetailsRetailer(
         order.orderid,
         user.userId
       );
-      if (orderDetails.data) {
-        /* map product quantity, price to product quantity, price in order*/
-        setOrderDetails(orderDetails.data);
-        products.data = products.data.map((product) => {
-          const orderProduct = orderDetails.data.find(
-            (oProduct) => oProduct.productid == product.productid
-          );
-          return {
-            ...product,
-            price: orderProduct?.productprice || product.price,
-            quantity: orderProduct?.productquantity || 0,
-            discount: product.discount || 0,
-          };
-        });
-        setProducts(products.data);
+      if (!orderDetails.error) {
+        const cart = orderDetails.data.map((item) => ({
+          discount: item.discount,
+          price: item.productprice,
+          productid: item.productid,
+          quantity: item.productquantity,
+          productname: item.productname,
+          orderstatus: item.orderstatus,
+          manufacturer: item.manufacturer,
+        }));
+        setCartItems(cart);
       }
-    } catch (error) {
-      Alert.alert("Error", "There was an error");
-    } finally {
-      setRefreshing(false);
-      setDiscount(0);
+    } catch (err) {
+      setErrors({ ...errors, cart: "Failed to get products" });
     }
   };
 
-  const updateQuantity = (amount, id) => {
-    setProducts((products) => {
-      let obj = [...products];
-      let index = obj.findIndex((item) => item.productid === id);
-      obj[index].quantity = parseInt(amount || 0);
-      return obj;
+  const updateQuantity = useCallback((amount, item) => {
+    setCartItems((prev) => {
+      let obj = [...prev];
+      const index = obj.findIndex(
+        (cItem) => cItem.productid === item.productid
+      );
+      if (index > -1) {
+        obj[index].quantity = parseInt(amount || 0);
+      } else {
+        obj.push({
+          discount: item.discount,
+          price: item.price,
+          productid: item.productid,
+          productname: item.productname,
+          manufacturer: item.manufacturer || null,
+          quantity: amount || 0,
+        });
+      }
+      return obj.filter((item) => item.quantity > 0);
     });
-  };
-
-  const renderProduct = useCallback(({ item }) => {
-    return (
-      <View
-        style={{
-          ...styles.product,
-          borderBottomColor: "silver",
-          paddingBottom: "3%",
-          backgroundColor: "#fafafa",
-        }}
-      >
-        <View style={{ width: "70%" }}>
-          <Text variant="titleMedium">{item.productname}</Text>
-          <Text style={styles.price} variant="titleSmall">
-            Price: {`\u20B9`} {Number(item.price).toFixed(2)}{" "}
-          </Text>
-          <Text variant="titleSmall" style={{ color: "#424242" }}>
-            Total: {`\u20B9`} {Number(item.price * item.quantity).toFixed(2)}{" "}
-          </Text>
-        </View>
-        <View style={styles.unitSection}>
-          <TextInput
-            keyboardType="number-pad"
-            style={styles.unitInput}
-            variant="flat"
-            value={item.quantity === 0 ? "" : item.quantity + ""}
-            onChangeText={(text) => {
-              if (text.includes("-")) return;
-              if (
-                text == "" ||
-                (Number.isInteger(parseInt(text)) && parseInt(text) > 0)
-              )
-                updateQuantity(text, item.productid);
-              else return;
-            }}
-          />
-          <Text variant="labelLarge" style={{ fontWeight: "400" }}>
-            {" "}
-            units
-          </Text>
-        </View>
-      </View>
-    );
   }, []);
 
-  const filteredProducts = useMemo(() => {
-    return products.filter(
-      (product) =>
-        !searchFilter ||
-        product.productname.toLowerCase().includes(searchFilter.toLowerCase())
-    );
-  }, [searchFilter, products]);
+  const renderProduct = useCallback(
+    ({ item }) => {
+      return (
+        <Product
+          item={item}
+          updateQuantity={updateQuantity}
+          cartItems={cartItems}
+        />
+      );
+    },
+    [cartItems]
+  );
 
   const productKeyExtractor = useCallback((product) => product.productid, []);
 
@@ -235,22 +215,6 @@ function UpdateOrder({ route, navigation }) {
                 {order.distributorname}
               </Text>
               <Text variant="titleMedium">ID: {order.orderid}</Text>
-            </View>
-            <View style={styles.flexContainer}>
-              <Text variant="titleMedium">
-                <Text style={{ color: "gray" }}>Products:</Text>{" "}
-                {orderAggregateData.totalProducts}
-              </Text>
-              <Text variant="titleMedium">
-                <Text style={{ color: "gray" }}>Items:</Text>{" "}
-                {orderAggregateData.totalItems}
-              </Text>
-            </View>
-            <View style={styles.flexContainer}>
-              <Text variant="titleMedium">
-                <Text style={{ color: "gray" }}>Total Amount:</Text> {`\u20B9`}{" "}
-                {Number(orderAggregateData.totalPrice).toFixed(2)}
-              </Text>
             </View>
           </View>
 
@@ -267,15 +231,20 @@ function UpdateOrder({ route, navigation }) {
       <FlatList
         removeClippedSubviews={false}
         keyExtractor={productKeyExtractor}
-        data={filteredProducts}
+        data={products}
         renderItem={renderProduct}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={2}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={getProducts} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => setPageNo(1)}
+          />
         }
       />
 
-      {orderDetails &&
-        (orderDetails[0]?.orderstatus.toLowerCase() === "placed" ? (
+      {cartItems &&
+        (cartItems[0]?.orderstatus.toLowerCase() === "placed" ? (
           <Button
             onPress={updateOrder}
             mode="contained"
@@ -285,7 +254,7 @@ function UpdateOrder({ route, navigation }) {
           </Button>
         ) : (
           <Button mode="contained" style={styles.orderButton}>
-            Order {orderDetails[0]?.orderstatus.toLowerCase()}
+            Order {cartItems[0]?.orderstatus.toLowerCase()}
           </Button>
         ))}
     </>

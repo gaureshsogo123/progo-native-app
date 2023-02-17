@@ -10,14 +10,15 @@ import {
   Image,
   Dimensions,
 } from "react-native";
-import { Button, useTheme, HelperText } from "react-native-paper";
+import { Button, HelperText, useTheme } from "react-native-paper";
 import { TextInput, Text } from "react-native-paper";
 import { useAuthContext } from "../../../context/UserAuthContext";
-import { fetchProducts, saveOrder } from "../helper/Purchasehelper";
-import calculateTotal from "../helper/calculateTotal";
+import { saveOrder } from "../helper/Purchasehelper";
+import { useProducts } from "../helper/useProducts";
 import Product from "./Product";
 import { AntDesign } from "@expo/vector-icons";
 import category from "../../../constants/Category";
+import useDebounce from "../../../hooks/useDebounce";
 
 
 const { height } = Dimensions.get("screen");
@@ -73,44 +74,50 @@ const styles = StyleSheet.create({
   },
 });
 
+const PAGE_SIZE = 15;
+
 function PurchaseOrderScreen({ route, navigation }) {
-  const theme = useTheme();
-
   const { distributorId, distributorName } = route.params;
-
+  const theme = useTheme();
   const { user,setCartProducts,setCartSuppliername } = useAuthContext();
-  const [refreshing, setRefreshing] = useState(true);
-  const [products, setProducts] = useState([]);
-  const [errors, setErrors] = useState({});
-  const [discount, setDiscount] = useState(0);
-  const [orderAggregateData, setOrderAggregateData] = useState({
-    totalPrice: 0,
-    totalItems: 0,
-    totalProducts: 0,
-  });
+  const [cartItems, setCartItems] = useState([]);
   const [searchFilter, setSearchFilter] = useState("");
+  const debounceSearch = useDebounce(searchFilter);
+  const [categoryId, setCategoryId] = useState(0);
+  const [pageNo, setPageNo] = useState(1);
+  const {
+    products,
+    setProducts,
+    refreshing,
+    discount,
+    error: productsError,
+    hasMore,
+  } = useProducts(distributorId, pageNo, PAGE_SIZE, debounceSearch, categoryId);
+  const [errors, setErrors] = useState({});
 
   const placeOrder = async () => {
     setErrors({ ...errors, saveOrder: "" });
-    const orderProducts = products.filter((product) => product.quantity !== 0);
-    if (orderProducts.length === 0) {
+    if (cartItems.length === 0) {
       Alert.alert(
         "Empty cart!",
         "Empty order cannot be placed. Please add some products to place an order"
       );
       return;
     }
+    const total = cartItems.reduce(
+      (total, item) => total + item.quantity * item.price,
+      0
+    );
     try {
       const result = await saveOrder(
         user.userId,
-        orderProducts.length,
-        orderAggregateData.totalPrice -
-          (orderAggregateData.totalPrice * discount) / 100,
+        cartItems.length,
+        total - (total * discount) / 100,
         "cash",
         distributorId,
         discount,
-        orderAggregateData.totalPrice,
-        orderProducts
+        total,
+        cartItems
       );
       if (!result.error) {
         Alert.alert(
@@ -129,67 +136,61 @@ function PurchaseOrderScreen({ route, navigation }) {
   };
 
   useEffect(() => {
-    if (!user) return;
-    setErrors({ ...errors, products: "" });
-    getProducts();
-  }, [distributorId]);
+    setProducts([]);
+    setPageNo(1);
+  }, [debounceSearch]);
 
-  const getProducts = async () => {
-    setRefreshing(true);
-    try {
-      const products = await fetchProducts(distributorId, 0, "ALL");
-      if (products.data.length === 0)
-        setErrors({
-          ...errors,
-          products: "You do not have any products yet",
-        });
-      else {
-        products.data = products.data.map((product) => ({
-          ...product,
-          quantity: product.quantity || 0,
-          discount: product.discount || 0,
-        }));
-        setProducts(products.data);
-      }
-    } catch (err) {
-      setErrors({ ...errors, products: "Failed to get products" });
-    } finally {
-      setRefreshing(false);
-      setDiscount(0);
+  const handleEndReached = () => {
+    if (hasMore) {
+      setPageNo((prev) => prev + 1);
     }
   };
 
-  useEffect(() => {
-    setOrderAggregateData(calculateTotal(products));
-  }, [products]);
-
-  const updateQuantity = (amount, id) => {
-    setProducts((products) => {
-      let obj = [...products];
-      let index = obj.findIndex((item) => item.productid === id);
-      obj[index].quantity = parseInt(amount || 0);
-      return obj;
+  const updateQuantity = useCallback((amount, item) => {
+    setCartItems((prev) => {
+      let obj = [...prev];
+      const index = obj.findIndex(
+        (cItem) => cItem.productid === item.productid
+      );
+      if (index > -1) {
+        obj[index].quantity = parseInt(amount || 0);
+      } else {
+        obj.push({
+          discount: item.discount,
+          price: item.price,
+          productid: item.productid,
+          productname: item.productname,
+          manufacturer: item.manufacturer || null,
+          quantity: amount || 0,
+        });
+      }
+      return obj.filter((item) => item.quantity > 0);
     });
-  };
+  })
 
   const cartHandlePress = (()=>{
-    const orderProducts = products.filter((product) => product.quantity !== 0);
+    const orderProducts = cartItems.filter((product) => product.quantity !== 0);
     if(orderProducts.length !==0){
      navigation.navigate("My Orders", { screen: "Cart" })
      setCartProducts(orderProducts);
-     setCartSuppliername(distributorName)
+     setCartSuppliername(distributorName);
     }
   })
 
-  const renderProduct = useCallback(({ item }) => {
-    return <Product item={item} updateQuantity={updateQuantity} />;
-  }, []);
+  
 
-  const filteredProducts = useMemo(() => {
-    return products?.filter((product) =>
-      product.productname.toLowerCase().includes(searchFilter.toLowerCase())
-    );
-  }, [searchFilter, products]);
+  const renderProduct = useCallback(
+    ({ item }) => {
+      return (
+        <Product
+          item={item}
+          updateQuantity={updateQuantity}
+          cartItems={cartItems}
+        />
+      );
+    },
+    [cartItems]
+  );
 
   const productKeyExtractor = useCallback((product) => product.productid, []);
 
@@ -248,7 +249,7 @@ function PurchaseOrderScreen({ route, navigation }) {
           onPress={cartHandlePress}
         >
           <Text style={{ color: "white" }}>
-            {orderAggregateData.totalProducts}
+            {cartItems.length}
           </Text>
         </TouchableOpacity>
       </View>
@@ -294,12 +295,14 @@ function PurchaseOrderScreen({ route, navigation }) {
       <FlatList
         removeClippedSubviews={false}
         keyExtractor={productKeyExtractor}
-        data={filteredProducts}
+        data={products}
         renderItem={renderProduct}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={2}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => getProducts()}
+            onRefresh={() => setPageNo(1)}
           />
         }
       />

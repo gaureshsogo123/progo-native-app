@@ -28,11 +28,15 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: 1,
     paddingBottom: 1,
-    backgroundColor:"#fde3d5"
+    backgroundColor: "#fde3d5",
   },
 });
-function Product({ item, updateQuantity }) {
+
+function Product({ item, updateQuantity, cartItems }) {
   const theme = useTheme();
+  const productQuantity =
+    cartItems?.find((product) => product.productid === item.productid)
+      ?.quantity || 0;
   return (
        <View
       style={{
@@ -53,7 +57,7 @@ function Product({ item, updateQuantity }) {
         </Text>
         <Text variant="titleSmall">
           Amount: {`\u20B9`}{" "}
-          {Number((item.price - item.discount) * item.quantity).toFixed(2)}{" "}
+          {Number((item.price - item.discount) * productQuantity).toFixed(2)}{" "}
         </Text>
       </View>
       </View>
@@ -62,14 +66,14 @@ function Product({ item, updateQuantity }) {
           keyboardType="number-pad"
           style={styles.unitInput}
           variant="flat"
-          value={item.quantity === 0 ? "" : item.quantity + ""}
+          value={productQuantity === 0 ? "" : productQuantity + ""}
           onChangeText={(text) => {
             if (text.includes("-")) return;
             if (
               text == "" ||
               (Number.isInteger(parseInt(text)) && parseInt(text) > 0)
             )
-              updateQuantity(text, item.productid);
+              updateQuantity(text, item);
             else return;
           }}
         />
