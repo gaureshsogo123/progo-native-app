@@ -6,11 +6,12 @@ import {
   View,
   Alert,
 } from "react-native";
-import { Button, useTheme, HelperText } from "react-native-paper";
+import { Button, HelperText } from "react-native-paper";
 import { TextInput, Text } from "react-native-paper";
 import { useAuthContext } from "../../../context/UserAuthContext";
-import { fetchProducts, saveOrder } from "../helper/Purchasehelper";
-import calculateTotal from "../helper/calculateTotal";
+import { saveOrder } from "../helper/Purchasehelper";
+import { useProducts } from "../helper/useProducts";
+import useDebounce from "../../../hooks/useDebounce";
 import Product from "./Product";
 
 const styles = StyleSheet.create({
@@ -48,12 +49,12 @@ const styles = StyleSheet.create({
     width: 70,
     textAlign: "center",
     paddingHorizontal: 1,
-    paddingBottom: 1
+    paddingBottom: 1,
   },
   orderButton: {
     borderRadius: 3,
     paddingVertical: 5,
-    backgroundColor:"#f9a374"
+    backgroundColor: "#f9a374",
   },
   flexContainer: {
     display: "flex",
@@ -62,44 +63,50 @@ const styles = StyleSheet.create({
   },
 });
 
-function PurchaseOrderScreen({ route, navigation }) {
-  const theme = useTheme();
+const PAGE_SIZE = 15;
 
+function PurchaseOrderScreen({ route, navigation }) {
   const { distributorId, distributorName } = route.params;
 
   const { user } = useAuthContext();
-  const [refreshing, setRefreshing] = useState(true);
-  const [products, setProducts] = useState([]);
-  const [errors, setErrors] = useState({});
-  const [discount, setDiscount] = useState(0);
-  const [orderAggregateData, setOrderAggregateData] = useState({
-    totalPrice: 0,
-    totalItems: 0,
-    totalProducts: 0,
-  });
+  const [cartItems, setCartItems] = useState([]);
   const [searchFilter, setSearchFilter] = useState("");
+  const debounceSearch = useDebounce(searchFilter);
+  const [categoryId, setCategoryId] = useState(0);
+  const [pageNo, setPageNo] = useState(1);
+  const {
+    products,
+    setProducts,
+    refreshing,
+    discount,
+    error: productsError,
+    hasMore,
+  } = useProducts(distributorId, pageNo, PAGE_SIZE, debounceSearch, categoryId);
+  const [errors, setErrors] = useState({});
 
   const placeOrder = async () => {
     setErrors({ ...errors, saveOrder: "" });
-    const orderProducts = products.filter((product) => product.quantity !== 0);
-    if (orderProducts.length === 0) {
+    if (cartItems.length === 0) {
       Alert.alert(
         "Empty cart!",
         "Empty order cannot be placed. Please add some products to place an order"
       );
       return;
     }
+    const total = cartItems.reduce(
+      (total, item) => total + item.quantity * item.price,
+      0
+    );
     try {
       const result = await saveOrder(
         user.userId,
-        orderProducts.length,
-        orderAggregateData.totalPrice -
-          (orderAggregateData.totalPrice * discount) / 100,
+        cartItems.length,
+        total - (total * discount) / 100,
         "cash",
         distributorId,
         discount,
-        orderAggregateData.totalPrice,
-        orderProducts
+        total,
+        cartItems
       );
       if (!result.error) {
         Alert.alert(
@@ -118,58 +125,50 @@ function PurchaseOrderScreen({ route, navigation }) {
   };
 
   useEffect(() => {
-    if (!user) return;
-    setErrors({ ...errors, products: "" });
-    getProducts();
-  }, [distributorId]);
+    setProducts([]);
+    setPageNo(1);
+  }, [debounceSearch]);
 
-  const getProducts = async () => {
-    setRefreshing(true);
-    try {
-      const products = await fetchProducts(distributorId, 0, "ALL");
-      if (products.data.length === 0)
-        setErrors({
-          ...errors,
-          products: "You do not have any products yet",
-        });
-      else {
-        products.data = products.data.map((product) => ({
-          ...product,
-          quantity: product.quantity || 0,
-          discount: product.discount || 0,
-        }));
-        setProducts(products.data);
-      }
-    } catch (err) {
-      setErrors({ ...errors, products: "Failed to get products" });
-    } finally {
-      setRefreshing(false);
-      setDiscount(0);
+  const handleEndReached = () => {
+    if (hasMore) {
+      setPageNo((prev) => prev + 1);
     }
   };
 
-  useEffect(() => {
-    setOrderAggregateData(calculateTotal(products));
-  }, [products]);
-
-  const updateQuantity = (amount, id) => {
-    setProducts((products) => {
-      let obj = [...products];
-      let index = obj.findIndex((item) => item.productid === id);
-      obj[index].quantity = parseInt(amount || 0);
-      return obj;
+  const updateQuantity = useCallback((amount, item) => {
+    setCartItems((prev) => {
+      let obj = [...prev];
+      const index = obj.findIndex(
+        (cItem) => cItem.productid === item.productid
+      );
+      if (index > -1) {
+        obj[index].quantity = parseInt(amount || 0);
+      } else {
+        obj.push({
+          discount: item.discount,
+          price: item.price,
+          productid: item.productid,
+          productname: item.productname,
+          manufacturer: item.manufacturer || null,
+          quantity: amount || 0,
+        });
+      }
+      return obj.filter((item) => item.quantity > 0);
     });
-  };
-
-  const renderProduct = useCallback(({ item }) => {
-    return <Product item={item} updateQuantity={updateQuantity} />;
   }, []);
 
-  const filteredProducts = useMemo(() => {
-    return products?.filter((product) =>
-      product.productname.toLowerCase().includes(searchFilter.toLowerCase())
-    );
-  }, [searchFilter, products]);
+  const renderProduct = useCallback(
+    ({ item }) => {
+      return (
+        <Product
+          item={item}
+          updateQuantity={updateQuantity}
+          cartItems={cartItems}
+        />
+      );
+    },
+    [cartItems]
+  );
 
   const productKeyExtractor = useCallback((product) => product.productid, []);
 
@@ -177,25 +176,9 @@ function PurchaseOrderScreen({ route, navigation }) {
     <>
       <View style={styles.heading}>
         <View style={styles.flexContainer}>
-          <Text variant="titleMedium" style={{width:"90%"}}>
+          <Text variant="titleMedium" style={{ width: "90%" }}>
             <Text style={{ color: "gray" }}>Supplier: </Text>
             {distributorName}
-          </Text>
-        </View>
-        <View style={styles.flexContainer}>
-          <Text variant="titleMedium">
-            <Text style={{ color: "gray" }}>Products:</Text>{" "}
-            {orderAggregateData.totalProducts}
-          </Text>
-          <Text variant="titleMedium">
-            <Text style={{ color: "gray" }}>Items:</Text>{" "}
-            {orderAggregateData.totalItems}
-          </Text>
-        </View>
-        <View style={styles.flexContainer}>
-          <Text variant="titleMedium">
-            <Text style={{ color: "gray" }}>Total Amount:</Text> {`\u20B9`}{" "}
-            {Number(orderAggregateData.totalPrice).toFixed(2)}
           </Text>
         </View>
       </View>
@@ -216,12 +199,14 @@ function PurchaseOrderScreen({ route, navigation }) {
       <FlatList
         removeClippedSubviews={false}
         keyExtractor={productKeyExtractor}
-        data={filteredProducts}
+        data={products}
         renderItem={renderProduct}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={2}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => getProducts()}
+            onRefresh={() => setPageNo(1)}
           />
         }
       />
