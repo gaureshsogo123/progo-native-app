@@ -1,6 +1,7 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 import { useTheme, Text, TextInput } from "react-native-paper";
+import category from "../../../constants/Category";
 
 const styles = StyleSheet.create({
   product: {
@@ -33,7 +34,7 @@ const styles = StyleSheet.create({
 function Product({ item, updateQuantity }) {
   const theme = useTheme();
   return (
-    <View
+       <View
       style={{
         ...styles.product,
         borderBottomColor: "silver",
@@ -41,6 +42,10 @@ function Product({ item, updateQuantity }) {
         backgroundColor: "#fafafa",
       }}
     >
+      <View style={{width:"70%",display:"flex",flexDirection:'row'}}>
+        <Image source={{uri:"http://pluspng.com/img-png/lemon-hd-png-lemon-png-pic-1870.png"}}
+        style={{width:60,height:70,alignSelf:'center',marginRight:12,borderRadius:20}}
+      />
       <View style={{ width: "70%" }}>
         <Text variant="titleMedium">{item.productname}</Text>
         <Text style={styles.price} variant="titleSmall">
@@ -50,6 +55,7 @@ function Product({ item, updateQuantity }) {
           Amount: {`\u20B9`}{" "}
           {Number((item.price - item.discount) * item.quantity).toFixed(2)}{" "}
         </Text>
+      </View>
       </View>
       <View style={styles.unitSection}>
         <TextInput

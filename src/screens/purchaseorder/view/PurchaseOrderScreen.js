@@ -5,6 +5,10 @@ import {
   StyleSheet,
   View,
   Alert,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+  Dimensions,
 } from "react-native";
 import { Button, useTheme, HelperText } from "react-native-paper";
 import { TextInput, Text } from "react-native-paper";
@@ -12,6 +16,13 @@ import { useAuthContext } from "../../../context/UserAuthContext";
 import { fetchProducts, saveOrder } from "../helper/Purchasehelper";
 import calculateTotal from "../helper/calculateTotal";
 import Product from "./Product";
+import { AntDesign } from "@expo/vector-icons";
+import category from "../../../constants/Category";
+
+
+const { height } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
+
 
 const styles = StyleSheet.create({
   container: {
@@ -24,7 +35,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   heading: {
-    padding: 10,
+    padding:10
   },
   product: {
     margin: 5,
@@ -48,12 +59,12 @@ const styles = StyleSheet.create({
     width: 70,
     textAlign: "center",
     paddingHorizontal: 1,
-    paddingBottom: 1
+    paddingBottom: 1,
   },
   orderButton: {
     borderRadius: 3,
     paddingVertical: 5,
-    backgroundColor:"#f9a374"
+    backgroundColor: "#f9a374",
   },
   flexContainer: {
     display: "flex",
@@ -67,7 +78,7 @@ function PurchaseOrderScreen({ route, navigation }) {
 
   const { distributorId, distributorName } = route.params;
 
-  const { user } = useAuthContext();
+  const { user,setCartProducts,setCartSuppliername } = useAuthContext();
   const [refreshing, setRefreshing] = useState(true);
   const [products, setProducts] = useState([]);
   const [errors, setErrors] = useState({});
@@ -161,6 +172,15 @@ function PurchaseOrderScreen({ route, navigation }) {
     });
   };
 
+  const cartHandlePress = (()=>{
+    const orderProducts = products.filter((product) => product.quantity !== 0);
+    if(orderProducts.length !==0){
+     navigation.navigate("My Orders", { screen: "Cart" })
+     setCartProducts(orderProducts);
+     setCartSuppliername(distributorName)
+    }
+  })
+
   const renderProduct = useCallback(({ item }) => {
     return <Product item={item} updateQuantity={updateQuantity} />;
   }, []);
@@ -177,12 +197,12 @@ function PurchaseOrderScreen({ route, navigation }) {
     <>
       <View style={styles.heading}>
         <View style={styles.flexContainer}>
-          <Text variant="titleMedium" style={{width:"90%"}}>
+          <Text variant="titleMedium" style={{ width: "90%" }}>
             <Text style={{ color: "gray" }}>Supplier: </Text>
             {distributorName}
           </Text>
         </View>
-        <View style={styles.flexContainer}>
+        {/*<View style={styles.flexContainer}>
           <Text variant="titleMedium">
             <Text style={{ color: "gray" }}>Products:</Text>{" "}
             {orderAggregateData.totalProducts}
@@ -191,23 +211,81 @@ function PurchaseOrderScreen({ route, navigation }) {
             <Text style={{ color: "gray" }}>Items:</Text>{" "}
             {orderAggregateData.totalItems}
           </Text>
-        </View>
-        <View style={styles.flexContainer}>
+  </View>*/}
+        {/* <View style={styles.flexContainer}>
           <Text variant="titleMedium">
             <Text style={{ color: "gray" }}>Total Amount:</Text> {`\u20B9`}{" "}
             {Number(orderAggregateData.totalPrice).toFixed(2)}
           </Text>
-        </View>
+</View>*/}
       </View>
 
-      <TextInput
-        value={searchFilter}
-        mode="outlined"
-        theme={{ roundness: 10 }}
-        style={{ marginHorizontal: 8, marginBottom: 5 }}
-        placeholder="Search Products"
-        onChangeText={(text) => setSearchFilter(text)}
-      />
+      <View style={{ display: "flex", flexDirection: "row" }}>
+        <TextInput
+          value={searchFilter}
+          mode="outlined"
+          theme={{ roundness: 10 }}
+          style={{ marginBottom:3, marginHorizontal: 8, width: "88%" }}
+          placeholder="Search Products"
+          onChangeText={(text) => setSearchFilter(text)}
+        />
+        <TouchableOpacity
+          style={{ width: "5%", alignSelf: "center" }}
+          onPress={cartHandlePress}
+        >
+          <AntDesign name="shoppingcart" size={28}  />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            width: "5%",
+            borderRadius: 30,
+            backgroundColor: theme.colors.primary,
+            height: 30,
+            justifyContent: "center",
+            alignItems: "center",
+            marginLeft: -6,
+          }}
+          onPress={cartHandlePress}
+        >
+          <Text style={{ color: "white" }}>
+            {orderAggregateData.totalProducts}
+          </Text>
+        </TouchableOpacity>
+      </View>
+      <View
+        style={{
+          backgroundColor: "white",
+          height: (height * 8) / 100,
+          marginBottom: 10,
+          marginTop:10
+        }}
+      >
+        <ScrollView horizontal={true}>
+          {category.map((val, i) => {
+            return (
+              <View style={{ marginRight: 15, justifyContent: "center" }} key={i}>
+                <Image
+                  source={{ uri: val.imglink }}
+                  style={{
+                    width: (width * 12) / 100,
+                    height: (height * 4) / 100,
+                    marginBottom: 5,
+                    alignSelf: "center",
+                  }}
+                />
+                <Text
+                  style={{
+                    alignSelf: "center",
+                    fontSize: (height * 1.5) / 100,
+                  }}
+                >
+                  {val.name}
+                </Text>
+              </View>
+            );
+          })}
+        </ScrollView>
+      </View>
       {errors.products && (
         <HelperText visible={errors.products} type="error">
           {errors.products}{" "}
