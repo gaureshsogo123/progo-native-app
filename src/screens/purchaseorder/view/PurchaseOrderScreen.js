@@ -1,18 +1,24 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
   RefreshControl,
   StyleSheet,
   View,
-  Alert,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+  Dimensions,
 } from "react-native";
-import { Button, HelperText } from "react-native-paper";
+import { Button, HelperText, useTheme } from "react-native-paper";
 import { TextInput, Text } from "react-native-paper";
-import { useAuthContext } from "../../../context/UserAuthContext";
-import { saveOrder } from "../helper/Purchasehelper";
 import { useProducts } from "../helper/useProducts";
 import useDebounce from "../../../hooks/useDebounce";
 import Product from "./Product";
+import { AntDesign } from "@expo/vector-icons";
+import category from "../../../constants/Category";
+
+const { height } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
 
 const styles = StyleSheet.create({
   container: {
@@ -50,10 +56,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: 1,
     paddingBottom: 1,
+    paddingBottom: 1,
   },
   orderButton: {
     borderRadius: 3,
     paddingVertical: 5,
+    backgroundColor: "#f9a374",
     backgroundColor: "#f9a374",
   },
   flexContainer: {
@@ -67,8 +75,7 @@ const PAGE_SIZE = 15;
 
 function PurchaseOrderScreen({ route, navigation }) {
   const { distributorId, distributorName } = route.params;
-
-  const { user } = useAuthContext();
+  const theme = useTheme();
   const [cartItems, setCartItems] = useState([]);
   const [searchFilter, setSearchFilter] = useState("");
   const debounceSearch = useDebounce(searchFilter);
@@ -84,46 +91,6 @@ function PurchaseOrderScreen({ route, navigation }) {
   } = useProducts(distributorId, pageNo, PAGE_SIZE, debounceSearch, categoryId);
   const [errors, setErrors] = useState({});
 
-  const placeOrder = async () => {
-    setErrors({ ...errors, saveOrder: "" });
-    if (cartItems.length === 0) {
-      Alert.alert(
-        "Empty cart!",
-        "Empty order cannot be placed. Please add some products to place an order"
-      );
-      return;
-    }
-    const total = cartItems.reduce(
-      (total, item) => total + item.quantity * item.price,
-      0
-    );
-    try {
-      const result = await saveOrder(
-        user.userId,
-        cartItems.length,
-        total - (total * discount) / 100,
-        "cash",
-        distributorId,
-        discount,
-        total,
-        cartItems
-      );
-      if (!result.error) {
-        Alert.alert(
-          "Success",
-          `Your order has been successfully placed with order ID: ${result.data[0]?.orderid}`
-        );
-        navigation.pop(1);
-        navigation.navigate("My Orders", { screen: "Orders" });
-      } else {
-        Alert.alert("Error", result.error);
-      }
-    } catch (error) {
-      Alert.alert("Error", error.message);
-      setErrors({ ...errors, saveOrder: "Failed to save order" });
-    }
-  };
-
   useEffect(() => {
     setProducts([]);
     setPageNo(1);
@@ -135,34 +102,25 @@ function PurchaseOrderScreen({ route, navigation }) {
     }
   };
 
-  const updateQuantity = useCallback((amount, item) => {
-    setCartItems((prev) => {
-      let obj = [...prev];
-      const index = obj.findIndex(
-        (cItem) => cItem.productid === item.productid
-      );
-      if (index > -1) {
-        obj[index].quantity = parseInt(amount || 0);
-      } else {
-        obj.push({
-          discount: item.discount,
-          price: item.price,
-          productid: item.productid,
-          productname: item.productname,
-          manufacturer: item.manufacturer || null,
-          quantity: amount || 0,
-        });
-      }
-      return obj.filter((item) => item.quantity > 0);
+  const cartHandlePress = () => {
+    navigation.navigate("Home", {
+      screen: "Cart",
+      params: {
+        cartItems,
+        action: "place",
+        discount: discount,
+        distributorId,
+        distributorName,
+      },
     });
-  }, []);
+  };
 
   const renderProduct = useCallback(
     ({ item }) => {
       return (
         <Product
           item={item}
-          updateQuantity={updateQuantity}
+          setCartItems={setCartItems}
           cartItems={cartItems}
         />
       );
@@ -183,14 +141,73 @@ function PurchaseOrderScreen({ route, navigation }) {
         </View>
       </View>
 
-      <TextInput
-        value={searchFilter}
-        mode="outlined"
-        theme={{ roundness: 10 }}
-        style={{ marginHorizontal: 8, marginBottom: 5 }}
-        placeholder="Search Products"
-        onChangeText={(text) => setSearchFilter(text)}
-      />
+      <View style={{ display: "flex", flexDirection: "row" }}>
+        <TextInput
+          value={searchFilter}
+          mode="outlined"
+          theme={{ roundness: 10 }}
+          style={{ marginBottom: 3, marginHorizontal: 8, width: "88%" }}
+          placeholder="Search Products"
+          onChangeText={(text) => setSearchFilter(text)}
+        />
+        <TouchableOpacity
+          style={{ width: "5%", alignSelf: "center" }}
+          onPress={cartHandlePress}
+        >
+          <AntDesign name="shoppingcart" size={28} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            width: "5%",
+            borderRadius: 30,
+            backgroundColor: theme.colors.primary,
+            height: 30,
+            justifyContent: "center",
+            alignItems: "center",
+            marginLeft: -6,
+          }}
+          onPress={cartHandlePress}
+        >
+          <Text style={{ color: "white" }}>{cartItems.length}</Text>
+        </TouchableOpacity>
+      </View>
+      <View
+        style={{
+          backgroundColor: "white",
+          height: (height * 8) / 100,
+          marginBottom: 10,
+          marginTop: 10,
+        }}
+      >
+        <ScrollView horizontal={true}>
+          {category.map((val, i) => {
+            return (
+              <View
+                style={{ marginRight: 15, justifyContent: "center" }}
+                key={i}
+              >
+                <Image
+                  source={{ uri: val.imglink }}
+                  style={{
+                    width: (width * 12) / 100,
+                    height: (height * 4) / 100,
+                    marginBottom: 5,
+                    alignSelf: "center",
+                  }}
+                />
+                <Text
+                  style={{
+                    alignSelf: "center",
+                    fontSize: (height * 1.5) / 100,
+                  }}
+                >
+                  {val.name}
+                </Text>
+              </View>
+            );
+          })}
+        </ScrollView>
+      </View>
       {errors.products && (
         <HelperText visible={errors.products} type="error">
           {errors.products}{" "}
@@ -210,8 +227,12 @@ function PurchaseOrderScreen({ route, navigation }) {
           />
         }
       />
-      <Button onPress={placeOrder} mode="contained" style={styles.orderButton}>
-        Place Order
+      <Button
+        onPress={cartHandlePress}
+        mode="contained"
+        style={styles.orderButton}
+      >
+        Checkout
       </Button>
     </>
   );

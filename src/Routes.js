@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { NavigationContainer } from "@react-navigation/native";
 import BottomNav from "./layout/BottomNav";
 import { useAuthContext } from "./context/UserAuthContext";
-import SignIn from "./screens/Signin/view/Signin";
+import UserAuthNavigator from "./layout/navigators/UserAuthNavigator";
 
 const Stack = createNativeStackNavigator();
 
@@ -20,8 +20,8 @@ const Routes = () => {
           />
         ) : (
           <Stack.Screen
-            name="signin"
-            component={SignIn}
+            name="userauth"
+            component={UserAuthNavigator}
             options={{ headerShown: false }}
           />
         )}

@@ -96,43 +96,6 @@ function UpdateOrder({ route, navigation }) {
     getCartProducts();
   }, []);
 
-  const updateOrder = async () => {
-    setErrors({ ...errors, saveOrder: "" });
-    if (cartItems.length === 0) {
-      Alert.alert(
-        "Empty cart!",
-        "Empty order cannot be placed. Please add some products to update the order or cancel if you no longer wish to fulfill this order"
-      );
-      return;
-    }
-    const total = cartItems.reduce(
-      (total, item) => total + item.quantity * item.price,
-      0
-    );
-    try {
-      const result = await editOrder(
-        user.userId,
-        cartItems.length,
-        Number(total - (total * discount) / 100).toFixed(2),
-        "cash",
-        Number(total).toFixed(2),
-        cartItems,
-        discount,
-        order.orderid,
-        order.distributorid
-      );
-      if (!result.error) {
-        Alert.alert(
-          "Success",
-          `Your order with ID - ${result.data[0]?.orderid} has been successfully updated!`
-        );
-        navigation.navigate("Orders", { screen: "OrdersList" });
-      } else setErrors({ ...errors, updateOrder: result.error });
-    } catch (error) {
-      Alert.alert("Error", "There was an error");
-    }
-  };
-
   useEffect(() => {
     setProducts([]);
     setPageNo(1);
@@ -167,40 +130,32 @@ function UpdateOrder({ route, navigation }) {
     }
   };
 
-  const updateQuantity = useCallback((amount, item) => {
-    setCartItems((prev) => {
-      let obj = [...prev];
-      const index = obj.findIndex(
-        (cItem) => cItem.productid === item.productid
-      );
-      if (index > -1) {
-        obj[index].quantity = parseInt(amount || 0);
-      } else {
-        obj.push({
-          discount: item.discount,
-          price: item.price,
-          productid: item.productid,
-          productname: item.productname,
-          manufacturer: item.manufacturer || null,
-          quantity: amount || 0,
-        });
-      }
-      return obj.filter((item) => item.quantity > 0);
-    });
-  }, []);
-
   const renderProduct = useCallback(
     ({ item }) => {
       return (
         <Product
           item={item}
-          updateQuantity={updateQuantity}
+          setCartItems={setCartItems}
           cartItems={cartItems}
         />
       );
     },
     [cartItems]
   );
+
+  const cartHandlePress = () => {
+    navigation.navigate("My Orders", {
+      screen: "Cart",
+      params: {
+        cartItems,
+        action: "update",
+        discount: discount,
+        distributorId: order.distributorid,
+        orderId: order.orderid,
+        distributorName: order.distributorname,
+      },
+    });
+  };
 
   const productKeyExtractor = useCallback((product) => product.productid, []);
 
@@ -243,20 +198,13 @@ function UpdateOrder({ route, navigation }) {
         }
       />
 
-      {cartItems &&
-        (cartItems[0]?.orderstatus.toLowerCase() === "placed" ? (
-          <Button
-            onPress={updateOrder}
-            mode="contained"
-            style={styles.orderButton}
-          >
-            Update Order
-          </Button>
-        ) : (
-          <Button mode="contained" style={styles.orderButton}>
-            Order {cartItems[0]?.orderstatus.toLowerCase()}
-          </Button>
-        ))}
+      <Button
+        onPress={cartHandlePress}
+        mode="contained"
+        style={styles.orderButton}
+      >
+        Proceed
+      </Button>
     </>
   );
 }

@@ -1,5 +1,5 @@
-import React from "react";
-import { StyleSheet, View } from "react-native";
+import React, { useCallback } from "react";
+import { Image, StyleSheet, View } from "react-native";
 import { Text, TextInput } from "react-native-paper";
 
 const styles = StyleSheet.create({
@@ -31,10 +31,33 @@ const styles = StyleSheet.create({
   },
 });
 
-function Product({ item, updateQuantity, cartItems }) {
+function Product({ item, setCartItems, cartItems }) {
   const productQuantity =
     cartItems?.find((product) => product.productid === item.productid)
       ?.quantity || 0;
+
+  const updateQuantity = useCallback((amount, item) => {
+    setCartItems((prev) => {
+      let obj = [...prev];
+      const index = obj.findIndex(
+        (cItem) => cItem.productid === item.productid
+      );
+      if (index > -1) {
+        obj[index].quantity = parseInt(amount || 0);
+      } else {
+        obj.push({
+          discount: item.discount || 0,
+          price: item.price,
+          productid: item.productid,
+          productname: item.productname,
+          manufacturer: item.manufacturer || null,
+          quantity: amount || 0,
+        });
+      }
+      return obj.filter((item) => item.quantity > 0);
+    });
+  }, []);
+
   return (
     <View
       style={{
@@ -44,15 +67,29 @@ function Product({ item, updateQuantity, cartItems }) {
         backgroundColor: "#fafafa",
       }}
     >
-      <View style={{ width: "70%" }}>
-        <Text variant="titleMedium">{item.productname}</Text>
-        <Text style={styles.price} variant="titleSmall">
-          Price: {`\u20B9`} {Number(item.price).toFixed(2)}{" "}
-        </Text>
-        <Text variant="titleSmall">
-          Amount: {`\u20B9`}{" "}
-          {Number((item.price - item.discount) * productQuantity).toFixed(2)}{" "}
-        </Text>
+      <View style={{ width: "70%", display: "flex", flexDirection: "row" }}>
+        <Image
+          source={{
+            uri: "http://pluspng.com/img-png/lemon-hd-png-lemon-png-pic-1870.png",
+          }}
+          style={{
+            width: 60,
+            height: 70,
+            alignSelf: "center",
+            marginRight: 12,
+            borderRadius: 20,
+          }}
+        />
+        <View style={{ width: "70%" }}>
+          <Text variant="titleMedium">{item.productname}</Text>
+          <Text style={styles.price} variant="titleSmall">
+            Price: {`\u20B9`} {Number(item.price).toFixed(2)}{" "}
+          </Text>
+          <Text variant="titleSmall">
+            Amount: {`\u20B9`}{" "}
+            {Number((item.price - item.discount) * productQuantity).toFixed(2)}{" "}
+          </Text>
+        </View>
       </View>
       <View style={styles.unitSection}>
         <TextInput
