@@ -256,7 +256,7 @@ function PurchaseOrderScreen({ route, navigation }) {
       <View
         style={{
           backgroundColor: "white",
-          height: (height * 8) / 100,
+          height: (height * 10) / 100,
           marginBottom: 10,
           marginTop:10
         }}
@@ -264,15 +264,15 @@ function PurchaseOrderScreen({ route, navigation }) {
         <ScrollView horizontal={true}>
           {category.map((val, i) => {
             return (
-              <View style={{ marginRight: 15, justifyContent: "center" }} key={i}>
+              <View style={{ marginRight: 20, justifyContent: "center" }} key={i}>
                 <Image
                   source={{ uri: val.imglink }}
                   style={{
-                    width: (width * 12) / 100,
-                    height: (height * 4) / 100,
+                    width: (width * 14) / 100,
+                    height: (height * 6) / 100,
                     marginBottom: 5,
                     alignSelf: "center",
-                  }}
+                }}
                 />
                 <Text
                   style={{

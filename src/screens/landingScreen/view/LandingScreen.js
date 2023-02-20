@@ -2,13 +2,20 @@ import React, { useEffect, useState } from "react";
 import {
   FlatList,
   StyleSheet,
-  Text,
   View,
   TouchableOpacity,
+  Image,
+  ScrollView,
+  Dimensions,
 } from "react-native";
 import { TextInput } from "react-native-paper";
+import suppliers from "../../../constants/DummySuppliers";
 import { useAuthContext } from "../../../context/UserAuthContext";
 import { getDistributors } from "../helper/LandingScreenHelper";
+import { Text } from "react-native-paper";
+
+const { height } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
 
 export default function LandingScreen({ navigation }) {
   const { user } = useAuthContext();
@@ -27,6 +34,7 @@ export default function LandingScreen({ navigation }) {
       });
   }, [user.userId]);
 
+  console.log(distributors)
   const filterDistributor = distributors.filter((item) => {
     if (item.name === "") {
       return item;
@@ -67,7 +75,7 @@ export default function LandingScreen({ navigation }) {
         </View>
       </View>
 
-      <FlatList
+      {/*<FlatList
         data={filterDistributor}
         keyboardShouldPersistTaps={"handled"}
         renderItem={({ item }) => {
@@ -84,7 +92,49 @@ export default function LandingScreen({ navigation }) {
             </TouchableOpacity>
           );
         }}
-      />
+      />*/}
+
+      <ScrollView
+        contentContainerStyle={{
+          display: "flex",
+          flexDirection: "row",
+          width: "100%",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          padding: 10,
+        }}
+        keyboardShouldPersistTaps={"handled"}
+      >
+        {filterDistributor.map((val, i) => {
+          return (
+            <TouchableOpacity
+              key={i}
+              style={styles.card}
+              onPress={() => handlePress(val)}
+            >
+              <Image
+                source={{
+                  uri:val.image ||"https://cdn-icons-png.flaticon.com/512/5486/5486254.png",
+                }}
+                style={{
+                  width: (width * 15) / 100,
+                  height: (height * 8) / 100,
+                }}
+              />
+              <Text
+                adjustsFontSizeToFit={true}
+                style={{
+                  fontSize: (height * 1.5) / 100,
+                  marginTop: "5%",
+                  fontWeight: "600",
+                }}
+              >
+                {val.name}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
     </>
   );
 }
@@ -111,6 +161,27 @@ const styles = StyleSheet.create({
     marginLeft: "3%",
     backgroundColor: "#fafafa",
     marginTop: "2%",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    elevation: 4,
+  },
+  card: {
+    width: "30%",
+    height: "auto",
+    justifyContent: "center",
+    backgroundColor: "#FDFEFF",
+    alignItems: "center",
+    marginBottom: "4%",
+    borderRadius: 20,
+    paddingTop: "3%",
+    paddingBottom: "3%",
+    paddingLeft: "1%",
+    paddingRight: "1%",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,

@@ -1,8 +1,10 @@
 import React from "react";
-import { Image, StyleSheet, View } from "react-native";
+import { Dimensions, Image, StyleSheet, View } from "react-native";
 import { useTheme, Text, TextInput } from "react-native-paper";
 import category from "../../../constants/Category";
 
+const {height}=Dimensions.get("screen");
+const {width} = Dimensions.get("screen");
 const styles = StyleSheet.create({
   product: {
     margin: 5,
@@ -47,8 +49,8 @@ function Product({ item, updateQuantity, cartItems }) {
       }}
     >
       <View style={{width:"70%",display:"flex",flexDirection:'row'}}>
-        <Image source={{uri:"http://pluspng.com/img-png/lemon-hd-png-lemon-png-pic-1870.png"}}
-        style={{width:60,height:70,alignSelf:'center',marginRight:12,borderRadius:20}}
+        <Image source={{uri:item.image}}
+        style={{width:width*15/100,height:height*8/100,alignSelf:'center',marginRight:width*3/100}}
       />
       <View style={{ width: "70%" }}>
         <Text variant="titleMedium">{item.productname}</Text>

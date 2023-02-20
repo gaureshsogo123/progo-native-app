@@ -216,7 +216,7 @@ function SignIn({ navigation }) {
           <>
 
 <MaterialTextInput
-              style={styles.textInput}
+              style={{...styles.textInput,marginBottom:"6%"}}
               mode="outlined"
               label={
                 <Text style={{ backgroundColor: "white", color: "gray" }}>
@@ -239,7 +239,7 @@ function SignIn({ navigation }) {
               mode="outlined"
               label={
                 <Text style={{ backgroundColor: "white", color: "gray" }}>
-                  Generate a New Pin
+                  Create New Pin
                 </Text>
               }
             />
