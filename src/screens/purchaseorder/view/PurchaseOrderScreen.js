@@ -15,7 +15,7 @@ import { useProducts } from "../helper/useProducts";
 import useDebounce from "../../../hooks/useDebounce";
 import Product from "./Product";
 import { AntDesign } from "@expo/vector-icons";
-import category from "../../../constants/Category";
+import useProductCategories from "../../../hooks/useProductCategories";
 
 const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
@@ -81,6 +81,7 @@ function PurchaseOrderScreen({ route, navigation }) {
   const debounceSearch = useDebounce(searchFilter);
   const [categoryId, setCategoryId] = useState(0);
   const [pageNo, setPageNo] = useState(1);
+  const { productCategories } = useProductCategories();
   const {
     products,
     setProducts,
@@ -94,7 +95,7 @@ function PurchaseOrderScreen({ route, navigation }) {
   useEffect(() => {
     setProducts([]);
     setPageNo(1);
-  }, [debounceSearch]);
+  }, [debounceSearch, categoryId]);
 
   const handleEndReached = () => {
     if (hasMore) {
@@ -180,14 +181,15 @@ function PurchaseOrderScreen({ route, navigation }) {
         }}
       >
         <ScrollView horizontal={true}>
-          {category.map((val, i) => {
+          {productCategories.map((val, i) => {
             return (
-              <View
+              <TouchableOpacity
                 style={{ marginRight: 15, justifyContent: "center" }}
                 key={i}
+                onPress={() => setCategoryId(val.categoryid)}
               >
                 <Image
-                  source={{ uri: val.imglink }}
+                  source={{ uri: val.image }}
                   style={{
                     width: (width * 12) / 100,
                     height: (height * 4) / 100,
@@ -201,9 +203,9 @@ function PurchaseOrderScreen({ route, navigation }) {
                     fontSize: (height * 1.5) / 100,
                   }}
                 >
-                  {val.name}
+                  {val.categoryname}
                 </Text>
-              </View>
+              </TouchableOpacity>
             );
           })}
         </ScrollView>

@@ -14,6 +14,7 @@ import { useProducts } from "../../purchaseorder/helper/useProducts";
 import { getOrderDetailsRetailer } from "../../orders/helper/OrderHelper";
 import { editOrder } from "../helper/UpdateOrderHelper";
 import Product from "../../purchaseorder/view/Product";
+import useProductCategories from "../../../hooks/useProductCategories";
 
 const styles = StyleSheet.create({
   container: {
@@ -76,6 +77,7 @@ function UpdateOrder({ route, navigation }) {
   const debounceSearch = useDebounce(searchFilter);
   const [categoryId, setCategoryId] = useState(0);
   const [pageNo, setPageNo] = useState(1);
+  const { productCategories } = useProductCategories();
   const {
     products,
     setProducts,
@@ -99,7 +101,7 @@ function UpdateOrder({ route, navigation }) {
   useEffect(() => {
     setProducts([]);
     setPageNo(1);
-  }, [debounceSearch]);
+  }, [debounceSearch, categoryId]);
 
   const handleEndReached = () => {
     if (hasMore) {
