@@ -1,9 +1,7 @@
 import React, { useCallback } from "react";
 import { Dimensions, Image, StyleSheet, View } from "react-native";
-import { useTheme, Text, TextInput } from "react-native-paper";
-import category from "../../../constants/Category";
+import { Text, TextInput } from "react-native-paper";
 import { useCartContext } from "../../../context/CartContext";
-import { useAuthContext } from "../../../context/UserAuthContext";
 
 const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
@@ -37,8 +35,6 @@ const styles = StyleSheet.create({
 });
 
 function Product({ item }) {
-  const theme = useTheme();
-
   const { cartItems, setCartItems } = useCartContext();
   const productQuantity =
     cartItems?.find((product) => product.productid === item.productid)

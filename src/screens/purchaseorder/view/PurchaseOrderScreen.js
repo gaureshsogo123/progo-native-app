@@ -17,7 +17,6 @@ import Product from "./Product";
 import { AntDesign } from "@expo/vector-icons";
 import useProductCategories from "../../../hooks/useProductCategories";
 import useDebounce from "../../../hooks/useDebounce";
-import { useAuthContext } from "../../../context/UserAuthContext";
 import { useCartContext } from "../../../context/CartContext";
 
 const { height } = Dimensions.get("screen");
@@ -79,7 +78,7 @@ const PAGE_SIZE = 15;
 function PurchaseOrderScreen({ route, navigation }) {
   const { distributorId, distributorName } = route.params;
   const theme = useTheme();
-  const { cartItems, setCartItems } = useCartContext();
+  const { cartItems } = useCartContext();
   const [searchFilter, setSearchFilter] = useState("");
   const debounceSearch = useDebounce(searchFilter);
   const [categoryId, setCategoryId] = useState(0);
@@ -141,22 +140,6 @@ function PurchaseOrderScreen({ route, navigation }) {
             {distributorName}
           </Text>
         </View>
-        {/*<View style={styles.flexContainer}>
-          <Text variant="titleMedium">
-            <Text style={{ color: "gray" }}>Products:</Text>{" "}
-            {orderAggregateData.totalProducts}
-          </Text>
-          <Text variant="titleMedium">
-            <Text style={{ color: "gray" }}>Items:</Text>{" "}
-            {orderAggregateData.totalItems}
-          </Text>
-  </View>*/}
-        {/* <View style={styles.flexContainer}>
-          <Text variant="titleMedium">
-            <Text style={{ color: "gray" }}>Total Amount:</Text> {`\u20B9`}{" "}
-            {Number(orderAggregateData.totalPrice).toFixed(2)}
-          </Text>
-</View>*/}
       </View>
 
       <View style={{ display: "flex", flexDirection: "row" }}>

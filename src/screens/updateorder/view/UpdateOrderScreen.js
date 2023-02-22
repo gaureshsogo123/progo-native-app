@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Dimensions,
   ScrollView,
-  Image
+  Image,
 } from "react-native";
 import { Button, TextInput, Text } from "react-native-paper";
 import { useAuthContext } from "../../../context/UserAuthContext";
@@ -16,7 +16,6 @@ import theme from "../../../themes/theme";
 import useDebounce from "../../../hooks/useDebounce";
 import { useProducts } from "../../purchaseorder/helper/useProducts";
 import { getOrderDetailsRetailer } from "../../orders/helper/OrderHelper";
-import { editOrder } from "../helper/UpdateOrderHelper";
 import Product from "../../purchaseorder/view/Product";
 import useProductCategories from "../../../hooks/useProductCategories";
 import { useCartContext } from "../../../context/CartContext";
@@ -120,17 +119,15 @@ function UpdateOrder({ route, navigation }) {
     }
   };
 
-  useEffect(()=>{
-    const unsubscribeFocus = navigation.addListener("focus", ()=>{
+  useEffect(() => {
+    const unsubscribeFocus = navigation.addListener("focus", () => {
       navi.reset({
-        index:0,
-        routes:[{name:'Landing Screen'}]
-      })
+        index: 0,
+        routes: [{ name: "Landing Screen" }],
+      });
     });
     return unsubscribeFocus;
-  },[navigation])
-
-  
+  }, [navigation]);
 
   const getCartProducts = async () => {
     try {
@@ -157,13 +154,7 @@ function UpdateOrder({ route, navigation }) {
 
   const renderProduct = useCallback(
     ({ item }) => {
-      return (
-        <Product
-          item={item}
-          setCartItems={setCartItems}
-          cartItems={cartItems}
-        />
-      );
+      return <Product item={item} />;
     },
     [cartItems]
   );
