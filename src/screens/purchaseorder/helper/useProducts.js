@@ -6,7 +6,7 @@ export const useProducts = (
   pageNo,
   pageSize,
   searchText = "ALL",
-  categoryId = 0
+  categoryId
 ) => {
   const [products, setProducts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);

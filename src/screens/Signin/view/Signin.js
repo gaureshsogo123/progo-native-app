@@ -192,22 +192,22 @@ function SignIn({ navigation }) {
                 marginTop: "1%",
               }}
             >
-              <TouchableOpacity onPress={() => setShowforgotPincode(true)}>
+              {/*<TouchableOpacity onPress={() => setShowforgotPincode(true)}>
                 <Text
                   style={{ color: theme.colors.primary, fontWeight: "600" }}
                   variant="bodyLarge"
                 >
                   Forget pin ?
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => navigation.navigate("signup")}>
+            </TouchableOpacity>*/}
+              {/*<TouchableOpacity onPress={() => navigation.navigate("signup")}>
                 <Text
                   style={{ color: theme.colors.primary, fontWeight: "600" }}
                   variant="bodyLarge"
                 >
                   Sign up
                 </Text>
-              </TouchableOpacity>
+          </TouchableOpacity>*/}
             </View>
           </>
         )}

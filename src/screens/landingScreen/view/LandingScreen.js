@@ -13,6 +13,8 @@ import suppliers from "../../../constants/DummySuppliers";
 import { useAuthContext } from "../../../context/UserAuthContext";
 import { getDistributors } from "../helper/LandingScreenHelper";
 import { Text } from "react-native-paper";
+import { useCartContext } from "../../../context/CartContext";
+import { useNavigation } from "@react-navigation/native";
 
 const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
@@ -21,6 +23,9 @@ export default function LandingScreen({ navigation }) {
   const { user } = useAuthContext();
   const [distributors, setDistributors] = useState([]);
   const [filterText, setFilterText] = useState("");
+  const {cartItems,setCartItems} = useCartContext();
+  const navi = useNavigation();
+  
 
   useEffect(() => {
     getDistributors(user.userId)
@@ -34,7 +39,26 @@ export default function LandingScreen({ navigation }) {
       });
   }, [user.userId]);
 
-  console.log(distributors)
+  useEffect(()=>{
+    const unsubscribeFocus = navigation.addListener("focus", ()=>{
+      setCartItems([])
+    });
+    return unsubscribeFocus;
+  },[cartItems])
+
+
+  useEffect(()=>{
+    const unsubscribeFocus = navigation.addListener("focus", ()=>{
+      navi.reset({
+        index:0,
+        routes:[{name:'Orders'}]
+      })
+    });
+    return unsubscribeFocus;
+  },[navigation])
+
+
+
   const filterDistributor = distributors.filter((item) => {
     if (item.name === "") {
       return item;
@@ -99,9 +123,9 @@ export default function LandingScreen({ navigation }) {
           display: "flex",
           flexDirection: "row",
           width: "100%",
-          justifyContent: "space-between",
+          justifyContent:"space-between",
           flexWrap: "wrap",
-          padding: 10,
+          padding:10
         }}
         keyboardShouldPersistTaps={"handled"}
       >
@@ -114,7 +138,7 @@ export default function LandingScreen({ navigation }) {
             >
               <Image
                 source={{
-                  uri:val.image ||"https://cdn-icons-png.flaticon.com/512/5486/5486254.png",
+                  uri:val.image||"https://cdn-icons-png.flaticon.com/512/5486/5486254.png"
                 }}
                 style={{
                   width: (width * 15) / 100,
@@ -171,7 +195,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   card: {
-    width: "30%",
+    width: "45%",
     height: "auto",
     justifyContent: "center",
     backgroundColor: "#FDFEFF",

@@ -23,7 +23,13 @@ const OrdersNavigator = () => {
         component={OrderDetailScreen}
       />
 
-      <OrderStackNavigator.Screen name="UpdateOrder" component={UpdateOrder} />
+      <OrderStackNavigator.Screen
+        name="UpdateOrder"
+        component={UpdateOrder}
+        options={{
+          title: "Update Order",
+        }}
+      />
 
       <OrderStackNavigator.Screen name="Cart" component={Cart} />
     </OrderStackNavigator.Navigator>

@@ -1,10 +1,17 @@
-import React from "react";
-import { View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
-import { Text, useTheme } from "react-native-paper";
-import cart from "../../../constants/Dummycart";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import { Text, useTheme, Button } from "react-native-paper";
 import { AntDesign } from "@expo/vector-icons";
+import { saveOrder } from "../helper/Purchasehelper";
+import { editOrder } from "../../updateorder/helper/UpdateOrderHelper";
 import { useAuthContext } from "../../../context/UserAuthContext";
-
+import { useCartContext } from "../../../context/CartContext";
 
 const styles = StyleSheet.create({
   container: {
@@ -31,9 +38,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#fafafa",
     height: "auto",
     marginBottom: "2%",
-    marginTop:"3%",
+    marginTop: "3%",
     shadowColor: "#000",
-    borderRadius:12,
+    borderRadius: 12,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -42,20 +49,123 @@ const styles = StyleSheet.create({
     shadowRadius: 2.62,
     elevation: 4,
   },
+  orderButton: {
+    width: "100%",
+    paddingVertical: 5,
+    backgroundColor: "#f9a374",
+    backgroundColor: "#f9a374",
+  },
 });
 
-function Cart() {
-  const {cartProducts,cartSupplierName}=useAuthContext();
+function Cart({ route, navigation }) {
+  const {
+    action,
+    discount = 0,
+    distributorId,
+    orderId,
+    distributorName,
+  } = route.params;
   const theme = useTheme();
-  const totalItems = cartProducts.reduce((acc, curr) => {
+  const { user } = useAuthContext();
+  const { cartItems, setCartItems } = useCartContext();
+  const [errors, setErrors] = useState({});
+  const totalItems = cartItems.reduce((acc, curr) => {
     acc = acc + Number(curr.quantity);
     return acc;
   }, 0);
 
-  const totalAmount = cartProducts.reduce((acc, curr) => {
+  const totalAmount = cartItems.reduce((acc, curr) => {
     acc = acc + Number(curr.quantity) * curr.price;
     return acc;
   }, 0);
+
+  const placeOrder = async () => {
+    setErrors({ ...errors, saveOrder: "" });
+    if (cartItems.length === 0) {
+      Alert.alert(
+        "Empty cart!",
+        "Empty order cannot be placed. Please add some products to place an order"
+      );
+      return;
+    }
+    const total = cartItems.reduce(
+      (total, item) => total + item.quantity * item.price,
+      0
+    );
+    try {
+      const result = await saveOrder(
+        user.userId,
+        cartItems.length,
+        total - (total * discount) / 100,
+        "cash",
+        distributorId,
+        discount,
+        total,
+        cartItems
+      );
+      if (!result.error) {
+        Alert.alert(
+          "Success",
+          `Your order has been successfully placed with order ID: ${result.data[0]?.orderid}`
+        );
+        navigation.pop(1);
+        navigation.navigate("My Orders", { screen: "Orders" });
+        setCartItems([]);
+      } else {
+        Alert.alert("Error", result.error);
+      }
+    } catch (error) {
+      Alert.alert("Error", error.message);
+      setErrors({ ...errors, saveOrder: "Failed to save order" });
+    }
+  };
+
+  const deleteHandlePress = (index) => {
+    setCartItems((prev) => prev.filter((val, i) => index !== i));
+  };
+
+  useEffect(() => {
+    if (cartItems.length == 0) {
+      navigation.goBack();
+    }
+  }, [cartItems]);
+  const updateOrder = async () => {
+    setErrors({ ...errors, saveOrder: "" });
+    if (cartItems.length === 0) {
+      Alert.alert(
+        "Empty cart!",
+        "Empty order cannot be placed. Please add some products to update the order or cancel if you no longer wish to fulfill this order"
+      );
+      return;
+    }
+    const total = cartItems.reduce(
+      (total, item) => total + item.quantity * item.price,
+      0
+    );
+    try {
+      const result = await editOrder(
+        user.userId,
+        cartItems.length,
+        Number(total - (total * discount) / 100).toFixed(2),
+        "cash",
+        Number(total).toFixed(2),
+        cartItems,
+        discount,
+        orderId,
+        distributorId
+      );
+      if (!result.error) {
+        Alert.alert(
+          "Success",
+          `Your order with ID - ${result.data[0]?.orderid} has been successfully updated!`
+        );
+        navigation.navigate("Orders", { screen: "OrdersList" });
+        setCartItems([]);
+      } else setErrors({ ...errors, updateOrder: result.error });
+    } catch (error) {
+      Alert.alert("Error", "There was an error");
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -63,13 +173,13 @@ function Cart() {
         <View style={styles.flexContainer}>
           <Text variant="titleMedium" style={{ width: "90%" }}>
             <Text style={{ color: "gray" }}>Supplier : </Text>
-            {cartSupplierName}
+            {distributorName}
           </Text>
         </View>
         <View style={styles.flexContainer}>
           <Text variant="titleMedium" style={{ width: "90%" }}>
             <Text style={{ color: "gray" }}>Products : </Text>
-            {cartProducts.length}
+            {cartItems.length}
           </Text>
         </View>
 
@@ -87,59 +197,100 @@ function Cart() {
           </Text>
         </View>
       </View>
-      <ScrollView style={{ marginTop: "1%", width: "100%" }}>
-        {cartProducts.map((val, i) => {
-          return (
-            <View style={styles.productcontainer} key={i}>
-                <View style={{display:"flex",flexDirection:"row",justifyContent:"space-between"}}>
-              <Text style={{ marginLeft: 10, marginTop: 10 }} variant="titleMedium">{val.productname}</Text>
-              <TouchableOpacity style={{alignSelf:"center",marginRight:10}}>
-                <AntDesign name="delete" size={20}/>
+      <ScrollView style={{ marginTop: "1%", width: "100%", height: "70%" }}>
+        {cartItems.map((val, i) => (
+          <View style={styles.productcontainer} key={i}>
+            <View
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-between",
+              }}
+            >
+              <Text
+                style={{ marginLeft: 10, marginTop: 10, width: "85%" }}
+                variant="titleMedium"
+              >
+                {val.productname}
+              </Text>
+              <TouchableOpacity
+                style={{ alignSelf: "center", marginRight: 10 }}
+                onPress={() => deleteHandlePress(i)}
+              >
+                <AntDesign name="delete" size={20} />
               </TouchableOpacity>
-              </View>
-              <Text style={{ marginLeft: 10, marginTop: 10,color:"gray" }} variant="titleSmall">
-                price : {`\u20B9`} {val.price}
+            </View>
+            <Text
+              style={{
+                marginLeft: 10,
+                marginTop: 10,
+                color: "#424242",
+                width: "85%",
+              }}
+              variant="titleSmall"
+            >
+              price : {`\u20B9`} {val.price}
+            </Text>
+            <View
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-between",
+              }}
+            >
+              <Text
+                style={{ marginLeft: 10, marginTop: 10 }}
+                variant="titleSmall"
+              >
+                Total : {`\u20B9`}{" "}
+                {(Number(val.quantity) * val.price).toFixed(2)}
               </Text>
               <View
                 style={{
                   display: "flex",
                   flexDirection: "row",
-                  justifyContent: "space-between",
+                  marginTop: 10,
+                  justifyContent: "flex-end",
+                  alignItems: "flex-end",
+                  marginRight: 10,
+                  marginBottom: 10,
                 }}
               >
-                <Text style={{ marginLeft: 10, marginTop: 10 }}>
-                  Total : {`\u20B9`} {(Number(val.quantity) * val.price).toFixed(2)}
-                </Text>
+                <Text>Qty : </Text>
                 <View
                   style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    marginTop: 10,
-                    justifyContent: "flex-end",
-                    alignItems: "flex-end",
-                    marginRight: 10,
-                    marginBottom:10
+                    width: "40%",
+                    height: 35,
+                    justifyContent: "center",
+                    backgroundColor: theme.colors.primary,
+                    alignItems: "center",
+                    borderRadius: 15,
                   }}
                 >
-                  <Text>Qty : </Text>
-                  <View
-                    style={{
-                      width: "40%",
-                      height: 35,
-                      justifyContent: "center",
-                      backgroundColor: theme.colors.primary,
-                      alignItems: "center",
-                      borderRadius:15
-                    }}
-                  >
-                    <Text>{val.quantity}</Text>
-                  </View>
+                  <Text>{val.quantity}</Text>
                 </View>
               </View>
             </View>
-          );
-        })}
+          </View>
+        ))}
       </ScrollView>
+      {action === "update" ? (
+        <Button
+          onPress={updateOrder}
+          style={styles.orderButton}
+          mode="contained"
+        >
+          Update order
+        </Button>
+      ) : (
+        <Button
+          onPress={placeOrder}
+          style={styles.orderButton}
+          mode="contained"
+        >
+          Place order
+        </Button>
+      )}
     </View>
   );
 }

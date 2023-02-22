@@ -8,8 +8,6 @@ const AuthContextProvider = ({ children }) => {
   const [user, setUser] = useState();
   const [connected, setConnected] = useState(false);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
-  const[cartProducts,setCartProducts]=useState([]);
-  const[cartSupplierName,setCartSuppliername]=useState("")
 
   useEffect(() => {
     const getUser = async () => {
@@ -68,10 +66,6 @@ const AuthContextProvider = ({ children }) => {
         loginUser,
         logoutUser,
         connected,
-        cartProducts,
-        setCartProducts,
-        cartSupplierName,
-        setCartSuppliername
       }}
     >
       {initialLoadComplete === true && children}

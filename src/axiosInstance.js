@@ -1,5 +1,6 @@
 import axios from "axios";
+import { SOGO_API } from "./constants/constants";
 
 export default axiosInstance = axios.create({
-  baseURL: "http://192.168.0.104:8001/api",
+  baseURL: SOGO_API,
 });
