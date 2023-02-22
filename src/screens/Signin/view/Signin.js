@@ -192,22 +192,22 @@ function SignIn({ navigation }) {
                 marginTop: "1%",
               }}
             >
-              <TouchableOpacity onPress={() => setShowforgotPincode(true)}>
+              {/*<TouchableOpacity onPress={() => setShowforgotPincode(true)}>
                 <Text
                   style={{ color: theme.colors.primary, fontWeight: "600" }}
                   variant="bodyLarge"
                 >
                   Forget pin ?
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => navigation.navigate("signup")}>
+            </TouchableOpacity>*/}
+              {/*<TouchableOpacity onPress={() => navigation.navigate("signup")}>
                 <Text
                   style={{ color: theme.colors.primary, fontWeight: "600" }}
                   variant="bodyLarge"
                 >
                   Sign up
                 </Text>
-              </TouchableOpacity>
+          </TouchableOpacity>*/}
             </View>
           </>
         )}
@@ -216,7 +216,7 @@ function SignIn({ navigation }) {
           <>
 
 <MaterialTextInput
-              style={styles.textInput}
+              style={{...styles.textInput,marginBottom:"6%"}}
               mode="outlined"
               label={
                 <Text style={{ backgroundColor: "white", color: "gray" }}>
@@ -239,7 +239,7 @@ function SignIn({ navigation }) {
               mode="outlined"
               label={
                 <Text style={{ backgroundColor: "white", color: "gray" }}>
-                  Generate a New Pin
+                  Create New Pin
                 </Text>
               }
             />

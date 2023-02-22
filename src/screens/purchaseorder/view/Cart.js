@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -11,6 +11,7 @@ import { AntDesign } from "@expo/vector-icons";
 import { saveOrder } from "../helper/Purchasehelper";
 import { editOrder } from "../../updateorder/helper/UpdateOrderHelper";
 import { useAuthContext } from "../../../context/UserAuthContext";
+import { useCartContext } from "../../../context/CartContext";
 
 const styles = StyleSheet.create({
   container: {
@@ -58,7 +59,6 @@ const styles = StyleSheet.create({
 
 function Cart({ route, navigation }) {
   const {
-    cartItems,
     action,
     discount = 0,
     distributorId,
@@ -67,6 +67,7 @@ function Cart({ route, navigation }) {
   } = route.params;
   const theme = useTheme();
   const { user } = useAuthContext();
+  const { cartItems, setCartItems } = useCartContext();
   const [errors, setErrors] = useState({});
   const totalItems = cartItems.reduce((acc, curr) => {
     acc = acc + Number(curr.quantity);
@@ -109,6 +110,7 @@ function Cart({ route, navigation }) {
         );
         navigation.pop(1);
         navigation.navigate("My Orders", { screen: "Orders" });
+        setCartItems([]);
       } else {
         Alert.alert("Error", result.error);
       }
@@ -118,6 +120,15 @@ function Cart({ route, navigation }) {
     }
   };
 
+  const deleteHandlePress = (index) => {
+    setCartItems((prev) => prev.filter((val, i) => index !== i));
+  };
+
+  useEffect(() => {
+    if (cartItems.length == 0) {
+      navigation.goBack();
+    }
+  }, [cartItems]);
   const updateOrder = async () => {
     setErrors({ ...errors, saveOrder: "" });
     if (cartItems.length === 0) {
@@ -149,6 +160,7 @@ function Cart({ route, navigation }) {
           `Your order with ID - ${result.data[0]?.orderid} has been successfully updated!`
         );
         navigation.navigate("Orders", { screen: "OrdersList" });
+        setCartItems([]);
       } else setErrors({ ...errors, updateOrder: result.error });
     } catch (error) {
       Alert.alert("Error", "There was an error");
@@ -196,19 +208,25 @@ function Cart({ route, navigation }) {
               }}
             >
               <Text
-                style={{ marginLeft: 10, marginTop: 10 }}
+                style={{ marginLeft: 10, marginTop: 10, width: "85%" }}
                 variant="titleMedium"
               >
                 {val.productname}
               </Text>
               <TouchableOpacity
                 style={{ alignSelf: "center", marginRight: 10 }}
+                onPress={() => deleteHandlePress(i)}
               >
                 <AntDesign name="delete" size={20} />
               </TouchableOpacity>
             </View>
             <Text
-              style={{ marginLeft: 10, marginTop: 10, color: "gray" }}
+              style={{
+                marginLeft: 10,
+                marginTop: 10,
+                color: "#424242",
+                width: "85%",
+              }}
               variant="titleSmall"
             >
               price : {`\u20B9`} {val.price}
@@ -220,7 +238,10 @@ function Cart({ route, navigation }) {
                 justifyContent: "space-between",
               }}
             >
-              <Text style={{ marginLeft: 10, marginTop: 10 }}>
+              <Text
+                style={{ marginLeft: 10, marginTop: 10 }}
+                variant="titleSmall"
+              >
                 Total : {`\u20B9`}{" "}
                 {(Number(val.quantity) * val.price).toFixed(2)}
               </Text>

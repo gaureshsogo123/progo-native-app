@@ -1,7 +1,12 @@
 import React, { useCallback } from "react";
-import { Image, StyleSheet, View } from "react-native";
-import { Text, TextInput } from "react-native-paper";
+import { Dimensions, Image, StyleSheet, View } from "react-native";
+import { useTheme, Text, TextInput } from "react-native-paper";
+import category from "../../../constants/Category";
+import { useCartContext } from "../../../context/CartContext";
+import { useAuthContext } from "../../../context/UserAuthContext";
 
+const { height } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
 const styles = StyleSheet.create({
   product: {
     margin: 5,
@@ -13,7 +18,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   price: {
-    color: "gray",
+    color: "#424242",
   },
   unitSection: {
     display: "flex",
@@ -31,7 +36,10 @@ const styles = StyleSheet.create({
   },
 });
 
-function Product({ item, setCartItems, cartItems }) {
+function Product({ item }) {
+  const theme = useTheme();
+
+  const { cartItems, setCartItems } = useCartContext();
   const productQuantity =
     cartItems?.find((product) => product.productid === item.productid)
       ?.quantity || 0;
@@ -70,20 +78,23 @@ function Product({ item, setCartItems, cartItems }) {
       <View style={{ width: "70%", display: "flex", flexDirection: "row" }}>
         <Image
           source={{
-            uri: "http://pluspng.com/img-png/lemon-hd-png-lemon-png-pic-1870.png",
+            uri:
+              item.image ||
+              "https://cdn-icons-png.flaticon.com/512/679/679922.png",
           }}
           style={{
-            width: 60,
-            height: 70,
+            width: (width * 15) / 100,
+            height: (height * 10) / 100,
             alignSelf: "center",
-            marginRight: 12,
-            borderRadius: 20,
+            marginRight: (width * 2.5) / 100,
           }}
         />
         <View style={{ width: "70%" }}>
           <Text variant="titleMedium">{item.productname}</Text>
           <Text style={styles.price} variant="titleSmall">
-            Price: {`\u20B9`} {Number(item.price).toFixed(2)}{" "}
+            Price: {`\u20B9`} {Number(item.price).toFixed(2)} (MRP: {`\u20B9`}
+            {item.mrp}, Margin:{" "}
+            {Number(((item.mrp - item.price) / item.price) * 100).toFixed(1)}%)
           </Text>
           <Text variant="titleSmall">
             Amount: {`\u20B9`}{" "}

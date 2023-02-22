@@ -8,14 +8,17 @@ import {
   ScrollView,
   Image,
   Dimensions,
+  Alert,
 } from "react-native";
 import { Button, HelperText, useTheme } from "react-native-paper";
 import { TextInput, Text } from "react-native-paper";
 import { useProducts } from "../helper/useProducts";
-import useDebounce from "../../../hooks/useDebounce";
 import Product from "./Product";
 import { AntDesign } from "@expo/vector-icons";
 import useProductCategories from "../../../hooks/useProductCategories";
+import useDebounce from "../../../hooks/useDebounce";
+import { useAuthContext } from "../../../context/UserAuthContext";
+import { useCartContext } from "../../../context/CartContext";
 
 const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
@@ -76,12 +79,13 @@ const PAGE_SIZE = 15;
 function PurchaseOrderScreen({ route, navigation }) {
   const { distributorId, distributorName } = route.params;
   const theme = useTheme();
-  const [cartItems, setCartItems] = useState([]);
+  const { cartItems, setCartItems } = useCartContext();
   const [searchFilter, setSearchFilter] = useState("");
   const debounceSearch = useDebounce(searchFilter);
   const [categoryId, setCategoryId] = useState(0);
   const [pageNo, setPageNo] = useState(1);
   const { productCategories } = useProductCategories();
+
   const {
     products,
     setProducts,
@@ -104,27 +108,24 @@ function PurchaseOrderScreen({ route, navigation }) {
   };
 
   const cartHandlePress = () => {
-    navigation.navigate("Home", {
-      screen: "Cart",
-      params: {
-        cartItems,
-        action: "place",
-        discount: discount,
-        distributorId,
-        distributorName,
-      },
-    });
+    if (cartItems.length > 0) {
+      navigation.navigate("Home", {
+        screen: "Cart",
+        params: {
+          action: "place",
+          discount: discount,
+          distributorId,
+          distributorName,
+        },
+      });
+    } else {
+      Alert.alert("Sorry Your Cart is Empty Please Add Some Products...");
+    }
   };
 
   const renderProduct = useCallback(
     ({ item }) => {
-      return (
-        <Product
-          item={item}
-          setCartItems={setCartItems}
-          cartItems={cartItems}
-        />
-      );
+      return <Product item={item} />;
     },
     [cartItems]
   );
@@ -140,6 +141,22 @@ function PurchaseOrderScreen({ route, navigation }) {
             {distributorName}
           </Text>
         </View>
+        {/*<View style={styles.flexContainer}>
+          <Text variant="titleMedium">
+            <Text style={{ color: "gray" }}>Products:</Text>{" "}
+            {orderAggregateData.totalProducts}
+          </Text>
+          <Text variant="titleMedium">
+            <Text style={{ color: "gray" }}>Items:</Text>{" "}
+            {orderAggregateData.totalItems}
+          </Text>
+  </View>*/}
+        {/* <View style={styles.flexContainer}>
+          <Text variant="titleMedium">
+            <Text style={{ color: "gray" }}>Total Amount:</Text> {`\u20B9`}{" "}
+            {Number(orderAggregateData.totalPrice).toFixed(2)}
+          </Text>
+</View>*/}
       </View>
 
       <View style={{ display: "flex", flexDirection: "row" }}>
@@ -175,24 +192,36 @@ function PurchaseOrderScreen({ route, navigation }) {
       <View
         style={{
           backgroundColor: "white",
-          height: (height * 8) / 100,
+          height: (height * 12) / 100,
           marginBottom: 10,
           marginTop: 10,
+          justifyContent: "center",
         }}
       >
-        <ScrollView horizontal={true}>
+        <ScrollView horizontal={true} contentContainerStyle={{ padding: 10 }}>
           {productCategories.map((val, i) => {
             return (
               <TouchableOpacity
-                style={{ marginRight: 15, justifyContent: "center" }}
+                style={{
+                  marginRight: 20,
+                  justifyContent: "center",
+                  borderTopWidth: val.categoryid == categoryId ? 6 : null,
+                  borderTopColor:
+                    val.categoryid == categoryId ? theme.colors.primary : null,
+                  paddingTop: "3%",
+                }}
                 key={i}
                 onPress={() => setCategoryId(val.categoryid)}
               >
                 <Image
-                  source={{ uri: val.image }}
+                  source={{
+                    uri:
+                      val.image ||
+                      "https://cdn-icons-png.flaticon.com/512/679/679922.png",
+                  }}
                   style={{
-                    width: (width * 12) / 100,
-                    height: (height * 4) / 100,
+                    width: (width * 14) / 100,
+                    height: (height * 6) / 100,
                     marginBottom: 5,
                     alignSelf: "center",
                   }}
@@ -201,7 +230,12 @@ function PurchaseOrderScreen({ route, navigation }) {
                   style={{
                     alignSelf: "center",
                     fontSize: (height * 1.5) / 100,
+                    color:
+                      val.categoryid == categoryId
+                        ? theme.colors.primary
+                        : null,
                   }}
+                  adjustsFontSizeToFit={true}
                 >
                   {val.categoryname}
                 </Text>
