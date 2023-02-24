@@ -4,6 +4,7 @@ import Orders from "../../screens/orders/view/OrderScreen";
 import UpdateOrder from "../../screens/updateorder/view/UpdateOrderScreen";
 import OrderDetailScreen from "../../screens/orders/view/OrderDetailScreen";
 import Cart from "../../screens/purchaseorder/view/Cart";
+import HeaderCart from "../../component/HeaderCart";
 
 const OrderStackNavigator = createNativeStackNavigator();
 
@@ -17,20 +18,18 @@ const OrdersNavigator = () => {
           title: "My Orders",
         }}
       />
-
       <OrderStackNavigator.Screen
         name="Order Details"
         component={OrderDetailScreen}
       />
-
       <OrderStackNavigator.Screen
         name="UpdateOrder"
         component={UpdateOrder}
         options={{
           title: "Update Order",
+          headerRight: () => <HeaderCart />,
         }}
       />
-
       <OrderStackNavigator.Screen name="Cart" component={Cart} />
     </OrderStackNavigator.Navigator>
   );

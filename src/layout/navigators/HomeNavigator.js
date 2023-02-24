@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import LandingScreen from "../../screens/landingScreen/view/LandingScreen";
 import PurchaseOrderScreen from "../../screens/purchaseorder/view/PurchaseOrderScreen";
 import Cart from "../../screens/purchaseorder/view/Cart";
+import HeaderCart from "../../component/HeaderCart";
 
 const HomeStackNavigator = createNativeStackNavigator();
 
@@ -16,12 +17,12 @@ const HomeNavigator = () => {
           title: "Home",
         }}
       />
-
       <HomeStackNavigator.Screen
         name="purchaseorder"
         component={PurchaseOrderScreen}
         options={{
           title: "Create Purchase Order",
+          headerRight: () => <HeaderCart />,
         }}
       />
       <HomeStackNavigator.Screen

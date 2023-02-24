@@ -14,7 +14,6 @@ import { Button, HelperText, useTheme } from "react-native-paper";
 import { TextInput, Text } from "react-native-paper";
 import { useProducts } from "../helper/useProducts";
 import Product from "./Product";
-import { AntDesign } from "@expo/vector-icons";
 import useDistributorProductCategories from "../../../hooks/useDistributorProductCategories";
 import useDebounce from "../../../hooks/useDebounce";
 import { useCartContext } from "../../../context/CartContext";
@@ -27,22 +26,32 @@ const PAGE_SIZE = 15;
 function PurchaseOrderScreen({ route, navigation }) {
   const { distributorId, distributorName } = route.params;
   const theme = useTheme();
-  const { cartItems } = useCartContext();
+  const { cartItems, setDistributorInfo, clearContext } = useCartContext();
   const [searchFilter, setSearchFilter] = useState("");
   const debounceSearch = useDebounce(searchFilter);
   const [categoryId, setCategoryId] = useState(0);
   const [pageNo, setPageNo] = useState(1);
   const { productCategories } = useDistributorProductCategories(distributorId);
 
-  const {
-    products,
-    setProducts,
-    refreshing,
-    discount,
-    error: productsError,
-    hasMore,
-  } = useProducts(distributorId, pageNo, PAGE_SIZE, debounceSearch, categoryId);
+  const { products, setProducts, refreshing, hasMore } = useProducts(
+    distributorId,
+    pageNo,
+    PAGE_SIZE,
+    debounceSearch,
+    categoryId
+  );
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    clearContext();
+
+    setDistributorInfo({
+      action: "place",
+      discount: 0,
+      distributorId,
+      distributorName,
+    });
+  }, [distributorId]);
 
   useEffect(() => {
     setProducts([]);
@@ -59,12 +68,6 @@ function PurchaseOrderScreen({ route, navigation }) {
     if (cartItems.length > 0) {
       navigation.navigate("Home", {
         screen: "Cart",
-        params: {
-          action: "place",
-          discount: discount,
-          distributorId,
-          distributorName,
-        },
       });
     } else {
       Alert.alert("Sorry Your Cart is Empty Please Add Some Products...");
@@ -88,25 +91,13 @@ function PurchaseOrderScreen({ route, navigation }) {
             <Text style={{ color: "gray" }}>Supplier: </Text>
             {distributorName}
           </Text>
-        </View>
-      </View>
-
-      <View style={{ display: "flex", flexDirection: "row" }}>
-        <TextInput
-          value={searchFilter}
-          mode="outlined"
-          theme={{ roundness: 10 }}
-          style={{ marginBottom: 3, marginHorizontal: 8, width: "88%" }}
-          placeholder="Search Products"
-          onChangeText={(text) => setSearchFilter(text)}
-        />
-        <TouchableOpacity
+          {/*<TouchableOpacity
           style={{ width: "5%", alignSelf: "center" }}
           onPress={cartHandlePress}
         >
           <AntDesign name="shoppingcart" size={28} />
-        </TouchableOpacity>
-        <TouchableOpacity
+  </TouchableOpacity>*/}
+          {/*<TouchableOpacity
           style={{
             width: "5%",
             borderRadius: 30,
@@ -114,13 +105,21 @@ function PurchaseOrderScreen({ route, navigation }) {
             height: 30,
             justifyContent: "center",
             alignItems: "center",
-            marginLeft: -6,
           }}
           onPress={cartHandlePress}
         >
           <Text style={{ color: "white" }}>{cartItems.length}</Text>
-        </TouchableOpacity>
+        </TouchableOpacity>*/}
+        </View>
       </View>
+      <TextInput
+        value={searchFilter}
+        mode="outlined"
+        theme={{ roundness: 10 }}
+        style={{ marginBottom: 3, marginHorizontal: 8 }}
+        placeholder="Search Products"
+        onChangeText={(text) => setSearchFilter(text)}
+      />
       <View
         style={{
           backgroundColor: "white",
@@ -140,7 +139,6 @@ function PurchaseOrderScreen({ route, navigation }) {
                   borderTopWidth: val.categoryid == categoryId ? 6 : null,
                   borderTopColor:
                     val.categoryid == categoryId ? theme.colors.primary : null,
-                  paddingTop: "3%",
                 }}
                 key={i}
                 onPress={() => setCategoryId(val.categoryid)}
@@ -200,7 +198,7 @@ function PurchaseOrderScreen({ route, navigation }) {
         mode="contained"
         style={styles.orderButton}
       >
-        Checkout
+        Add to Cart
       </Button>
     </>
   );

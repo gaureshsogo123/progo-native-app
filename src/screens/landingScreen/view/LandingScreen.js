@@ -18,7 +18,7 @@ const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
 
 export default function LandingScreen({ navigation }) {
-  const { user } = useAuthContext();
+  const { user, routeName } = useAuthContext();
   const [distributors, setDistributors] = useState([]);
   const [filterText, setFilterText] = useState("");
   const { cartItems, setCartItems } = useCartContext();
@@ -44,13 +44,15 @@ export default function LandingScreen({ navigation }) {
   }, [cartItems]);
 
   useEffect(() => {
-    const unsubscribeFocus = navigation.addListener("focus", () => {
-      navi.reset({
-        index: 0,
-        routes: [{ name: "Orders" }],
+    if (routeName == "UpdateOrder") {
+      const unsubscribeFocus = navigation.addListener("focus", () => {
+        navi.reset({
+          index: 0,
+          routes: [{ name: "Orders" }],
+        });
       });
-    });
-    return unsubscribeFocus;
+      return unsubscribeFocus;
+    }
   }, [navigation]);
 
   const filterDistributor = distributors.filter((item) => {
@@ -66,6 +68,7 @@ export default function LandingScreen({ navigation }) {
       distributorId: item.userid,
     });
   };
+
   return (
     <>
       <View style={styles.container}>
@@ -85,7 +88,7 @@ export default function LandingScreen({ navigation }) {
             style={styles.input}
             mode="outlined"
             theme={{ roundness: 10 }}
-            placeholder="Search Supplier"
+            placeholder="Search Brand"
             value={filterText}
             onChangeText={(text) => setFilterText(text)}
             keyboardType={"name-phone-pad"}
@@ -118,7 +121,7 @@ export default function LandingScreen({ navigation }) {
                     "https://cdn-icons-png.flaticon.com/512/5486/5486254.png",
                 }}
                 style={{
-                  width: (width * 15) / 100,
+                  width: (width * 17) / 100,
                   height: (height * 8) / 100,
                 }}
               />
