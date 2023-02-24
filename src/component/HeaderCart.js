@@ -10,13 +10,20 @@ const { width, height } = Dimensions.get("screen");
 function HeaderCart() {
   const navigation = useNavigation();
   const theme = useTheme();
-  const { cartItems } = useCartContext();
+  const { cartItems,distributorInfo } = useCartContext();
 
   const handlePress = () => {
     if (cartItems.length > 0) {
-      navigation.navigate("My Orders", {
+      if(distributorInfo.action == "place"){
+      navigation.navigate("Home", {
         screen: "Cart",
       });
+    }
+    else{
+      navigation.navigate("My Orders",{
+        screen: "Cart"
+      })
+    }
     } else {
       Alert.alert("", "Sorry Your Cart is Empty Please Add Some Products...");
     }
