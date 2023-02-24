@@ -8,6 +8,7 @@ const AuthContextProvider = ({ children }) => {
   const [user, setUser] = useState();
   const [connected, setConnected] = useState(false);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [routeName,setRouteName]=useState("");
 
   useEffect(() => {
     const getUser = async () => {
@@ -66,6 +67,8 @@ const AuthContextProvider = ({ children }) => {
         loginUser,
         logoutUser,
         connected,
+        routeName,
+        setRouteName
       }}
     >
       {initialLoadComplete === true && children}

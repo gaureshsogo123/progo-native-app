@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { Dimensions, Image, StyleSheet, View } from "react-native";
-import { Text, TextInput } from "react-native-paper";
+import { useTheme, Text, TextInput } from "react-native-paper";
 import { useCartContext } from "../../../context/CartContext";
 
 const { height } = Dimensions.get("screen");
@@ -16,7 +16,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   price: {
-    color: "#424242",
+    color: "gray",
+  },
+  pricecontainer: {
+    display: "flex",
+    flexDirection: "row",
+    width: "100%",
   },
   unitSection: {
     display: "flex",
@@ -82,19 +87,55 @@ function Product({ item }) {
             width: (width * 15) / 100,
             height: (height * 10) / 100,
             alignSelf: "center",
-            marginRight: (width * 2.5) / 100,
+            marginRight: (width * 1.5) / 100,
           }}
         />
-        <View style={{ width: "70%" }}>
+        <View style={{ width: "100%" }}>
           <Text variant="titleMedium">{item.productname}</Text>
-          <Text style={styles.price} variant="titleSmall">
-            Price: {`\u20B9`} {Number(item.price).toFixed(2)} (MRP: {`\u20B9`}
-            {item.mrp}, Margin:{" "}
-            {Number(((item.mrp - item.price) / item.price) * 100).toFixed(1)}%)
+          <Text style={styles.pricecontainer}>
+            <Text style={styles.price} variant="titleSmall">
+              Price:
+            </Text>
+            <Text variant="titleSmall">
+              {" "}
+              {`\u20B9`}
+              {Number(item.price).toFixed(2)}
+            </Text>
           </Text>
-          <Text variant="titleSmall">
-            Amount: {`\u20B9`}{" "}
-            {Number((item.price - item.discount) * productQuantity).toFixed(2)}{" "}
+          <Text style={{ display: "flex", flexDirection: "row", width: "80%" }}>
+            <Text style={styles.pricecontainer}>
+              <Text variant="titleSmall" style={styles.price}>
+                MRP:{" "}
+              </Text>
+              <Text variant="titleSmall">
+                {`\u20B9`}
+                {item.mrp}
+              </Text>
+            </Text>
+
+            <Text style={styles.pricecontainer}>
+              <Text style={styles.price} variant="titleSmall">
+                {" "}
+                Margin:{" "}
+              </Text>
+              <Text variant="titleSmall">
+                {Number(((item.mrp - item.price) / item.price) * 100).toFixed(
+                  1
+                )}
+                %
+              </Text>
+            </Text>
+          </Text>
+          <Text style={{ display: "flex", flexDirection: "row", width: "80%" }}>
+            <Text style={styles.price} variant="titleSmall">
+              Amount:
+            </Text>{" "}
+            <Text variant="titleSmall">
+              {`\u20B9`}
+              {Number((item.price - item.discount) * productQuantity).toFixed(
+                2
+              )}
+            </Text>
           </Text>
         </View>
       </View>

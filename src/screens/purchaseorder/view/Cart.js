@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Dimensions,
 } from "react-native";
 import { Text, useTheme, Button } from "react-native-paper";
 import { AntDesign } from "@expo/vector-icons";
@@ -18,19 +19,21 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     alignItems: "flex-start",
     width: "100%",
+    height: "100%",
     padding: 10,
   },
   toppagecontainer: {
     backgroundColor: "white",
     width: "100%",
     height: "auto",
-    paddingTop: 10,
+    paddingTop: 5,
+    paddingBottom: 5,
   },
   flexContainer: {
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 10,
+    marginBottom: 2,
     marginLeft: 10,
   },
   productcontainer: {
@@ -53,21 +56,18 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingVertical: 5,
     backgroundColor: "#f9a374",
-    backgroundColor: "#f9a374",
+    position: "absolute",
+    bottom: 0,
+    borderRadius: 3,
   },
 });
 
-function Cart({ route, navigation }) {
-  const {
-    action,
-    discount = 0,
-    distributorId,
-    orderId,
-    distributorName,
-  } = route.params;
+const { height } = Dimensions.get("screen");
+function Cart({ navigation }) {
   const theme = useTheme();
   const { user } = useAuthContext();
-  const { cartItems, setCartItems } = useCartContext();
+  const { cartItems, setCartItems, distributorInfo, clearContext } =
+    useCartContext();
   const [errors, setErrors] = useState({});
   const totalItems = cartItems.reduce((acc, curr) => {
     acc = acc + Number(curr.quantity);
@@ -96,10 +96,10 @@ function Cart({ route, navigation }) {
       const result = await saveOrder(
         user.userId,
         cartItems.length,
-        total - (total * discount) / 100,
+        total - (total * distributorInfo.discount) / 100,
         "cash",
-        distributorId,
-        discount,
+        distributorInfo.distributorId,
+        distributorInfo.discount,
         total,
         cartItems
       );
@@ -110,7 +110,7 @@ function Cart({ route, navigation }) {
         );
         navigation.pop(1);
         navigation.navigate("My Orders", { screen: "Orders" });
-        setCartItems([]);
+        clearContext();
       } else {
         Alert.alert("Error", result.error);
       }
@@ -146,13 +146,13 @@ function Cart({ route, navigation }) {
       const result = await editOrder(
         user.userId,
         cartItems.length,
-        Number(total - (total * discount) / 100).toFixed(2),
+        Number(total - (total * distributorInfo.discount) / 100).toFixed(2),
         "cash",
         Number(total).toFixed(2),
         cartItems,
-        discount,
-        orderId,
-        distributorId
+        distributorInfo.discount,
+        distributorInfo.orderId,
+        distributorInfo.distributorId
       );
       if (!result.error) {
         Alert.alert(
@@ -160,7 +160,7 @@ function Cart({ route, navigation }) {
           `Your order with ID - ${result.data[0]?.orderid} has been successfully updated!`
         );
         navigation.navigate("Orders", { screen: "OrdersList" });
-        setCartItems([]);
+        clearContext();
       } else setErrors({ ...errors, updateOrder: result.error });
     } catch (error) {
       Alert.alert("Error", "There was an error");
@@ -168,119 +168,144 @@ function Cart({ route, navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.toppagecontainer}>
-        <View style={styles.flexContainer}>
-          <Text variant="titleMedium" style={{ width: "90%" }}>
-            <Text style={{ color: "gray" }}>Supplier : </Text>
-            {distributorName}
-          </Text>
-        </View>
-        <View style={styles.flexContainer}>
-          <Text variant="titleMedium" style={{ width: "90%" }}>
-            <Text style={{ color: "gray" }}>Products : </Text>
-            {cartItems.length}
-          </Text>
-        </View>
-
-        <View style={styles.flexContainer}>
-          <Text variant="titleMedium" style={{ width: "90%" }}>
-            <Text style={{ color: "gray" }}>Items : </Text>
-            {totalItems}
-          </Text>
-        </View>
-
-        <View style={styles.flexContainer}>
-          <Text variant="titleMedium" style={{ width: "90%" }}>
-            <Text style={{ color: "gray" }}>Total Amount : </Text>
-            {`\u20B9`} {totalAmount}
-          </Text>
-        </View>
-      </View>
-      <ScrollView style={{ marginTop: "1%", width: "100%", height: "70%" }}>
-        {cartItems.map((val, i) => (
-          <View style={styles.productcontainer} key={i}>
-            <View
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-between",
-              }}
-            >
-              <Text
-                style={{ marginLeft: 10, marginTop: 10, width: "85%" }}
-                variant="titleMedium"
-              >
-                {val.productname}
-              </Text>
-              <TouchableOpacity
-                style={{ alignSelf: "center", marginRight: 10 }}
-                onPress={() => deleteHandlePress(i)}
-              >
-                <AntDesign name="delete" size={20} />
-              </TouchableOpacity>
-            </View>
-            <Text
-              style={{
-                marginLeft: 10,
-                marginTop: 10,
-                color: "#424242",
-                width: "85%",
-              }}
-              variant="titleSmall"
-            >
-              price : {`\u20B9`} {val.price}
+    <>
+      <View style={styles.container}>
+        <View style={styles.toppagecontainer}>
+          <View style={styles.flexContainer}>
+            <Text variant="titleMedium" style={{ width: "100%" }}>
+              <Text style={{ color: "gray" }}>Supplier: </Text>
+              {distributorInfo.distributorName}
             </Text>
-            <View
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-between",
-              }}
-            >
+          </View>
+
+          <View style={styles.flexContainer}>
+            <Text variant="titleMedium">
+              <Text style={{ color: "gray" }}>Items: </Text>
+              {totalItems}
+            </Text>
+            <Text variant="titleMedium" style={{ paddingRight: 10 }}>
+              {distributorInfo.action == "update"
+                ? `ID: ${distributorInfo.orderId}`
+                : null}
+            </Text>
+          </View>
+
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              width: "100%",
+              justifyContent: "space-between",
+            }}
+          >
+            <View style={styles.flexContainer}>
+              <Text variant="titleMedium">
+                <Text style={{ color: "gray" }}>Products: </Text>
+                {cartItems.length}
+              </Text>
+            </View>
+
+            <View style={styles.flexContainer}>
+              <Text variant="titleMedium" style={{ paddingRight: 10 }}>
+                <Text style={{ color: "gray" }}>Total: </Text>
+                {`\u20B9`}
+                {totalAmount}
+              </Text>
+            </View>
+          </View>
+        </View>
+        <ScrollView
+          style={{
+            marginTop: "1%",
+            width: "100%",
+            marginBottom: (height * 6) / 100,
+          }}
+        >
+          {cartItems.map((val, i) => (
+            <View style={styles.productcontainer} key={i}>
+              <View
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Text
+                  style={{ marginLeft: 10, marginTop: 10, width: "85%" }}
+                  variant="titleMedium"
+                >
+                  {val.productname}
+                </Text>
+                <TouchableOpacity
+                  style={{ alignSelf: "center", marginRight: 10 }}
+                  onPress={() => deleteHandlePress(i)}
+                >
+                  <AntDesign name="delete" size={20} />
+                </TouchableOpacity>
+              </View>
               <Text
-                style={{ marginLeft: 10, marginTop: 10 }}
+                style={{
+                  marginLeft: 10,
+                  marginTop: 10,
+                  color: "#424242",
+                  width: "85%",
+                }}
                 variant="titleSmall"
               >
-                Total : {`\u20B9`}{" "}
-                {(Number(val.quantity) * val.price).toFixed(2)}
+                price : {`\u20B9`}
+                {val.price}
               </Text>
               <View
                 style={{
                   display: "flex",
                   flexDirection: "row",
-                  marginTop: 10,
-                  justifyContent: "flex-end",
-                  alignItems: "flex-end",
-                  marginRight: 10,
-                  marginBottom: 10,
+                  justifyContent: "space-between",
                 }}
               >
-                <Text>Qty : </Text>
+                <Text
+                  style={{ marginLeft: 10, marginTop: 10 }}
+                  variant="titleSmall"
+                >
+                  Amount : {`\u20B9`}
+                  {(Number(val.quantity) * val.price).toFixed(2)}
+                </Text>
                 <View
                   style={{
-                    width: "40%",
-                    height: 35,
-                    justifyContent: "center",
-                    backgroundColor: theme.colors.primary,
-                    alignItems: "center",
-                    borderRadius: 15,
+                    display: "flex",
+                    flexDirection: "row",
+                    marginTop: 10,
+                    justifyContent: "flex-end",
+                    alignItems: "flex-end",
+                    marginRight: 10,
+                    marginBottom: 10,
                   }}
                 >
-                  <Text>{val.quantity}</Text>
+                  <Text>Qty : </Text>
+                  <View
+                    style={{
+                      width: "40%",
+                      height: 35,
+                      justifyContent: "center",
+                      backgroundColor: theme.colors.primary,
+                      alignItems: "center",
+                      borderRadius: 15,
+                    }}
+                  >
+                    <Text>{val.quantity}</Text>
+                  </View>
                 </View>
               </View>
             </View>
-          </View>
-        ))}
-      </ScrollView>
-      {action === "update" ? (
+          ))}
+        </ScrollView>
+      </View>
+      {distributorInfo.action === "update" ? (
         <Button
           onPress={updateOrder}
           style={styles.orderButton}
           mode="contained"
         >
-          Update order
+          Update Order
         </Button>
       ) : (
         <Button
@@ -288,10 +313,10 @@ function Cart({ route, navigation }) {
           style={styles.orderButton}
           mode="contained"
         >
-          Place order
+          Place Order
         </Button>
       )}
-    </View>
+    </>
   );
 }
 

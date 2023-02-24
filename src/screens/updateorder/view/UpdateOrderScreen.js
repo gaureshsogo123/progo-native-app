@@ -17,86 +17,30 @@ import useDebounce from "../../../hooks/useDebounce";
 import { useProducts } from "../../purchaseorder/helper/useProducts";
 import { getOrderDetailsRetailer } from "../../orders/helper/OrderHelper";
 import Product from "../../purchaseorder/view/Product";
-import useProductCategories from "../../../hooks/useProductCategories";
+import useDistributorProductCategories from "../../../hooks/useDistributorProductCategories";
 import { useCartContext } from "../../../context/CartContext";
-import { AntDesign } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
-const { height } = Dimensions.get("screen");
-const { width } = Dimensions.get("screen");
-const styles = StyleSheet.create({
-  container: {
-    display: "flex",
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
-    width: "100%",
-  },
-  pagecontainer: {
-    width: "100%",
-  },
-  heading: {
-    padding: 10,
-  },
-  product: {
-    margin: 5,
-    padding: 5,
-    display: "flex",
-    flexDirection: "row",
-    flex: 1,
-    justifyContent: "space-between",
-    borderBottomWidth: 1,
-  },
-  price: {
-    color: "gray",
-  },
-  unitSection: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    alignItems: "flex-end",
-  },
-  unitInput: {
-    width: 70,
-    textAlign: "center",
-    height: 40,
-    paddingHorizontal: 1,
-    paddingBottom: 1,
-    backgroundColor: theme.colors.secondaryContainer,
-  },
-  orderButton: {
-    borderRadius: 3,
-    paddingVertical: 5,
-  },
-  flexContainer: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-});
-
+const { height, width } = Dimensions.get("screen");
 const PAGE_SIZE = 15;
 
 function UpdateOrder({ route, navigation }) {
   const { order } = route.params;
-  const { user } = useAuthContext();
+  const { user, setRouteName } = useAuthContext();
 
-  const { cartItems, setCartItems } = useCartContext();
+  const { cartItems, setCartItems, setDistributorInfo } = useCartContext();
   const [searchFilter, setSearchFilter] = useState("");
   const debounceSearch = useDebounce(searchFilter);
   const [categoryId, setCategoryId] = useState(0);
   const [pageNo, setPageNo] = useState(1);
-  const { productCategories } = useProductCategories();
+  const { productCategories } = useDistributorProductCategories(
+    order.distributorid
+  );
   const [errors, setErrors] = useState({});
   const navi = useNavigation();
+  const updateOrderRoute = useRoute();
 
-  const {
-    products,
-    setProducts,
-    refreshing,
-    discount,
-    error: productsError,
-    hasMore,
-  } = useProducts(
+  const { products, setProducts, refreshing, hasMore } = useProducts(
     order.distributorid,
     pageNo,
     PAGE_SIZE,
@@ -106,6 +50,16 @@ function UpdateOrder({ route, navigation }) {
 
   useEffect(() => {
     getCartProducts();
+
+    if (order.orderstatus == "Placed") {
+      setDistributorInfo({
+        action: "update",
+        discount: 0,
+        distributorId: order.distributorid,
+        orderId: order.orderid,
+        distributorName: order.distributorname,
+      });
+    }
   }, []);
 
   useEffect(() => {
@@ -118,6 +72,10 @@ function UpdateOrder({ route, navigation }) {
       setPageNo((prev) => prev + 1);
     }
   };
+
+  useEffect(() => {
+    setRouteName(updateOrderRoute.name);
+  }, [navigation]);
 
   useEffect(() => {
     const unsubscribeFocus = navigation.addListener("focus", () => {
@@ -135,19 +93,21 @@ function UpdateOrder({ route, navigation }) {
         order.orderid,
         user.userId
       );
-      if (!orderDetails.error) {
-        const cart = orderDetails.data.map((item) => ({
-          discount: item.discount,
-          price: item.productprice,
-          productid: item.productid,
-          quantity: item.productquantity,
-          productname: item.productname,
-          orderstatus: item.orderstatus,
-          manufacturer: item.manufacturer,
-        }));
-        setCartItems(cart);
+      if (orderDetails.error) {
+        Alert.alert("Error", "There was an error");
       }
+      const cart = orderDetails.data.map((item) => ({
+        discount: item.discount,
+        price: item.productprice,
+        productid: item.productid,
+        quantity: item.productquantity,
+        productname: item.productname,
+        orderstatus: item.orderstatus,
+        manufacturer: item.manufacturer,
+      }));
+      setCartItems(cart);
     } catch (err) {
+      Alert.alert("Error", "Failed to fetch previous cart items");
       setErrors({ ...errors, cart: "Failed to get products" });
     }
   };
@@ -163,14 +123,6 @@ function UpdateOrder({ route, navigation }) {
     if (cartItems.length > 0) {
       navigation.navigate("My Orders", {
         screen: "Cart",
-        params: {
-          cartItems,
-          action: "update",
-          discount: discount,
-          distributorId: order.distributorid,
-          orderId: order.orderid,
-          distributorName: order.distributorname,
-        },
       });
     } else {
       Alert.alert("Sorry Your Cart is Empty Please Add Some Products...");
@@ -185,44 +137,22 @@ function UpdateOrder({ route, navigation }) {
         <View style={styles.pagecontainer}>
           <View style={styles.heading}>
             <View style={styles.flexContainer}>
-              <Text variant="titleMedium" style={{ width: "80%" }}>
+              <Text variant="titleMedium" style={{ width: "70%" }}>
                 <Text style={{ color: "gray" }}>Supplier: </Text>
                 {order.distributorname}
               </Text>
-              <Text variant="titleMedium">ID: {order.orderid}</Text>
+              <Text variant="titleMedium">ID:{order.orderid}</Text>
             </View>
           </View>
-          <View style={{ display: "flex", flexDirection: "row" }}>
-            <TextInput
-              value={searchFilter}
-              mode="outlined"
-              theme={{ roundness: 10 }}
-              style={{ marginBottom: 3, marginHorizontal: 8, width: "88%" }}
-              placeholder="Search products"
-              onChangeText={(text) => setSearchFilter(text)}
-            />
-            <TouchableOpacity
-              style={{ width: "5%", alignSelf: "center" }}
-              onPress={cartHandlePress}
-            >
-              <AntDesign name="shoppingcart" size={28} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{
-                width: "5%",
-                borderRadius: 30,
-                backgroundColor: theme.colors.primary,
-                height: 30,
-                justifyContent: "center",
-                alignItems: "center",
-                marginLeft: -6,
-              }}
-              onPress={cartHandlePress}
-            >
-              <Text style={{ color: "white" }}>{cartItems.length}</Text>
-            </TouchableOpacity>
-          </View>
 
+          <TextInput
+            value={searchFilter}
+            mode="outlined"
+            theme={{ roundness: 10 }}
+            style={{ marginBottom: 3, marginHorizontal: 8 }}
+            placeholder="Search products"
+            onChangeText={(text) => setSearchFilter(text)}
+          />
           <View
             style={{
               backgroundColor: "white",
@@ -247,7 +177,6 @@ function UpdateOrder({ route, navigation }) {
                         val.categoryid == categoryId
                           ? theme.colors.primary
                           : null,
-                      paddingTop: "3%",
                     }}
                     key={i}
                     onPress={() => setCategoryId(val.categoryid)}
@@ -312,3 +241,53 @@ function UpdateOrder({ route, navigation }) {
 }
 
 export default UpdateOrder;
+
+const styles = StyleSheet.create({
+  container: {
+    display: "flex",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    width: "100%",
+  },
+  pagecontainer: {
+    width: "100%",
+  },
+  heading: {
+    padding: 10,
+  },
+  product: {
+    margin: 5,
+    padding: 5,
+    display: "flex",
+    flexDirection: "row",
+    flex: 1,
+    justifyContent: "space-between",
+    borderBottomWidth: 1,
+  },
+  price: {
+    color: "gray",
+  },
+  unitSection: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
+  },
+  unitInput: {
+    width: 70,
+    textAlign: "center",
+    height: 40,
+    paddingHorizontal: 1,
+    paddingBottom: 1,
+    backgroundColor: theme.colors.secondaryContainer,
+  },
+  orderButton: {
+    borderRadius: 3,
+    paddingVertical: 5,
+  },
+  flexContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+});
