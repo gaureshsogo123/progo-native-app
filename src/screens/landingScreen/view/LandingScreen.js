@@ -20,10 +20,10 @@ const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
 
 export default function LandingScreen({ navigation }) {
-  const { user } = useAuthContext();
+  const { user,routeName } = useAuthContext();
   const [distributors, setDistributors] = useState([]);
   const [filterText, setFilterText] = useState("");
-  const {cartItems,setCartItems} = useCartContext();
+  const {cartItems,setCartItems,setDistributorInfo} = useCartContext();
   const navi = useNavigation();
   
 
@@ -48,6 +48,7 @@ export default function LandingScreen({ navigation }) {
 
 
   useEffect(()=>{
+    if(routeName == "UpdateOrder"){
     const unsubscribeFocus = navigation.addListener("focus", ()=>{
       navi.reset({
         index:0,
@@ -55,8 +56,8 @@ export default function LandingScreen({ navigation }) {
       })
     });
     return unsubscribeFocus;
+  }
   },[navigation])
-
 
 
   const filterDistributor = distributors.filter((item) => {
@@ -71,7 +72,15 @@ export default function LandingScreen({ navigation }) {
       distributorName: item.name,
       distributorId: item.userid,
     });
+    setDistributorInfo({
+      action: "place",
+        discount: 0,
+        distributorId: item.userid,
+        distributorName: item.name,
+    })
   };
+
+  
   return (
     <>
       <View style={styles.container}>
@@ -91,7 +100,7 @@ export default function LandingScreen({ navigation }) {
             style={styles.input}
             mode="outlined"
             theme={{ roundness: 10 }}
-            placeholder="Search Supplier"
+            placeholder="Search Brand"
             value={filterText}
             onChangeText={(text) => setFilterText(text)}
             keyboardType={"name-phone-pad"}
@@ -141,7 +150,7 @@ export default function LandingScreen({ navigation }) {
                   uri:val.image||"https://cdn-icons-png.flaticon.com/512/5486/5486254.png"
                 }}
                 style={{
-                  width: (width * 15) / 100,
+                  width: (width * 17) / 100,
                   height: (height * 8) / 100,
                 }}
               />

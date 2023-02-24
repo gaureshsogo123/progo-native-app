@@ -79,7 +79,10 @@ const PAGE_SIZE = 15;
 function PurchaseOrderScreen({ route, navigation }) {
   const { distributorId, distributorName } = route.params;
   const theme = useTheme();
-  const { cartItems, setCartItems } = useCartContext();
+  const {
+    cartItems,
+    setDistributorInfo,
+  } = useCartContext();
   const [searchFilter, setSearchFilter] = useState("");
   const debounceSearch = useDebounce(searchFilter);
   const [categoryId, setCategoryId] = useState(0);
@@ -111,17 +114,19 @@ function PurchaseOrderScreen({ route, navigation }) {
     if (cartItems.length > 0) {
       navigation.navigate("Home", {
         screen: "Cart",
-        params: {
-          action: "place",
-          discount: discount,
-          distributorId,
-          distributorName,
-        },
+      });
+      setDistributorInfo({
+        action: "place",
+        discount: discount,
+        distributorId: distributorId,
+        distributorName: distributorName,
       });
     } else {
       Alert.alert("Sorry Your Cart is Empty Please Add Some Products...");
     }
   };
+
+
 
   const renderProduct = useCallback(
     ({ item }) => {
@@ -140,6 +145,25 @@ function PurchaseOrderScreen({ route, navigation }) {
             <Text style={{ color: "gray" }}>Supplier: </Text>
             {distributorName}
           </Text>
+          {/*<TouchableOpacity
+          style={{ width: "5%", alignSelf: "center" }}
+          onPress={cartHandlePress}
+        >
+          <AntDesign name="shoppingcart" size={28} />
+  </TouchableOpacity>*/}
+        {/*<TouchableOpacity
+          style={{
+            width: "5%",
+            borderRadius: 30,
+            backgroundColor: theme.colors.primary,
+            height: 30,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          onPress={cartHandlePress}
+        >
+          <Text style={{ color: "white" }}>{cartItems.length}</Text>
+        </TouchableOpacity>*/}
         </View>
         {/*<View style={styles.flexContainer}>
           <Text variant="titleMedium">
@@ -159,36 +183,15 @@ function PurchaseOrderScreen({ route, navigation }) {
 </View>*/}
       </View>
 
-      <View style={{ display: "flex", flexDirection: "row" }}>
+      
         <TextInput
           value={searchFilter}
           mode="outlined"
           theme={{ roundness: 10 }}
-          style={{ marginBottom: 3, marginHorizontal: 8, width: "88%" }}
+          style={{ marginBottom: 3, marginHorizontal: 8 }}
           placeholder="Search Products"
           onChangeText={(text) => setSearchFilter(text)}
         />
-        <TouchableOpacity
-          style={{ width: "5%", alignSelf: "center" }}
-          onPress={cartHandlePress}
-        >
-          <AntDesign name="shoppingcart" size={28} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{
-            width: "5%",
-            borderRadius: 30,
-            backgroundColor: theme.colors.primary,
-            height: 30,
-            justifyContent: "center",
-            alignItems: "center",
-            marginLeft: -6,
-          }}
-          onPress={cartHandlePress}
-        >
-          <Text style={{ color: "white" }}>{cartItems.length}</Text>
-        </TouchableOpacity>
-      </View>
       <View
         style={{
           backgroundColor: "white",
@@ -208,7 +211,6 @@ function PurchaseOrderScreen({ route, navigation }) {
                   borderTopWidth: val.categoryid == categoryId ? 6 : null,
                   borderTopColor:
                     val.categoryid == categoryId ? theme.colors.primary : null,
-                  paddingTop: "3%",
                 }}
                 key={i}
                 onPress={() => setCategoryId(val.categoryid)}
@@ -268,7 +270,7 @@ function PurchaseOrderScreen({ route, navigation }) {
         mode="contained"
         style={styles.orderButton}
       >
-        Checkout
+        Add to Cart
       </Button>
     </>
   );

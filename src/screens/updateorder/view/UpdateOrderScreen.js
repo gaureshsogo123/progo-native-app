@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Dimensions,
   ScrollView,
-  Image
+  Image,
 } from "react-native";
 import { Button, TextInput, Text } from "react-native-paper";
 import { useAuthContext } from "../../../context/UserAuthContext";
@@ -21,7 +21,7 @@ import Product from "../../purchaseorder/view/Product";
 import useProductCategories from "../../../hooks/useProductCategories";
 import { useCartContext } from "../../../context/CartContext";
 import { AntDesign } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
@@ -79,9 +79,13 @@ const PAGE_SIZE = 15;
 
 function UpdateOrder({ route, navigation }) {
   const { order } = route.params;
-  const { user } = useAuthContext();
+  const { user, setRouteName } = useAuthContext();
 
-  const { cartItems, setCartItems } = useCartContext();
+  const {
+    cartItems,
+    setCartItems,
+    setDistributorInfo
+  } = useCartContext();
   const [searchFilter, setSearchFilter] = useState("");
   const debounceSearch = useDebounce(searchFilter);
   const [categoryId, setCategoryId] = useState(0);
@@ -89,6 +93,7 @@ function UpdateOrder({ route, navigation }) {
   const { productCategories } = useProductCategories();
   const [errors, setErrors] = useState({});
   const navi = useNavigation();
+  const updateOrderRoute = useRoute();
 
   const {
     products,
@@ -120,17 +125,19 @@ function UpdateOrder({ route, navigation }) {
     }
   };
 
-  useEffect(()=>{
-    const unsubscribeFocus = navigation.addListener("focus", ()=>{
+  useEffect(() => {
+    setRouteName(updateOrderRoute.name);
+  }, [navigation]);
+
+  useEffect(() => {
+    const unsubscribeFocus = navigation.addListener("focus", () => {
       navi.reset({
-        index:0,
-        routes:[{name:'Landing Screen'}]
-      })
+        index: 0,
+        routes: [{ name: "Landing Screen" }],
+      });
     });
     return unsubscribeFocus;
-  },[navigation])
-
-  
+  }, [navigation]);
 
   const getCartProducts = async () => {
     try {
@@ -172,14 +179,13 @@ function UpdateOrder({ route, navigation }) {
     if (cartItems.length > 0) {
       navigation.navigate("My Orders", {
         screen: "Cart",
-        params: {
-          cartItems,
-          action: "update",
-          discount: discount,
-          distributorId: order.distributorid,
-          orderId: order.orderid,
-          distributorName: order.distributorname,
-        },
+      });
+      setDistributorInfo({
+        action: "update",
+        discount: discount,
+        distributorId: order.distributorid,
+        orderId: order.orderid,
+        distributorName: order.distributorname,
       });
     } else {
       Alert.alert("Sorry Your Cart is Empty Please Add Some Products...");
@@ -194,29 +200,29 @@ function UpdateOrder({ route, navigation }) {
         <View style={styles.pagecontainer}>
           <View style={styles.heading}>
             <View style={styles.flexContainer}>
-              <Text variant="titleMedium" style={{ width: "80%" }}>
+              <Text variant="titleMedium" style={{ width: "70%" }}>
                 <Text style={{ color: "gray" }}>Supplier: </Text>
                 {order.distributorname}
               </Text>
-              <Text variant="titleMedium">ID: {order.orderid}</Text>
+              <Text variant="titleMedium">ID:{order.orderid}</Text>
             </View>
           </View>
-          <View style={{ display: "flex", flexDirection: "row" }}>
-            <TextInput
-              value={searchFilter}
-              mode="outlined"
-              theme={{ roundness: 10 }}
-              style={{ marginBottom: 3, marginHorizontal: 8, width: "88%" }}
-              placeholder="Search products"
-              onChangeText={(text) => setSearchFilter(text)}
-            />
-            <TouchableOpacity
+
+          <TextInput
+            value={searchFilter}
+            mode="outlined"
+            theme={{ roundness: 10 }}
+            style={{ marginBottom: 3, marginHorizontal: 8 }}
+            placeholder="Search products"
+            onChangeText={(text) => setSearchFilter(text)}
+          />
+          {/*<TouchableOpacity
               style={{ width: "5%", alignSelf: "center" }}
               onPress={cartHandlePress}
             >
               <AntDesign name="shoppingcart" size={28} />
-            </TouchableOpacity>
-            <TouchableOpacity
+  </TouchableOpacity>*/}
+          {/*<TouchableOpacity
               style={{
                 width: "5%",
                 borderRadius: 30,
@@ -229,8 +235,7 @@ function UpdateOrder({ route, navigation }) {
               onPress={cartHandlePress}
             >
               <Text style={{ color: "white" }}>{cartItems.length}</Text>
-            </TouchableOpacity>
-          </View>
+            </TouchableOpacity>*/}
 
           <View
             style={{
@@ -256,7 +261,6 @@ function UpdateOrder({ route, navigation }) {
                         val.categoryid == categoryId
                           ? theme.colors.primary
                           : null,
-                      paddingTop: "3%",
                     }}
                     key={i}
                     onPress={() => setCategoryId(val.categoryid)}

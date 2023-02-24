@@ -17,12 +17,14 @@ import { useAuthContext } from "../../../context/UserAuthContext";
 import OrderFilters from "./OrderFilters";
 import CancelOrderPopup from "./CancelOrderPopup";
 import Order from "./Order";
+import { useCartContext } from "../../../context/CartContext";
 
 const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
 
 export default function Orders({ navigation }) {
   const { user } = useAuthContext();
+  const {setDistributorInfo}=useCartContext();
   const theme = useTheme();
 
   const [status, setStatus] = useState("All");
@@ -90,6 +92,15 @@ export default function Orders({ navigation }) {
     navigation.navigate("Order Details", {
       order: item,
     });
+    if(item.orderstatus=="Placed"){
+      setDistributorInfo({
+        action: "update",
+        discount: 0,
+        distributorId:item.distributorid,
+        orderId:item.orderid,
+        distributorName: item.distributorname,
+      });
+    }
   };
 
   const filterorders = useMemo(
