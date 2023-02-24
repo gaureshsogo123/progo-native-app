@@ -40,8 +40,6 @@ const styles = StyleSheet.create({
 });
 
 function Product({ item }) {
-  const theme = useTheme();
-
   const { cartItems, setCartItems } = useCartContext();
   const productQuantity =
     cartItems?.find((product) => product.productid === item.productid)

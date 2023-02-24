@@ -16,7 +16,6 @@ import theme from "../../../themes/theme";
 import useDebounce from "../../../hooks/useDebounce";
 import { useProducts } from "../../purchaseorder/helper/useProducts";
 import { getOrderDetailsRetailer } from "../../orders/helper/OrderHelper";
-import { editOrder } from "../helper/UpdateOrderHelper";
 import Product from "../../purchaseorder/view/Product";
 import useProductCategories from "../../../hooks/useProductCategories";
 import { useCartContext } from "../../../context/CartContext";
@@ -164,13 +163,7 @@ function UpdateOrder({ route, navigation }) {
 
   const renderProduct = useCallback(
     ({ item }) => {
-      return (
-        <Product
-          item={item}
-          setCartItems={setCartItems}
-          cartItems={cartItems}
-        />
-      );
+      return <Product item={item} />;
     },
     [cartItems]
   );

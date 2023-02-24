@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  FlatList,
   StyleSheet,
   View,
   TouchableOpacity,
@@ -9,7 +8,6 @@ import {
   Dimensions,
 } from "react-native";
 import { TextInput } from "react-native-paper";
-import suppliers from "../../../constants/DummySuppliers";
 import { useAuthContext } from "../../../context/UserAuthContext";
 import { getDistributors } from "../helper/LandingScreenHelper";
 import { Text } from "react-native-paper";
@@ -25,7 +23,6 @@ export default function LandingScreen({ navigation }) {
   const [filterText, setFilterText] = useState("");
   const {cartItems,setCartItems,setDistributorInfo} = useCartContext();
   const navi = useNavigation();
-  
 
   useEffect(() => {
     getDistributors(user.userId)
@@ -39,21 +36,21 @@ export default function LandingScreen({ navigation }) {
       });
   }, [user.userId]);
 
-  useEffect(()=>{
-    const unsubscribeFocus = navigation.addListener("focus", ()=>{
-      setCartItems([])
+  useEffect(() => {
+    const unsubscribeFocus = navigation.addListener("focus", () => {
+      setCartItems([]);
     });
     return unsubscribeFocus;
-  },[cartItems])
+  }, [cartItems]);
 
 
   useEffect(()=>{
     if(routeName == "UpdateOrder"){
     const unsubscribeFocus = navigation.addListener("focus", ()=>{
       navi.reset({
-        index:0,
-        routes:[{name:'Orders'}]
-      })
+        index: 0,
+        routes: [{ name: "Orders" }],
+      });
     });
     return unsubscribeFocus;
   }
@@ -108,33 +105,14 @@ export default function LandingScreen({ navigation }) {
         </View>
       </View>
 
-      {/*<FlatList
-        data={filterDistributor}
-        keyboardShouldPersistTaps={"handled"}
-        renderItem={({ item }) => {
-          return (
-            <TouchableOpacity
-              onPress={() => handlePress(item)}
-              style={styles.list}
-            >
-              <View>
-                <Text style={{ fontSize: 15, fontWeight: "400" }}>
-                  {item.name}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          );
-        }}
-      />*/}
-
       <ScrollView
         contentContainerStyle={{
           display: "flex",
           flexDirection: "row",
           width: "100%",
-          justifyContent:"space-between",
+          justifyContent: "space-between",
           flexWrap: "wrap",
-          padding:10
+          padding: 10,
         }}
         keyboardShouldPersistTaps={"handled"}
       >
@@ -147,7 +125,9 @@ export default function LandingScreen({ navigation }) {
             >
               <Image
                 source={{
-                  uri:val.image||"https://cdn-icons-png.flaticon.com/512/5486/5486254.png"
+                  uri:
+                    val.image ||
+                    "https://cdn-icons-png.flaticon.com/512/5486/5486254.png",
                 }}
                 style={{
                   width: (width * 17) / 100,
