@@ -17,63 +17,12 @@ import useDebounce from "../../../hooks/useDebounce";
 import { useProducts } from "../../purchaseorder/helper/useProducts";
 import { getOrderDetailsRetailer } from "../../orders/helper/OrderHelper";
 import Product from "../../purchaseorder/view/Product";
-import useProductCategories from "../../../hooks/useProductCategories";
+import useDistributorProductCategories from "../../../hooks/useDistributorProductCategories";
 import { useCartContext } from "../../../context/CartContext";
 import { AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
-const { height } = Dimensions.get("screen");
-const { width } = Dimensions.get("screen");
-const styles = StyleSheet.create({
-  container: {
-    display: "flex",
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
-    width: "100%",
-  },
-  pagecontainer: {
-    width: "100%",
-  },
-  heading: {
-    padding: 10,
-  },
-  product: {
-    margin: 5,
-    padding: 5,
-    display: "flex",
-    flexDirection: "row",
-    flex: 1,
-    justifyContent: "space-between",
-    borderBottomWidth: 1,
-  },
-  price: {
-    color: "gray",
-  },
-  unitSection: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    alignItems: "flex-end",
-  },
-  unitInput: {
-    width: 70,
-    textAlign: "center",
-    height: 40,
-    paddingHorizontal: 1,
-    paddingBottom: 1,
-    backgroundColor: theme.colors.secondaryContainer,
-  },
-  orderButton: {
-    borderRadius: 3,
-    paddingVertical: 5,
-  },
-  flexContainer: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-});
-
+const { height, width } = Dimensions.get("screen");
 const PAGE_SIZE = 15;
 
 function UpdateOrder({ route, navigation }) {
@@ -85,7 +34,9 @@ function UpdateOrder({ route, navigation }) {
   const debounceSearch = useDebounce(searchFilter);
   const [categoryId, setCategoryId] = useState(0);
   const [pageNo, setPageNo] = useState(1);
-  const { productCategories } = useProductCategories();
+  const { productCategories } = useDistributorProductCategories(
+    order.distributorid
+  );
   const [errors, setErrors] = useState({});
   const navi = useNavigation();
 
@@ -312,3 +263,53 @@ function UpdateOrder({ route, navigation }) {
 }
 
 export default UpdateOrder;
+
+const styles = StyleSheet.create({
+  container: {
+    display: "flex",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    width: "100%",
+  },
+  pagecontainer: {
+    width: "100%",
+  },
+  heading: {
+    padding: 10,
+  },
+  product: {
+    margin: 5,
+    padding: 5,
+    display: "flex",
+    flexDirection: "row",
+    flex: 1,
+    justifyContent: "space-between",
+    borderBottomWidth: 1,
+  },
+  price: {
+    color: "gray",
+  },
+  unitSection: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
+  },
+  unitInput: {
+    width: 70,
+    textAlign: "center",
+    height: 40,
+    paddingHorizontal: 1,
+    paddingBottom: 1,
+    backgroundColor: theme.colors.secondaryContainer,
+  },
+  orderButton: {
+    borderRadius: 3,
+    paddingVertical: 5,
+  },
+  flexContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+});

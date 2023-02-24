@@ -15,63 +15,12 @@ import { TextInput, Text } from "react-native-paper";
 import { useProducts } from "../helper/useProducts";
 import Product from "./Product";
 import { AntDesign } from "@expo/vector-icons";
-import useProductCategories from "../../../hooks/useProductCategories";
+import useDistributorProductCategories from "../../../hooks/useDistributorProductCategories";
 import useDebounce from "../../../hooks/useDebounce";
 import { useCartContext } from "../../../context/CartContext";
 
 const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
-
-const styles = StyleSheet.create({
-  container: {
-    display: "flex",
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
-    width: "100%",
-  },
-  pagecontainer: {
-    width: "100%",
-  },
-  heading: {
-    padding: 10,
-  },
-  product: {
-    margin: 5,
-    padding: 5,
-    display: "flex",
-    flexDirection: "row",
-    flex: 1,
-    justifyContent: "space-between",
-    borderBottomWidth: 1,
-  },
-  price: {
-    color: "gray",
-  },
-  unitSection: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    alignItems: "flex-end",
-  },
-  unitInput: {
-    width: 70,
-    textAlign: "center",
-    paddingHorizontal: 1,
-    paddingBottom: 1,
-    paddingBottom: 1,
-  },
-  orderButton: {
-    borderRadius: 3,
-    paddingVertical: 5,
-    backgroundColor: "#f9a374",
-    backgroundColor: "#f9a374",
-  },
-  flexContainer: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-});
 
 const PAGE_SIZE = 15;
 
@@ -83,7 +32,7 @@ function PurchaseOrderScreen({ route, navigation }) {
   const debounceSearch = useDebounce(searchFilter);
   const [categoryId, setCategoryId] = useState(0);
   const [pageNo, setPageNo] = useState(1);
-  const { productCategories } = useProductCategories();
+  const { productCategories } = useDistributorProductCategories(distributorId);
 
   const {
     products,
@@ -258,3 +207,54 @@ function PurchaseOrderScreen({ route, navigation }) {
 }
 
 export default PurchaseOrderScreen;
+
+const styles = StyleSheet.create({
+  container: {
+    display: "flex",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    width: "100%",
+  },
+  pagecontainer: {
+    width: "100%",
+  },
+  heading: {
+    padding: 10,
+  },
+  product: {
+    margin: 5,
+    padding: 5,
+    display: "flex",
+    flexDirection: "row",
+    flex: 1,
+    justifyContent: "space-between",
+    borderBottomWidth: 1,
+  },
+  price: {
+    color: "gray",
+  },
+  unitSection: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
+  },
+  unitInput: {
+    width: 70,
+    textAlign: "center",
+    paddingHorizontal: 1,
+    paddingBottom: 1,
+    paddingBottom: 1,
+  },
+  orderButton: {
+    borderRadius: 3,
+    paddingVertical: 5,
+    backgroundColor: "#f9a374",
+    backgroundColor: "#f9a374",
+  },
+  flexContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+});
