@@ -125,7 +125,7 @@ function UpdateOrder({ route, navigation }) {
         screen: "Cart",
       });
     } else {
-      Alert.alert("Sorry Your Cart is Empty Please Add Some Products...");
+      Alert.alert("", "Sorry Your Cart is Empty Please Add Some Products...");
     }
   };
 
