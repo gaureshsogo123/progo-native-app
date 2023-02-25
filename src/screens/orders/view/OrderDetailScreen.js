@@ -147,13 +147,13 @@ function OrderDetailScreen({ navigation, route }) {
     <>
       <View style={styles.heading}>
         <View style={styles.flexContainer}>
-          <Text variant="titleMedium" style={{ width: "80%" }}>
+          <Text variant="titleMedium" style={{ width: "70%" }}>
             <Text style={{ color: "gray" }}>Supplier: </Text>
             {order.distributorname}
           </Text>
 
           <Text variant="titleMedium">
-            <Text variant="titleMedium">ID: </Text>
+            <Text variant="titleMedium" style={{color:"gray"}}>ID:</Text>
             {order.orderid}
           </Text>
         </View>

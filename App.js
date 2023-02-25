@@ -7,6 +7,7 @@ import {
 import { Provider as PaperProvider } from "react-native-paper";
 import theme from "./src/themes/theme";
 import OfflineProtected from "./src/component/OfflineProtected";
+import CartContextProvider from "./src/context/CartContext";
 
 export default function App() {
   return (
@@ -14,7 +15,9 @@ export default function App() {
       <PaperProvider theme={theme}>
         <AuthContextProvider>
           <OfflineProtected>
+            <CartContextProvider>
             <Routes />
+            </CartContextProvider>
           </OfflineProtected>
         </AuthContextProvider>
       </PaperProvider>

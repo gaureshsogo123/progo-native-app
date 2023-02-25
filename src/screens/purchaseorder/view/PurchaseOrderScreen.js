@@ -1,17 +1,210 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
   RefreshControl,
   StyleSheet,
   View,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+  Dimensions,
   Alert,
 } from "react-native";
-import { Button, useTheme, HelperText } from "react-native-paper";
+import { Button, HelperText, useTheme } from "react-native-paper";
 import { TextInput, Text } from "react-native-paper";
-import { useAuthContext } from "../../../context/UserAuthContext";
-import { fetchProducts, saveOrder } from "../helper/Purchasehelper";
-import calculateTotal from "../helper/calculateTotal";
+import { useProducts } from "../helper/useProducts";
 import Product from "./Product";
+import useDistributorProductCategories from "../../../hooks/useDistributorProductCategories";
+import useDebounce from "../../../hooks/useDebounce";
+import { useCartContext } from "../../../context/CartContext";
+
+const { height } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
+
+const PAGE_SIZE = 15;
+
+function PurchaseOrderScreen({ route, navigation }) {
+  const { distributorId, distributorName } = route.params;
+  const theme = useTheme();
+  const { cartItems, setDistributorInfo, clearContext } = useCartContext();
+  const [searchFilter, setSearchFilter] = useState("");
+  const debounceSearch = useDebounce(searchFilter);
+  const [categoryId, setCategoryId] = useState(0);
+  const [pageNo, setPageNo] = useState(1);
+  const { productCategories } = useDistributorProductCategories(distributorId);
+
+  const { products, setProducts, refreshing, hasMore } = useProducts(
+    distributorId,
+    pageNo,
+    PAGE_SIZE,
+    debounceSearch,
+    categoryId
+  );
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    clearContext();
+
+    setDistributorInfo({
+      action: "place",
+      discount: 0,
+      distributorId,
+      distributorName,
+    });
+  }, [distributorId]);
+
+  useEffect(() => {
+    setProducts([]);
+    setPageNo(1);
+  }, [debounceSearch, categoryId]);
+
+  const handleEndReached = () => {
+    if (hasMore) {
+      setPageNo((prev) => prev + 1);
+    }
+  };
+
+  const cartHandlePress = () => {
+    if (cartItems.length > 0) {
+      navigation.navigate("Home", {
+        screen: "Cart",
+      });
+    } else {
+      Alert.alert("Sorry Your Cart is Empty Please Add Some Products...");
+    }
+  };
+
+  const renderProduct = useCallback(
+    ({ item }) => {
+      return <Product item={item} />;
+    },
+    [cartItems]
+  );
+
+  const productKeyExtractor = useCallback((product) => product.productid, []);
+
+  return (
+    <>
+      <View style={styles.heading}>
+        <View style={styles.flexContainer}>
+          <Text variant="titleMedium" style={{ width: "90%" }}>
+            <Text style={{ color: "gray" }}>Supplier: </Text>
+            {distributorName}
+          </Text>
+          {/*<TouchableOpacity
+          style={{ width: "5%", alignSelf: "center" }}
+          onPress={cartHandlePress}
+        >
+          <AntDesign name="shoppingcart" size={28} />
+  </TouchableOpacity>*/}
+          {/*<TouchableOpacity
+          style={{
+            width: "5%",
+            borderRadius: 30,
+            backgroundColor: theme.colors.primary,
+            height: 30,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          onPress={cartHandlePress}
+        >
+          <Text style={{ color: "white" }}>{cartItems.length}</Text>
+        </TouchableOpacity>*/}
+        </View>
+      </View>
+      <TextInput
+        value={searchFilter}
+        mode="outlined"
+        theme={{ roundness: 10 }}
+        style={{ marginBottom: 3, marginHorizontal: 8 }}
+        placeholder="Search Products"
+        onChangeText={(text) => setSearchFilter(text)}
+      />
+      <View
+        style={{
+          backgroundColor: "white",
+          height: (height * 12) / 100,
+          marginBottom: 10,
+          marginTop: 10,
+          justifyContent: "center",
+        }}
+      >
+        <ScrollView horizontal={true} contentContainerStyle={{ padding: 10 }}>
+          {productCategories.map((val, i) => {
+            return (
+              <TouchableOpacity
+                style={{
+                  marginRight: 20,
+                  justifyContent: "center",
+                  borderTopWidth: val.categoryid == categoryId ? 6 : null,
+                  borderTopColor:
+                    val.categoryid == categoryId ? theme.colors.primary : null,
+                }}
+                key={i}
+                onPress={() => setCategoryId(val.categoryid)}
+              >
+                <Image
+                  source={{
+                    uri:
+                      val.image ||
+                      "https://cdn-icons-png.flaticon.com/512/679/679922.png",
+                  }}
+                  style={{
+                    width: (width * 14) / 100,
+                    height: (height * 6) / 100,
+                    marginBottom: 5,
+                    alignSelf: "center",
+                  }}
+                />
+                <Text
+                  style={{
+                    alignSelf: "center",
+                    fontSize: (height * 1.5) / 100,
+                    color:
+                      val.categoryid == categoryId
+                        ? theme.colors.primary
+                        : null,
+                  }}
+                  adjustsFontSizeToFit={true}
+                >
+                  {val.categoryname}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+      {errors.products && (
+        <HelperText visible={errors.products} type="error">
+          {errors.products}{" "}
+        </HelperText>
+      )}
+      <FlatList
+        removeClippedSubviews={false}
+        keyExtractor={productKeyExtractor}
+        data={products}
+        renderItem={renderProduct}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={2}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => setPageNo(1)}
+          />
+        }
+      />
+      <Button
+        onPress={cartHandlePress}
+        mode="contained"
+        style={styles.orderButton}
+      >
+        Add to Cart
+      </Button>
+    </>
+  );
+}
+
+export default PurchaseOrderScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -48,12 +241,14 @@ const styles = StyleSheet.create({
     width: 70,
     textAlign: "center",
     paddingHorizontal: 1,
-    paddingBottom: 1
+    paddingBottom: 1,
+    paddingBottom: 1,
   },
   orderButton: {
     borderRadius: 3,
     paddingVertical: 5,
-    backgroundColor:"#f9a374"
+    backgroundColor: "#f9a374",
+    backgroundColor: "#f9a374",
   },
   flexContainer: {
     display: "flex",
@@ -61,175 +256,3 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
 });
-
-function PurchaseOrderScreen({ route, navigation }) {
-  const theme = useTheme();
-
-  const { distributorId, distributorName } = route.params;
-
-  const { user } = useAuthContext();
-  const [refreshing, setRefreshing] = useState(true);
-  const [products, setProducts] = useState([]);
-  const [errors, setErrors] = useState({});
-  const [discount, setDiscount] = useState(0);
-  const [orderAggregateData, setOrderAggregateData] = useState({
-    totalPrice: 0,
-    totalItems: 0,
-    totalProducts: 0,
-  });
-  const [searchFilter, setSearchFilter] = useState("");
-
-  const placeOrder = async () => {
-    setErrors({ ...errors, saveOrder: "" });
-    const orderProducts = products.filter((product) => product.quantity !== 0);
-    if (orderProducts.length === 0) {
-      Alert.alert(
-        "Empty cart!",
-        "Empty order cannot be placed. Please add some products to place an order"
-      );
-      return;
-    }
-    try {
-      const result = await saveOrder(
-        user.userId,
-        orderProducts.length,
-        orderAggregateData.totalPrice -
-          (orderAggregateData.totalPrice * discount) / 100,
-        "cash",
-        distributorId,
-        discount,
-        orderAggregateData.totalPrice,
-        orderProducts
-      );
-      if (!result.error) {
-        Alert.alert(
-          "Success",
-          `Your order has been successfully placed with order ID: ${result.data[0]?.orderid}`
-        );
-        navigation.pop(1);
-        navigation.navigate("My Orders", { screen: "Orders" });
-      } else {
-        Alert.alert("Error", result.error);
-      }
-    } catch (error) {
-      Alert.alert("Error", error.message);
-      setErrors({ ...errors, saveOrder: "Failed to save order" });
-    }
-  };
-
-  useEffect(() => {
-    if (!user) return;
-    setErrors({ ...errors, products: "" });
-    getProducts();
-  }, [distributorId]);
-
-  const getProducts = async () => {
-    setRefreshing(true);
-    try {
-      const products = await fetchProducts(distributorId, 0, "ALL");
-      if (products.data.length === 0)
-        setErrors({
-          ...errors,
-          products: "You do not have any products yet",
-        });
-      else {
-        products.data = products.data.map((product) => ({
-          ...product,
-          quantity: product.quantity || 0,
-          discount: product.discount || 0,
-        }));
-        setProducts(products.data);
-      }
-    } catch (err) {
-      setErrors({ ...errors, products: "Failed to get products" });
-    } finally {
-      setRefreshing(false);
-      setDiscount(0);
-    }
-  };
-
-  useEffect(() => {
-    setOrderAggregateData(calculateTotal(products));
-  }, [products]);
-
-  const updateQuantity = (amount, id) => {
-    setProducts((products) => {
-      let obj = [...products];
-      let index = obj.findIndex((item) => item.productid === id);
-      obj[index].quantity = parseInt(amount || 0);
-      return obj;
-    });
-  };
-
-  const renderProduct = useCallback(({ item }) => {
-    return <Product item={item} updateQuantity={updateQuantity} />;
-  }, []);
-
-  const filteredProducts = useMemo(() => {
-    return products?.filter((product) =>
-      product.productname.toLowerCase().includes(searchFilter.toLowerCase())
-    );
-  }, [searchFilter, products]);
-
-  const productKeyExtractor = useCallback((product) => product.productid, []);
-
-  return (
-    <>
-      <View style={styles.heading}>
-        <View style={styles.flexContainer}>
-          <Text variant="titleMedium" style={{width:"90%"}}>
-            <Text style={{ color: "gray" }}>Supplier: </Text>
-            {distributorName}
-          </Text>
-        </View>
-        <View style={styles.flexContainer}>
-          <Text variant="titleMedium">
-            <Text style={{ color: "gray" }}>Products:</Text>{" "}
-            {orderAggregateData.totalProducts}
-          </Text>
-          <Text variant="titleMedium">
-            <Text style={{ color: "gray" }}>Items:</Text>{" "}
-            {orderAggregateData.totalItems}
-          </Text>
-        </View>
-        <View style={styles.flexContainer}>
-          <Text variant="titleMedium">
-            <Text style={{ color: "gray" }}>Total Amount:</Text> {`\u20B9`}{" "}
-            {Number(orderAggregateData.totalPrice).toFixed(2)}
-          </Text>
-        </View>
-      </View>
-
-      <TextInput
-        value={searchFilter}
-        mode="outlined"
-        theme={{ roundness: 10 }}
-        style={{ marginHorizontal: 8, marginBottom: 5 }}
-        placeholder="Search Products"
-        onChangeText={(text) => setSearchFilter(text)}
-      />
-      {errors.products && (
-        <HelperText visible={errors.products} type="error">
-          {errors.products}{" "}
-        </HelperText>
-      )}
-      <FlatList
-        removeClippedSubviews={false}
-        keyExtractor={productKeyExtractor}
-        data={filteredProducts}
-        renderItem={renderProduct}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => getProducts()}
-          />
-        }
-      />
-      <Button onPress={placeOrder} mode="contained" style={styles.orderButton}>
-        Place Order
-      </Button>
-    </>
-  );
-}
-
-export default PurchaseOrderScreen;

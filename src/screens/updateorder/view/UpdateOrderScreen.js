@@ -1,18 +1,246 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
   RefreshControl,
   StyleSheet,
   View,
+  TouchableOpacity,
+  Dimensions,
+  ScrollView,
+  Image,
 } from "react-native";
 import { Button, TextInput, Text } from "react-native-paper";
 import { useAuthContext } from "../../../context/UserAuthContext";
 import theme from "../../../themes/theme";
-import calculateTotal from "../../purchaseorder/helper/calculateTotal";
-import { fetchProducts } from "../../purchaseorder/helper/Purchasehelper";
+import useDebounce from "../../../hooks/useDebounce";
+import { useProducts } from "../../purchaseorder/helper/useProducts";
 import { getOrderDetailsRetailer } from "../../orders/helper/OrderHelper";
-import { editOrder } from "../helper/UpdateOrderHelper";
+import Product from "../../purchaseorder/view/Product";
+import useDistributorProductCategories from "../../../hooks/useDistributorProductCategories";
+import { useCartContext } from "../../../context/CartContext";
+import { useNavigation, useRoute } from "@react-navigation/native";
+
+const { height, width } = Dimensions.get("screen");
+const PAGE_SIZE = 15;
+
+function UpdateOrder({ route, navigation }) {
+  const { order } = route.params;
+  const { user, setRouteName } = useAuthContext();
+
+  const { cartItems, setCartItems, setDistributorInfo } = useCartContext();
+  const [searchFilter, setSearchFilter] = useState("");
+  const debounceSearch = useDebounce(searchFilter);
+  const [categoryId, setCategoryId] = useState(0);
+  const [pageNo, setPageNo] = useState(1);
+  const { productCategories } = useDistributorProductCategories(
+    order.distributorid
+  );
+  const [errors, setErrors] = useState({});
+  const navi = useNavigation();
+  const updateOrderRoute = useRoute();
+
+  const { products, setProducts, refreshing, hasMore } = useProducts(
+    order.distributorid,
+    pageNo,
+    PAGE_SIZE,
+    debounceSearch,
+    categoryId
+  );
+
+  useEffect(() => {
+    getCartProducts();
+
+    if (order.orderstatus == "Placed") {
+      setDistributorInfo({
+        action: "update",
+        discount: 0,
+        distributorId: order.distributorid,
+        orderId: order.orderid,
+        distributorName: order.distributorname,
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    setProducts([]);
+    setPageNo(1);
+  }, [debounceSearch, categoryId]);
+
+  const handleEndReached = () => {
+    if (hasMore) {
+      setPageNo((prev) => prev + 1);
+    }
+  };
+
+  useEffect(() => {
+    setRouteName(updateOrderRoute.name);
+  }, [navigation]);
+
+  useEffect(() => {
+    const unsubscribeFocus = navigation.addListener("focus", () => {
+      navi.reset({
+        index: 0,
+        routes: [{ name: "Landing Screen" }],
+      });
+    });
+    return unsubscribeFocus;
+  }, [navigation]);
+
+  const getCartProducts = async () => {
+    try {
+      const orderDetails = await getOrderDetailsRetailer(
+        order.orderid,
+        user.userId
+      );
+      if (orderDetails.error) {
+        Alert.alert("Error", "There was an error");
+      }
+      const cart = orderDetails.data.map((item) => ({
+        discount: item.discount,
+        price: item.productprice,
+        productid: item.productid,
+        quantity: item.productquantity,
+        productname: item.productname,
+        orderstatus: item.orderstatus,
+        manufacturer: item.manufacturer,
+      }));
+      setCartItems(cart);
+    } catch (err) {
+      Alert.alert("Error", "Failed to fetch previous cart items");
+      setErrors({ ...errors, cart: "Failed to get products" });
+    }
+  };
+
+  const renderProduct = useCallback(
+    ({ item }) => {
+      return <Product item={item} />;
+    },
+    [cartItems]
+  );
+
+  const cartHandlePress = () => {
+    if (cartItems.length > 0) {
+      navigation.navigate("My Orders", {
+        screen: "Cart",
+      });
+    } else {
+      Alert.alert("Sorry Your Cart is Empty Please Add Some Products...");
+    }
+  };
+
+  const productKeyExtractor = useCallback((product) => product.productid, []);
+
+  return (
+    <>
+      <View style={styles.container}>
+        <View style={styles.pagecontainer}>
+          <View style={styles.heading}>
+            <View style={styles.flexContainer}>
+              <Text variant="titleMedium" style={{ width: "70%" }}>
+                <Text style={{ color: "gray" }}>Supplier: </Text>
+                {order.distributorname}
+              </Text>
+              <Text variant="titleMedium">ID:{order.orderid}</Text>
+            </View>
+          </View>
+
+          <TextInput
+            value={searchFilter}
+            mode="outlined"
+            theme={{ roundness: 10 }}
+            style={{ marginBottom: 3, marginHorizontal: 8 }}
+            placeholder="Search products"
+            onChangeText={(text) => setSearchFilter(text)}
+          />
+          <View
+            style={{
+              backgroundColor: "white",
+              height: (height * 12) / 100,
+              marginBottom: 10,
+              marginTop: 10,
+              justifyContent: "center",
+            }}
+          >
+            <ScrollView
+              horizontal={true}
+              contentContainerStyle={{ padding: 10 }}
+            >
+              {productCategories.map((val, i) => {
+                return (
+                  <TouchableOpacity
+                    style={{
+                      marginRight: 20,
+                      justifyContent: "center",
+                      borderTopWidth: val.categoryid == categoryId ? 6 : null,
+                      borderTopColor:
+                        val.categoryid == categoryId
+                          ? theme.colors.primary
+                          : null,
+                    }}
+                    key={i}
+                    onPress={() => setCategoryId(val.categoryid)}
+                  >
+                    <Image
+                      source={{
+                        uri:
+                          val.image ||
+                          "https://cdn-icons-png.flaticon.com/512/679/679922.png",
+                      }}
+                      style={{
+                        width: (width * 14) / 100,
+                        height: (height * 6) / 100,
+                        marginBottom: 5,
+                        alignSelf: "center",
+                      }}
+                    />
+                    <Text
+                      style={{
+                        alignSelf: "center",
+                        fontSize: (height * 1.5) / 100,
+                        color:
+                          val.categoryid == categoryId
+                            ? theme.colors.primary
+                            : null,
+                      }}
+                      adjustsFontSizeToFit={true}
+                    >
+                      {val.categoryname}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </View>
+      </View>
+      <FlatList
+        removeClippedSubviews={false}
+        keyExtractor={productKeyExtractor}
+        data={products}
+        renderItem={renderProduct}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={2}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => setPageNo(1)}
+          />
+        }
+      />
+
+      <Button
+        onPress={cartHandlePress}
+        mode="contained"
+        style={styles.orderButton}
+      >
+        Proceed
+      </Button>
+    </>
+  );
+}
+
+export default UpdateOrder;
 
 const styles = StyleSheet.create({
   container: {
@@ -63,233 +291,3 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
 });
-
-function UpdateOrder({ route, navigation }) {
-  const {
-    order,
-    order: { distributorid },
-  } = route.params;
-  const { user } = useAuthContext();
-
-  const [refreshing, setRefreshing] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [discount, setDiscount] = useState(0);
-
-  const [products, setProducts] = useState([]);
-  const [orderDetails, setOrderDetails] = useState();
-  const [orderAggregateData, setOrderAggregateData] = useState({
-    totalPrice: 0,
-    totalItems: 0,
-    totalProducts: 0,
-  });
-  const [searchFilter, setSearchFilter] = useState("");
-
-  useEffect(() => {
-    getProducts();
-  }, [order.orderid]);
-
-  useEffect(() => {
-    setOrderAggregateData(calculateTotal(products));
-  }, [products]);
-
-  const updateOrder = async () => {
-    setErrors({ ...errors, saveOrder: "" });
-    const orderProducts = products.filter((product) => product.quantity !== 0);
-    if (orderProducts.length === 0) {
-      Alert.alert(
-        "Empty cart!",
-        "Empty order cannot be placed. Please add some products to update the order or cancel if you no longer wish to fulfill this order"
-      );
-      return;
-    }
-    try {
-      const result = await editOrder(
-        user.userId,
-        orderProducts.length,
-        Number(
-          orderAggregateData.totalPrice -
-            (orderAggregateData.totalPrice * discount) / 100
-        ).toFixed(2),
-        "cash",
-        Number(orderAggregateData.totalPrice).toFixed(2),
-        orderProducts,
-        discount,
-        order.orderid,
-        distributorid
-      );
-      if (!result.error) {
-        Alert.alert(
-          "Success",
-          `Your order with ID - ${result.data[0]?.orderid} has been successfully updated!`
-        );
-        navigation.navigate("Orders", { screen: "OrdersList" });
-      } else setErrors({ ...errors, updateOrder: result.error });
-    } catch (error) {
-      Alert.alert("Error", "There was an error");
-    }
-  };
-
-  const getProducts = async () => {
-    setRefreshing(true);
-    try {
-      const products = await fetchProducts(distributorid, 0, "ALL");
-      const orderDetails = await getOrderDetailsRetailer(
-        order.orderid,
-        user.userId
-      );
-      if (orderDetails.data) {
-        /* map product quantity, price to product quantity, price in order*/
-        setOrderDetails(orderDetails.data);
-        products.data = products.data.map((product) => {
-          const orderProduct = orderDetails.data.find(
-            (oProduct) => oProduct.productid == product.productid
-          );
-          return {
-            ...product,
-            price: orderProduct?.productprice || product.price,
-            quantity: orderProduct?.productquantity || 0,
-            discount: product.discount || 0,
-          };
-        });
-        setProducts(products.data);
-      }
-    } catch (error) {
-      Alert.alert("Error", "There was an error");
-    } finally {
-      setRefreshing(false);
-      setDiscount(0);
-    }
-  };
-
-  const updateQuantity = (amount, id) => {
-    setProducts((products) => {
-      let obj = [...products];
-      let index = obj.findIndex((item) => item.productid === id);
-      obj[index].quantity = parseInt(amount || 0);
-      return obj;
-    });
-  };
-
-  const renderProduct = useCallback(({ item }) => {
-    return (
-      <View
-        style={{
-          ...styles.product,
-          borderBottomColor: "silver",
-          paddingBottom: "3%",
-          backgroundColor: "#fafafa",
-        }}
-      >
-        <View style={{ width: "70%" }}>
-          <Text variant="titleMedium">{item.productname}</Text>
-          <Text style={styles.price} variant="titleSmall">
-            Price: {`\u20B9`} {Number(item.price).toFixed(2)}{" "}
-          </Text>
-          <Text variant="titleSmall" style={{ color: "#424242" }}>
-            Total: {`\u20B9`} {Number(item.price * item.quantity).toFixed(2)}{" "}
-          </Text>
-        </View>
-        <View style={styles.unitSection}>
-          <TextInput
-            keyboardType="number-pad"
-            style={styles.unitInput}
-            variant="flat"
-            value={item.quantity === 0 ? "" : item.quantity + ""}
-            onChangeText={(text) => {
-              if (text.includes("-")) return;
-              if (
-                text == "" ||
-                (Number.isInteger(parseInt(text)) && parseInt(text) > 0)
-              )
-                updateQuantity(text, item.productid);
-              else return;
-            }}
-          />
-          <Text variant="labelLarge" style={{ fontWeight: "400" }}>
-            {" "}
-            units
-          </Text>
-        </View>
-      </View>
-    );
-  }, []);
-
-  const filteredProducts = useMemo(() => {
-    return products.filter(
-      (product) =>
-        !searchFilter ||
-        product.productname.toLowerCase().includes(searchFilter.toLowerCase())
-    );
-  }, [searchFilter, products]);
-
-  const productKeyExtractor = useCallback((product) => product.productid, []);
-
-  return (
-    <>
-      <View style={styles.container}>
-        <View style={styles.pagecontainer}>
-          <View style={styles.heading}>
-            <View style={styles.flexContainer}>
-              <Text variant="titleMedium" style={{ width: "80%" }}>
-                <Text style={{ color: "gray" }}>Supplier: </Text>
-                {order.distributorname}
-              </Text>
-              <Text variant="titleMedium">ID: {order.orderid}</Text>
-            </View>
-            <View style={styles.flexContainer}>
-              <Text variant="titleMedium">
-                <Text style={{ color: "gray" }}>Products:</Text>{" "}
-                {orderAggregateData.totalProducts}
-              </Text>
-              <Text variant="titleMedium">
-                <Text style={{ color: "gray" }}>Items:</Text>{" "}
-                {orderAggregateData.totalItems}
-              </Text>
-            </View>
-            <View style={styles.flexContainer}>
-              <Text variant="titleMedium">
-                <Text style={{ color: "gray" }}>Total Amount:</Text> {`\u20B9`}{" "}
-                {Number(orderAggregateData.totalPrice).toFixed(2)}
-              </Text>
-            </View>
-          </View>
-
-          <TextInput
-            value={searchFilter}
-            mode="outlined"
-            theme={{ roundness: 10 }}
-            style={{ marginHorizontal: 8, marginBottom: 5 }}
-            placeholder="Search products"
-            onChangeText={(text) => setSearchFilter(text)}
-          />
-        </View>
-      </View>
-      <FlatList
-        removeClippedSubviews={false}
-        keyExtractor={productKeyExtractor}
-        data={filteredProducts}
-        renderItem={renderProduct}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={getProducts} />
-        }
-      />
-
-      {orderDetails &&
-        (orderDetails[0]?.orderstatus.toLowerCase() === "placed" ? (
-          <Button
-            onPress={updateOrder}
-            mode="contained"
-            style={styles.orderButton}
-          >
-            Update Order
-          </Button>
-        ) : (
-          <Button mode="contained" style={styles.orderButton}>
-            Order {orderDetails[0]?.orderstatus.toLowerCase()}
-          </Button>
-        ))}
-    </>
-  );
-}
-
-export default UpdateOrder;
