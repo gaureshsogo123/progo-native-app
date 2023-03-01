@@ -5,10 +5,11 @@ import { Alert, View, StyleSheet, Dimensions } from "react-native";
 import { updatePin } from "../helper/SigninHelper";
 
 const { height } = Dimensions.get("screen");
+
 function UpdatePin({ navigation, route }) {
   const theme = useTheme();
 
-  const { mobile_no } = route.params;
+  const { mobile_no, onSuccess } = route.params;
 
   const [pin, setPin] = useState();
   const [confirmPin, setConfirmPin] = useState();
@@ -41,7 +42,11 @@ function UpdatePin({ navigation, route }) {
         .then((res) => {
           if (!res.error) {
             Alert.alert("Success", res.message);
-            navigation.goBack();
+            if (onSuccess) {
+              onSuccess();
+            } else {
+              navigation.goBack();
+            }
           } else Alert.alert("Error", res.error);
         })
         .catch((err) => {
@@ -66,12 +71,13 @@ function UpdatePin({ navigation, route }) {
           backgroundColor: theme.colors.background,
         }}
       >
+        <Text variant="titleMedium">Please set a PIN</Text>
         <MaterialTextInput
           style={styles.textInput}
           mode="outlined"
           label={
             <Text style={{ backgroundColor: "white", color: "gray" }}>
-              New PIN
+              Enter PIN
             </Text>
           }
           value={pin}

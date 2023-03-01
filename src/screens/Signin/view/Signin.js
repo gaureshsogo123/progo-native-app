@@ -51,7 +51,6 @@ function SignIn({ navigation }) {
   const [mobileNumber, setMobileNumber] = useState();
   const [pin, setPin] = useState();
   const [errors, setErrors] = useState({});
-  const [showforgotPincode, setShowforgotPincode] = useState(false);
 
   const { loginUser, isLoggedIn } = useAuthContext();
 
@@ -104,10 +103,9 @@ function SignIn({ navigation }) {
       .catch((err) => setErrors({ ...errors, pin: err.message }));
   };
 
-  // to reset forgotten pin when otp function is set up
-  // const handleResetPIN = () => {
-  //   navigation.push("UpdatePin", { mobile_no: "", signUp: false });
-  // };
+  const handleForgotPin = () => {
+    navigation.push("forgotpin");
+  };
 
   return (
     <>
@@ -123,149 +121,81 @@ function SignIn({ navigation }) {
           backgroundColor: theme.colors.background,
         }}
       >
-        {!showforgotPincode && (
-          <>
-            <MaterialTextInput
-              style={styles.textInput}
-              mode="outlined"
-              label={
-                <Text style={{ backgroundColor: "white", color: "gray" }}>
-                  Phone Number
-                </Text>
+        <>
+          <MaterialTextInput
+            style={styles.textInput}
+            mode="outlined"
+            label={
+              <Text style={{ backgroundColor: "white", color: "gray" }}>
+                Phone Number
+              </Text>
+            }
+            keyboardType={"numeric"}
+            value={mobileNumber}
+            onChangeText={(e) => {
+              if (/^\d[0-9]*$/.test(e) || e === "") {
+                setMobileNumber(e);
+                setErrors({ ...errors, mobile: "" });
+              } else {
+                setErrors({ ...errors, mobile: "Only numbers allowed" });
               }
-              keyboardType={"numeric"}
-              value={mobileNumber}
-              onChangeText={(e) => {
-                if (/^\d[0-9]*$/.test(e) || e === "") {
-                  setMobileNumber(e);
-                  setErrors({ ...errors, mobile: "" });
-                } else {
-                  setErrors({ ...errors, mobile: "Only numbers allowed" });
-                }
-              }}
-            />
-            <HelperText type="error" visible={errors.mobile}>
-              {errors.mobile}{" "}
-            </HelperText>
-
-            <MaterialTextInput
-              style={styles.textInput}
-              mode="outlined"
-              label={
-                <Text style={{ backgroundColor: "white", color: "gray" }}>
-                  Enter PIN
-                </Text>
-              }
-              value={pin}
-              secureTextEntry={true}
-              onChangeText={(e) => {
-                setErrors({ ...errors, otp: "" });
-                setPin(e);
-              }}
-            />
-
-            {/* 
-          When OTP is set up
-          <Button mode="text" onPress={handleResetPIN} style={styles.reset}>
-            Forgot PIN
-          </Button> */}
-            <HelperText
-              style={{ textAlign: "center" }}
-              type="error"
-              visible={errors.pin}
-            >
-              {errors.pin}{" "}
-            </HelperText>
-            <Button
-              style={styles.button}
-              mode="contained"
-              onPress={handleSignIn}
-            >
-              Sign In
-            </Button>
-            <View
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-evenly",
-                width: "100%",
-                marginTop: "1%",
-              }}
-            >
-              {/*<TouchableOpacity onPress={() => setShowforgotPincode(true)}>
-                <Text
-                  style={{ color: theme.colors.primary, fontWeight: "600" }}
-                  variant="bodyLarge"
-                >
-                  Forget pin ?
-                </Text>
-            </TouchableOpacity>*/}
-              {/*<TouchableOpacity onPress={() => navigation.navigate("signup")}>
-                <Text
-                  style={{ color: theme.colors.primary, fontWeight: "600" }}
-                  variant="bodyLarge"
-                >
-                  Sign up
-                </Text>
-          </TouchableOpacity>*/}
-            </View>
-          </>
-        )}
-
-        {showforgotPincode && (
-          <>
-
-<MaterialTextInput
-              style={{...styles.textInput,marginBottom:"6%"}}
-              mode="outlined"
-              label={
-                <Text style={{ backgroundColor: "white", color: "gray" }}>
-                  Phone Number
-                </Text>
-              }
-              keyboardType={"numeric"}
-              value={mobileNumber}
-              onChangeText={(e) => {
-                if (/^\d[0-9]*$/.test(e) || e === "") {
-                  setMobileNumber(e);
-                  setErrors({ ...errors, mobile: "" });
-                } else {
-                  setErrors({ ...errors, mobile: "Only numbers allowed" });
-                }
-              }}
-            />
-            <MaterialTextInput
-              style={{ ...styles.textInput }}
-              mode="outlined"
-              label={
-                <Text style={{ backgroundColor: "white", color: "gray" }}>
-                  Create New Pin
-                </Text>
-              }
-            />
-            <Button
-              mode="contained"
-              style={{ ...styles.button, marginTop: "6%" }}
-              onPress={() => setShowforgotPincode(false)}
-            >
-              Submit New Pin
-            </Button>
-            <TouchableOpacity
-              style={{ marginTop: "1%" }}
-              onPress={() => setShowforgotPincode(false)}
-            >
+            }}
+          />
+          <HelperText type="error" visible={errors.mobile}>
+            {errors.mobile}{" "}
+          </HelperText>
+          <MaterialTextInput
+            style={styles.textInput}
+            mode="outlined"
+            label={
+              <Text style={{ backgroundColor: "white", color: "gray" }}>
+                Enter PIN
+              </Text>
+            }
+            value={pin}
+            secureTextEntry={true}
+            onChangeText={(e) => {
+              setErrors({ ...errors, otp: "" });
+              setPin(e);
+            }}
+          />
+          <HelperText
+            style={{ textAlign: "center" }}
+            type="error"
+            visible={errors.pin}
+          >
+            {errors.pin}{" "}
+          </HelperText>
+          <Button style={styles.button} mode="contained" onPress={handleSignIn}>
+            Sign In
+          </Button>
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-evenly",
+              width: "100%",
+              marginTop: "1%",
+            }}
+          >
+            <TouchableOpacity onPress={handleForgotPin}>
               <Text
-                style={{
-                  color: theme.colors.primary,
-                  fontWeight: "600",
-                }}
+                style={{ color: theme.colors.primary, fontWeight: "600" }}
                 variant="bodyLarge"
               >
-                Back to Sign In
+                Forgot pin ?
               </Text>
             </TouchableOpacity>
-          </>
-        )}
+            <TouchableOpacity onPress={() => navigation.navigate("signup")}>
+              <Text
+                style={{ color: theme.colors.primary, fontWeight: "600" }}
+                variant="bodyLarge"
+              >
+                Sign up
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </>
       </View>
     </>
   );

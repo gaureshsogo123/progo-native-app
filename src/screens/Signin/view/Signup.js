@@ -6,7 +6,7 @@ import {
   Dimensions,
   TouchableOpacity,
 } from "react-native";
-import { Button, Text, useTheme, HelperText } from "react-native-paper";
+import { Button, Text, useTheme } from "react-native-paper";
 
 import { TextInput as MaterialTextInput } from "react-native-paper";
 
@@ -45,11 +45,18 @@ const styles = StyleSheet.create({
 
 function SignUp({ navigation }) {
   const theme = useTheme();
+  const [step, setStep] = useState(1);
+  const [mobile, setMobile] = useState("");
 
-  // to reset forgotten pin when otp function is set up
-  // const handleResetPIN = () => {
-  //   navigation.push("UpdatePin", { mobile_no: "", signUp: false });
-  // };
+  const handleSignup = () => {
+    setStep(2);
+  };
+
+  const handleOTP = () => {
+    navigation.push("updatepin", {
+      mobile_no: mobile,
+    });
+  };
 
   return (
     <>
@@ -66,58 +73,90 @@ function SignUp({ navigation }) {
           backgroundColor: theme.colors.background,
         }}
       >
-        <MaterialTextInput
-          style={styles.textInput}
-          mode="outlined"
-          label={
-            <Text style={{ backgroundColor: "white", color: "gray" }}>
-              Shop Name
-            </Text>
-          }
-        />
+        {step === 1 ? (
+          <>
+            <MaterialTextInput
+              style={styles.textInput}
+              mode="outlined"
+              label={
+                <Text style={{ backgroundColor: "white", color: "gray" }}>
+                  Shop Name
+                </Text>
+              }
+            />
 
-        <MaterialTextInput
-          style={{ ...styles.textInput, marginTop: "6%" }}
-          mode="outlined"
-          label={
-            <Text style={{ backgroundColor: "white", color: "gray" }}>
-              City
-            </Text>
-          }
-        />
+            <MaterialTextInput
+              style={{ ...styles.textInput, marginTop: "6%" }}
+              mode="outlined"
+              label={
+                <Text style={{ backgroundColor: "white", color: "gray" }}>
+                  City
+                </Text>
+              }
+            />
 
-        <MaterialTextInput
+            <MaterialTextInput
+              style={{ ...styles.textInput, marginTop: "6%" }}
+              mode="outlined"
+              onChangeText={(val) => setMobile(val)}
+              label={
+                <Text style={{ backgroundColor: "white", color: "gray" }}>
+                  Mobile Number
+                </Text>
+              }
+            />
+            {/* <MaterialTextInput
           style={{ ...styles.textInput, marginTop: "6%" }}
           mode="outlined"
           label={
             <Text style={{ backgroundColor: "white", color: "gray" }}>
-              Mobile Number
+              Enter passcode
             </Text>
           }
-        />
-        <MaterialTextInput
-          style={{ ...styles.textInput, marginTop: "6%" }}
-          mode="outlined"
-          label={
-            <Text style={{ backgroundColor: "white", color: "gray" }}>
-              Create 6 digit pin code
-            </Text>
-          }
-        />
-        <Button style={{ ...styles.button, marginTop: "6%" }} mode="contained">
-          Send Otp
-        </Button>
-        <TouchableOpacity style={{ marginTop: "1%" }} onPress={()=>navigation.navigate("signin")}>
-          <Text
-            style={{
-              color: theme.colors.primary,
-              fontWeight: "600",
-            }}
-            variant="bodyLarge"
-          >
-            Back to Sign In
-          </Text>
-        </TouchableOpacity>
+        /> */}
+            <Button
+              onPress={handleSignup}
+              style={{ ...styles.button, marginTop: "6%" }}
+              mode="contained"
+            >
+              Sign Up
+            </Button>
+            <TouchableOpacity
+              style={{ marginTop: "1%" }}
+              onPress={() => navigation.navigate("signin")}
+            >
+              <Text
+                style={{
+                  color: theme.colors.primary,
+                  fontWeight: "600",
+                }}
+                variant="bodyLarge"
+              >
+                Back to Sign In
+              </Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <Text>OTP was sent to +91 {mobile}</Text>
+            <MaterialTextInput
+              style={{ ...styles.textInput, marginTop: "6%" }}
+              mode="outlined"
+              label={
+                <Text style={{ backgroundColor: "white", color: "gray" }}>
+                  Enter OTP
+                </Text>
+              }
+            />
+            <Button
+              onPress={handleOTP}
+              style={{ ...styles.button, marginTop: "6%" }}
+              mode="contained"
+            >
+              Submit OTP
+            </Button>
+          </>
+        )}
       </View>
     </>
   );
