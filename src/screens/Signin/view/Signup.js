@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   StyleSheet,
@@ -6,53 +6,49 @@ import {
   Dimensions,
   TouchableOpacity,
 } from "react-native";
-import { Button, Text, useTheme } from "react-native-paper";
-
+import { Button, HelperText, Text, useTheme } from "react-native-paper";
+import { AntDesign } from "@expo/vector-icons";
 import { TextInput as MaterialTextInput } from "react-native-paper";
+import useCities from "../../../hooks/useCities";
+import { validateMobile } from "../helper/validateMobile";
 
 const { height } = Dimensions.get("screen");
-
-const styles = StyleSheet.create({
-  sogoBg: {
-    height: "25%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  textInput: {
-    width: "70%",
-    padding: 0,
-    fontSize: 15,
-  },
-  reset: {
-    textAlign: "left",
-  },
-  button: {
-    width: "70%",
-    borderRadius: 5,
-  },
-  head: {
-    fontFamily: "serif",
-    fontWeight: "500",
-    fontSize: (height * 4) / 100,
-  },
-});
 
 function SignUp({ navigation }) {
   const theme = useTheme();
   const [step, setStep] = useState(1);
   const [mobile, setMobile] = useState("");
+  const [city, setCity] = useState(null);
+  const [firstName, setFirstName] = useState("");
+  const [errors, setErrors] = useState({});
+  const { cities } = useCities();
 
   const handleSignup = () => {
+    setErrors({});
+    if (!city || !firstName) {
+      Alert.alert("Required", "All fields are required");
+      return;
+    }
+    if (!validateMobile(mobile)) {
+      setErrors((prev) => ({
+        ...prev,
+        mobile: "Please enter a valid mobile no",
+      }));
+      return;
+    }
     setStep(2);
   };
 
   const handleOTP = () => {
+    // verify otp
+
+    // if otp error, show alert and return
+
+    // call admin add retailer here
+
+    // if error, show Alert and return
+
+    // or else push to update pin
     navigation.push("updatepin", {
       mobile_no: mobile,
     });
@@ -84,17 +80,6 @@ function SignUp({ navigation }) {
                 </Text>
               }
             />
-
-            <MaterialTextInput
-              style={{ ...styles.textInput, marginTop: "6%" }}
-              mode="outlined"
-              label={
-                <Text style={{ backgroundColor: "white", color: "gray" }}>
-                  City
-                </Text>
-              }
-            />
-
             <MaterialTextInput
               style={{ ...styles.textInput, marginTop: "6%" }}
               mode="outlined"
@@ -105,18 +90,12 @@ function SignUp({ navigation }) {
                 </Text>
               }
             />
-            {/* <MaterialTextInput
-          style={{ ...styles.textInput, marginTop: "6%" }}
-          mode="outlined"
-          label={
-            <Text style={{ backgroundColor: "white", color: "gray" }}>
-              Enter passcode
-            </Text>
-          }
-        /> */}
+            <HelperText type="error" visible={errors.mobile}>
+              {errors.mobile}{" "}
+            </HelperText>
             <Button
               onPress={handleSignup}
-              style={{ ...styles.button, marginTop: "6%" }}
+              style={{ ...styles.button }}
               mode="contained"
             >
               Sign Up
@@ -138,7 +117,15 @@ function SignUp({ navigation }) {
           </>
         ) : (
           <>
-            <Text>OTP was sent to +91 {mobile}</Text>
+            <Text style={{ textAlign: "center", textAlignVertical: "center" }}>
+              <AntDesign
+                onPress={() => setStep(1)}
+                name="arrowleft"
+                size={20}
+              />
+              {"  "}
+              OTP was sent to +91 {mobile}
+            </Text>
             <MaterialTextInput
               style={{ ...styles.textInput, marginTop: "6%" }}
               mode="outlined"
@@ -155,6 +142,17 @@ function SignUp({ navigation }) {
             >
               Submit OTP
             </Button>
+            <TouchableOpacity style={{ marginTop: "1%" }}>
+              <Text
+                style={{
+                  color: theme.colors.primary,
+                  fontWeight: "600",
+                }}
+                variant="bodyLarge"
+              >
+                Resend OTP
+              </Text>
+            </TouchableOpacity>
           </>
         )}
       </View>
@@ -163,3 +161,34 @@ function SignUp({ navigation }) {
 }
 
 export default SignUp;
+
+const styles = StyleSheet.create({
+  sogoBg: {
+    height: "25%",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  textInput: {
+    width: "70%",
+    padding: 0,
+    fontSize: 15,
+  },
+  reset: {
+    textAlign: "left",
+  },
+  button: {
+    width: "70%",
+    borderRadius: 5,
+  },
+  head: {
+    fontFamily: "serif",
+    fontWeight: "500",
+    fontSize: (height * 4) / 100,
+  },
+});
