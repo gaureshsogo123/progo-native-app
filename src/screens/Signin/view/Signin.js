@@ -12,6 +12,7 @@ import { TextInput as MaterialTextInput } from "react-native-paper";
 
 import { useAuthContext } from "../../../context/UserAuthContext";
 import { signIn } from "../helper/SigninHelper";
+import { validateMobile } from "../helper/validateMobile";
 
 const { height } = Dimensions.get("screen");
 
@@ -58,11 +59,6 @@ function SignIn({ navigation }) {
     if (isLoggedIn()) navigation.navigate("bottomnav");
   }, []);
 
-  const validateMobile = () => {
-    const regex = new RegExp(/^\d{10}$/);
-    return regex.test(mobileNumber);
-  };
-
   const resetInputs = () => {
     setMobileNumber("");
     setPin("");
@@ -71,7 +67,7 @@ function SignIn({ navigation }) {
 
   const handleSignIn = () => {
     setErrors({});
-    if (!validateMobile()) {
+    if (!validateMobile(mobileNumber)) {
       setErrors((prev) => ({
         ...prev,
         mobile: "Please enter valid mobile number",
