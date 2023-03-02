@@ -1,3 +1,4 @@
+import { Alert } from "react-native";
 import axiosInstance from "../../../axiosInstance";
 
 export const signIn = async ({ mobile_no, pin }) => {
@@ -36,3 +37,42 @@ export const updatePin = async ({ mobile_no, pin }) => {
       return { error: err.response?.data?.message || err.message, data: {} };
     });
 };
+
+
+export const adminAddRetailer = async (
+  mobile,
+  firstName,
+  city
+) => {
+  return axiosInstance
+    .post("/retailer/adminAddRetailer", {
+      mobile,
+      firstName,
+      city
+    })
+    .then((res) => {
+      const data = res.data.data;
+      console.log("data",data)
+      Alert.alert("Retailer Added");
+      return { data: data };
+    })
+    .catch((err) => {
+      return { error: err.message };
+    });
+};
+
+
+export const getRetailer = async (
+) => {
+  return axiosInstance
+    .get("/retailer")
+    .then((res) => {
+      const products = res.data.data;
+      return { data: products };
+    })
+    .catch((err) => {
+      return { error: err.message };
+    });
+};
+
+

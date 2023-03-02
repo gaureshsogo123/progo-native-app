@@ -11,7 +11,7 @@ import { Button, Text, useTheme, HelperText } from "react-native-paper";
 import { TextInput as MaterialTextInput } from "react-native-paper";
 
 import { useAuthContext } from "../../../context/UserAuthContext";
-import { signIn } from "../helper/SigninHelper";
+import { getRetailer, signIn } from "../helper/SigninHelper";
 
 const { height } = Dimensions.get("screen");
 

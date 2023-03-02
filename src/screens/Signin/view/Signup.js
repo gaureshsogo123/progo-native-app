@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import parseWithOptions from "date-fns/fp/parseWithOptions/index";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -9,6 +10,12 @@ import {
 import { Button, Text, useTheme } from "react-native-paper";
 
 import { TextInput as MaterialTextInput } from "react-native-paper";
+import firebase from "firebase/compat/app";
+import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
+import { firebaseConfig } from "../../../constants/FirebaseConfig";
+import { adminAddRetailer } from "../helper/SigninHelper";
+import { useAuthContext } from "../../../context/UserAuthContext";
+import { useNavigation } from "@react-navigation/native";
 
 const { height } = Dimensions.get("screen");
 
@@ -47,15 +54,43 @@ function SignUp({ navigation }) {
   const theme = useTheme();
   const [step, setStep] = useState(1);
   const [mobile, setMobile] = useState("");
+  const [shopName, setShopName] = useState("");
+  const [city, setCity] = useState("");
+  const [otp, setOtp] = useState("");
+  const [veriId, setVeriId] = useState(null);
+  const recaptchaVeri = useRef(null);
+  const [errors, setErrors] = useState({});
+  const { loginUser, isLoggedIn } = useAuthContext();
 
+  const navi = useNavigation();
   const handleSignup = () => {
-    setStep(2);
+    if (mobile && shopName && city) {
+      const phoneProvider = new firebase.auth.PhoneAuthProvider();
+      phoneProvider
+        .verifyPhoneNumber("+91" + mobile, recaptchaVeri.current)
+        .then(setVeriId);
+      setStep(2);
+    }
   };
 
   const handleOTP = () => {
-    navigation.push("updatepin", {
+      navigation.push("updatepin", {
       mobile_no: mobile,
-    });
+    })
+    
+    const cred = firebase.auth.PhoneAuthProvider.credential(veriId, otp);
+    const res = firebase
+      .auth()
+      .signInWithCredential(cred)
+      .then(() => {
+        setOtp("");
+        adminAddRetailer(mobile, shopName, city);
+        Alert.alert("Retailer Added");
+        navi.goBack();
+      })
+      .catch((err) => {
+        Alert.alert("Otp Not Matched");
+      });
   };
 
   return (
@@ -73,6 +108,10 @@ function SignUp({ navigation }) {
           backgroundColor: theme.colors.background,
         }}
       >
+        <FirebaseRecaptchaVerifierModal
+          ref={recaptchaVeri}
+          firebaseConfig={firebaseConfig}
+        />
         {step === 1 ? (
           <>
             <MaterialTextInput
@@ -83,6 +122,7 @@ function SignUp({ navigation }) {
                   Shop Name
                 </Text>
               }
+              onChangeText={(val) => setShopName(val)}
             />
 
             <MaterialTextInput
@@ -93,6 +133,7 @@ function SignUp({ navigation }) {
                   City
                 </Text>
               }
+              onChangeText={(val) => setCity(val)}
             />
 
             <MaterialTextInput
@@ -147,6 +188,8 @@ function SignUp({ navigation }) {
                   Enter OTP
                 </Text>
               }
+              value={otp}
+              onChangeText={setOtp}
             />
             <Button
               onPress={handleOTP}
