@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Text, Button, useTheme, HelperText } from "react-native-paper";
 import { TextInput as MaterialTextInput } from "react-native-paper";
 import { validateMobile } from "../helper/validateMobile";
+import firebase from "firebase/compat/app";
+import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
+import { firebaseConfig } from "../../../constants/FirebaseConfig";
+import { getRetailer } from "../helper/SigninHelper";
 
 const { height } = Dimensions.get("screen");
 
@@ -11,6 +15,10 @@ function ForgotPin({ navigation }) {
   const [mobileNumber, setMobileNumber] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [errors, setErrors] = useState({});
+  const recaptchaVeri = useRef(null);
+  const [otp, setOtp] = useState("");
+  const [veriId, setVeriId] = useState(null);
+  const [retailers, setRetailers] = useState([]);
 
   const handleGetOtp = () => {
     setErrors({});
@@ -21,16 +29,49 @@ function ForgotPin({ navigation }) {
       }));
       return;
     }
+    if (!retailers.find((val) => val.mobileno == mobileNumber)) {
+      setErrors((prev) => ({
+        ...prev,
+        mobile: "Mobile Number Is not Registerd",
+      }));
+      return;
+    }
+    const phoneProvider = new firebase.auth.PhoneAuthProvider();
+    phoneProvider
+      .verifyPhoneNumber("+91" + mobileNumber, recaptchaVeri.current)
+      .then(setVeriId);
+    setErrors({});
     setOtpSent(true);
   };
 
-  const handleOTP = () => {
+  useEffect(() => {
+    getRetailer()
+      .then((res) => {
+        setRetailers(res.data);
+      })
+      .catch((err) => {
+        //
+      });
+  }, []);
+
+  const handleOTP = async () => {
     // verify otp
 
     // if otp error, show alert and return
 
     // else go to update pin
-    navigation.push("updatepin", { mobile_no: mobileNumber });
+
+    const cred = firebase.auth.PhoneAuthProvider.credential(veriId, otp);
+    await firebase
+      .auth()
+      .signInWithCredential(cred)
+      .then(() => {
+        setOtp("");
+        navigation.push("updatepin", { mobile_no: mobileNumber });
+      })
+      .catch((err) => {
+        Alert.alert("Otp Not Matched");
+      });
   };
 
   const backToSignIn = () => {
@@ -39,6 +80,10 @@ function ForgotPin({ navigation }) {
 
   return (
     <>
+      <FirebaseRecaptchaVerifierModal
+        ref={recaptchaVeri}
+        firebaseConfig={firebaseConfig}
+      />
       <View style={styles.sogoBg}>
         <Text variant="displayMedium" style={styles.head}>
           {" "}
