@@ -44,16 +44,14 @@ export const adminAddRetailer = async (
   firstName,
   city
 ) => {
-  return axiosInstance
+  return await axiosInstance
     .post("/retailer/adminAddRetailer", {
-      mobile,
-      firstName,
-      city
+      mobile:mobile,
+      firstName:firstName,
+      city:city
     })
     .then((res) => {
       const data = res.data.data;
-      console.log("data",data)
-      Alert.alert("Retailer Added");
       return { data: data };
     })
     .catch((err) => {

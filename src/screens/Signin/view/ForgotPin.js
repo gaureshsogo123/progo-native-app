@@ -1,7 +1,12 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
-import { Text, Button, useTheme } from "react-native-paper";
+import { Text, Button, useTheme, HelperText } from "react-native-paper";
 import { TextInput as MaterialTextInput } from "react-native-paper";
+import { validateMobile } from "../helper/validateMobile";
+import firebase from "firebase/compat/app";
+import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
+import { firebaseConfig } from "../../../constants/FirebaseConfig";
+import { getRetailer } from "../helper/SigninHelper";
 
 const { height } = Dimensions.get("screen");
 
@@ -10,13 +15,75 @@ function ForgotPin({ navigation }) {
   const [mobileNumber, setMobileNumber] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [errors, setErrors] = useState({});
+  const recaptchaVeri = useRef(null);
+  const [otp, setOtp] = useState("");
+  const [veriId, setVeriId] = useState(null);
+  const [retailers, setRetailers] = useState([]);
 
-  const handleOTP = () => {
-    navigation.push("updatepin", { mobile_no: mobileNumber });
+  const handleGetOtp = () => {
+    setErrors({});
+    if (!validateMobile(mobileNumber)) {
+      setErrors((prev) => ({
+        ...prev,
+        mobile: "Please enter a valid mobile no",
+      }));
+      return;
+    }
+    if (!retailers.find((val) => val.mobileno == mobileNumber)) {
+      setErrors((prev) => ({
+        ...prev,
+        mobile: "Mobile Number Is not Registerd",
+      }));
+      return;
+    }
+    const phoneProvider = new firebase.auth.PhoneAuthProvider();
+    phoneProvider
+      .verifyPhoneNumber("+91" + mobileNumber, recaptchaVeri.current)
+      .then(setVeriId);
+    setErrors({});
+    setOtpSent(true);
+  };
+
+  useEffect(() => {
+    getRetailer()
+      .then((res) => {
+        setRetailers(res.data);
+      })
+      .catch((err) => {
+        //
+      });
+  }, []);
+
+  const handleOTP = async () => {
+    // verify otp
+
+    // if otp error, show alert and return
+
+    // else go to update pin
+
+    const cred = firebase.auth.PhoneAuthProvider.credential(veriId, otp);
+    await firebase
+      .auth()
+      .signInWithCredential(cred)
+      .then(() => {
+        setOtp("");
+        navigation.push("updatepin", { mobile_no: mobileNumber });
+      })
+      .catch((err) => {
+        Alert.alert("Otp Not Matched");
+      });
+  };
+
+  const backToSignIn = () => {
+    navigation.navigate("userauth", { screen: "signin" });
   };
 
   return (
     <>
+      <FirebaseRecaptchaVerifierModal
+        ref={recaptchaVeri}
+        firebaseConfig={firebaseConfig}
+      />
       <View style={styles.sogoBg}>
         <Text variant="displayMedium" style={styles.head}>
           {" "}
@@ -63,7 +130,7 @@ function ForgotPin({ navigation }) {
         ) : (
           <>
             <MaterialTextInput
-              style={{ ...styles.textInput, marginBottom: "6%" }}
+              style={{ ...styles.textInput }}
               mode="outlined"
               label={
                 <Text style={{ backgroundColor: "white", color: "gray" }}>
@@ -81,14 +148,20 @@ function ForgotPin({ navigation }) {
                 }
               }}
             />
+            <HelperText type="error" visible={errors.mobile}>
+              {errors.mobile}{" "}
+            </HelperText>
             <Button
               mode="contained"
               style={{ ...styles.button, marginTop: "6%" }}
-              onPress={() => setOtpSent(true)}
+              onPress={handleGetOtp}
             >
               Get OTP
             </Button>
-            <TouchableOpacity style={{ marginTop: "1%" }}>
+            <TouchableOpacity
+              style={{ marginTop: "1%" }}
+              onPress={backToSignIn}
+            >
               <Text
                 style={{
                   color: theme.colors.primary,

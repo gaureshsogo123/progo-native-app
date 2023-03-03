@@ -42,6 +42,7 @@ function UpdatePin({ navigation, route }) {
         .then((res) => {
           if (!res.error) {
             Alert.alert("Success", res.message);
+            navigation.navigate("userauth", { screen: "signin" });
             if (onSuccess) {
               onSuccess();
             } else {
