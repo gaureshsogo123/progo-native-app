@@ -1,3 +1,1 @@
-export const SOGO_API = "http://192.168.0.104:8001/api";
-
-
+export const SOGO_API = "http://192.168.30.106:8001/api";

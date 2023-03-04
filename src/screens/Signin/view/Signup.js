@@ -1,5 +1,4 @@
-import parseWithOptions from "date-fns/fp/parseWithOptions/index";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -8,27 +7,16 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import {
-  Button,
-  HelperText,
-  Text,
-  TextInput,
-  useTheme,
-} from "react-native-paper";
+import { Button, HelperText, Text, useTheme } from "react-native-paper";
 import { AntDesign } from "@expo/vector-icons";
 import { TextInput as MaterialTextInput } from "react-native-paper";
 import firebase from "firebase/compat/app";
 import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 import { firebaseConfig } from "../../../constants/FirebaseConfig";
 import { adminAddRetailer } from "../helper/SigninHelper";
-import { useAuthContext } from "../../../context/UserAuthContext";
-import { useNavigation } from "@react-navigation/native";
 import useCities from "../../../hooks/useCities";
 import { validateMobile } from "../helper/validateMobile";
-import Popup from "../../../component/Popup";
 import { MaterialIcons } from "@expo/vector-icons";
-import AllCityPopup from "../../../component/AllCityPopup";
-import { Dropdown } from "react-native-element-dropdown";
 
 const { height } = Dimensions.get("screen");
 
@@ -42,13 +30,10 @@ function SignUp({ navigation }) {
   const [veriId, setVeriId] = useState(null);
   const recaptchaVeri = useRef(null);
   const [errors, setErrors] = useState({});
-  const { loginUser, isLoggedIn } = useAuthContext();
   const [search, setSearch] = useState("");
   const [dropdownShown, setDropdownShown] = useState(false);
   const [showCity, setShowCity] = useState(false);
-  const [otpgenerated, setOtpgenerated] = useState(false);
 
-  const navi = useNavigation();
   const { cities } = useCities();
 
   const handleSignup = () => {
@@ -66,9 +51,14 @@ function SignUp({ navigation }) {
       const phoneProvider = new firebase.auth.PhoneAuthProvider();
       phoneProvider
         .verifyPhoneNumber("+91" + mobile, recaptchaVeri.current)
-        .then(setVeriId);
-      setErrors({});
-      setStep(2);
+        .then(setVeriId)
+        .catch((error) => {
+          Alert.alert("Error", error.message);
+        })
+        .finally(() => {
+          setErrors({});
+          setStep(2);
+        });
     }
   };
 
@@ -80,52 +70,35 @@ function SignUp({ navigation }) {
   };
 
   const filterCities = cities.filter((item) => {
-    if (item === "") {
-      return item;
-    }
     return item.toLowerCase().includes(search.toLowerCase());
   });
 
   const handleOTP = async () => {
-    // verify otp
-
-    // if otp error, show alert and return
-
-    // call admin add retailer here
-
-    // if error, show Alert and return
-
-    // or else push to update pin
-    {
-      /*navigation.push("updatepin", {
-      mobile_no: mobile,
-    })*/
-    }
-
     const cred = firebase.auth.PhoneAuthProvider.credential(veriId, otp);
     await firebase
       .auth()
-      .signInWithCredential(cred)
+      .signInWithCredential(cred) // verify firebase otp
       .then(() => {
-        setOtpgenerated(true);
+        adminAddRetailer(mobile, shopName, city) // add retailer
+          .then((res) => {
+            if (res.error) {
+              Alert.alert("Error", res.error);
+              return;
+            }
+            Alert.alert("Retailer Added");
+            // go to update pin
+            navigation.push("updatepin", {
+              mobile_no: mobile,
+            });
+          })
+          .catch((err) => {
+            Alert.alert(err.error);
+          });
       })
       .catch((err) => {
         Alert.alert("Otp Not Matched");
       });
   };
-
-  useEffect(() => {
-    if (otpgenerated == true) {
-      adminAddRetailer(mobile, shopName, city)
-        .then((res) => {
-          Alert.alert("Retailer Added");
-          navi.goBack();
-        })
-        .catch((err) => {
-          Alert.alert(err.error);
-        });
-    }
-  }, [otpgenerated]);
 
   return (
     <>
@@ -249,7 +222,9 @@ function SignUp({ navigation }) {
             {!dropdownShown && (
               <TouchableOpacity
                 style={{ marginTop: "1%" }}
-                onPress={() => navi.goBack()}
+                onPress={() =>
+                  navigation.navigate("userauth", { screen: "signin" })
+                }
               >
                 <Text
                   style={{
@@ -292,7 +267,10 @@ function SignUp({ navigation }) {
             >
               Submit OTP
             </Button>
-            <TouchableOpacity style={{ marginTop: "1%" }}>
+            <TouchableOpacity
+              onPress={handleSignup}
+              style={{ marginTop: "1%" }}
+            >
               <Text
                 style={{
                   color: theme.colors.primary,

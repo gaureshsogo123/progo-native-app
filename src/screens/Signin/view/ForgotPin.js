@@ -1,12 +1,18 @@
-import { useEffect, useRef, useState } from "react";
-import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
+import { useRef, useState } from "react";
+import {
+  Dimensions,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Alert,
+} from "react-native";
 import { Text, Button, useTheme, HelperText } from "react-native-paper";
 import { TextInput as MaterialTextInput } from "react-native-paper";
 import { validateMobile } from "../helper/validateMobile";
 import firebase from "firebase/compat/app";
 import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 import { firebaseConfig } from "../../../constants/FirebaseConfig";
-import { getRetailer } from "../helper/SigninHelper";
+import { AntDesign } from "@expo/vector-icons";
 
 const { height } = Dimensions.get("screen");
 
@@ -18,7 +24,6 @@ function ForgotPin({ navigation }) {
   const recaptchaVeri = useRef(null);
   const [otp, setOtp] = useState("");
   const [veriId, setVeriId] = useState(null);
-  const [retailers, setRetailers] = useState([]);
 
   const handleGetOtp = () => {
     setErrors({});
@@ -29,38 +34,20 @@ function ForgotPin({ navigation }) {
       }));
       return;
     }
-    if (!retailers.find((val) => val.mobileno == mobileNumber)) {
-      setErrors((prev) => ({
-        ...prev,
-        mobile: "Mobile Number Is not Registerd",
-      }));
-      return;
-    }
     const phoneProvider = new firebase.auth.PhoneAuthProvider();
     phoneProvider
       .verifyPhoneNumber("+91" + mobileNumber, recaptchaVeri.current)
-      .then(setVeriId);
-    setErrors({});
-    setOtpSent(true);
+      .then(setVeriId)
+      .catch((error) => {
+        Alert.alert("Error", error.message);
+      })
+      .finally(() => {
+        setErrors({});
+        setOtpSent(true);
+      });
   };
 
-  useEffect(() => {
-    getRetailer()
-      .then((res) => {
-        setRetailers(res.data);
-      })
-      .catch((err) => {
-        //
-      });
-  }, []);
-
   const handleOTP = async () => {
-    // verify otp
-
-    // if otp error, show alert and return
-
-    // else go to update pin
-
     const cred = firebase.auth.PhoneAuthProvider.credential(veriId, otp);
     await firebase
       .auth()
@@ -98,10 +85,20 @@ function ForgotPin({ navigation }) {
       >
         {otpSent ? (
           <>
-            <Text>OTP was sent to +91 {mobileNumber}</Text>
+            <Text style={{ textAlign: "center", textAlignVertical: "center" }}>
+              <AntDesign
+                onPress={() => setOtpSent(false)}
+                name="arrowleft"
+                size={20}
+              />
+              {"  "}
+              OTP was sent to +91 {mobileNumber}
+            </Text>
             <MaterialTextInput
               style={{ ...styles.textInput, marginTop: "6%" }}
               mode="outlined"
+              value={otp}
+              onChangeText={(text) => setOtp(text)}
               label={
                 <Text style={{ backgroundColor: "white", color: "gray" }}>
                   Enter OTP
@@ -115,7 +112,10 @@ function ForgotPin({ navigation }) {
             >
               Submit OTP
             </Button>
-            <TouchableOpacity style={{ marginTop: "1%" }}>
+            <TouchableOpacity
+              onPress={handleGetOtp}
+              style={{ marginTop: "1%" }}
+            >
               <Text
                 style={{
                   color: theme.colors.primary,

@@ -16,37 +16,6 @@ import { validateMobile } from "../helper/validateMobile";
 
 const { height } = Dimensions.get("screen");
 
-const styles = StyleSheet.create({
-  sogoBg: {
-    height: "25%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  textInput: {
-    width: "70%",
-    padding: 0,
-    fontSize: 15,
-  },
-  reset: {
-    textAlign: "left",
-  },
-  button: {
-    width: "70%",
-    borderRadius: 5,
-  },
-  head: {
-    fontFamily: "serif",
-    fontWeight: "500",
-    fontSize: (height * 4) / 100,
-  },
-});
-
 function SignIn({ navigation }) {
   const theme = useTheme();
   const [mobileNumber, setMobileNumber] = useState();
@@ -85,15 +54,10 @@ function SignIn({ navigation }) {
             );
             return;
           }
-
           loginUser(res.data);
           resetInputs();
         } else {
           Alert.alert("Error", res.error);
-          setErrors((prev) => ({
-            ...prev,
-            mobile: "Mobile Number Is not Registerd",
-          }));
         }
       })
       .catch((err) => setErrors({ ...errors, pin: err.message }));
@@ -198,3 +162,34 @@ function SignIn({ navigation }) {
 }
 
 export default SignIn;
+
+const styles = StyleSheet.create({
+  sogoBg: {
+    height: "25%",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  textInput: {
+    width: "70%",
+    padding: 0,
+    fontSize: 15,
+  },
+  reset: {
+    textAlign: "left",
+  },
+  button: {
+    width: "70%",
+    borderRadius: 5,
+  },
+  head: {
+    fontFamily: "serif",
+    fontWeight: "500",
+    fontSize: (height * 4) / 100,
+  },
+});

@@ -1,16 +1,15 @@
 import React, { useState } from "react";
-import { Text, HelperText, Button, useTheme } from "react-native-paper";
+import { Text, HelperText, Button } from "react-native-paper";
 import { TextInput as MaterialTextInput } from "react-native-paper";
 import { Alert, View, StyleSheet, Dimensions } from "react-native";
 import { updatePin } from "../helper/SigninHelper";
+import { useAuthContext } from "../../../context/UserAuthContext";
 
 const { height } = Dimensions.get("screen");
 
 function UpdatePin({ navigation, route }) {
-  const theme = useTheme();
-
-  const { mobile_no, onSuccess } = route.params;
-
+  const { mobile_no } = route.params;
+  const { isLoggedIn } = useAuthContext();
   const [pin, setPin] = useState();
   const [confirmPin, setConfirmPin] = useState();
   const [errors, setErrors] = useState({});
@@ -42,11 +41,10 @@ function UpdatePin({ navigation, route }) {
         .then((res) => {
           if (!res.error) {
             Alert.alert("Success", res.message);
-            navigation.navigate("userauth", { screen: "signin" });
-            if (onSuccess) {
-              onSuccess();
-            } else {
+            if (isLoggedIn()) {
               navigation.goBack();
+            } else {
+              navigation.navigate("userauth", { screen: "signin" });
             }
           } else Alert.alert("Error", res.error);
         })
