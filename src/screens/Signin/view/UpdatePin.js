@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Text, HelperText, Button } from "react-native-paper";
+import { Text, HelperText, Button, useTheme } from "react-native-paper";
 import { TextInput as MaterialTextInput } from "react-native-paper";
 import { Alert, View, StyleSheet, Dimensions } from "react-native";
 import { updatePin } from "../helper/SigninHelper";
@@ -8,6 +8,7 @@ import { useAuthContext } from "../../../context/UserAuthContext";
 const { height } = Dimensions.get("screen");
 
 function UpdatePin({ navigation, route }) {
+  const theme = useTheme();
   const { mobile_no } = route.params;
   const { isLoggedIn } = useAuthContext();
   const [pin, setPin] = useState();

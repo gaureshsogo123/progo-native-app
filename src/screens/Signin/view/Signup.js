@@ -85,14 +85,17 @@ function SignUp({ navigation }) {
               Alert.alert("Error", res.error);
               return;
             }
-            Alert.alert("Retailer Added");
+            Alert.alert(
+              "Signed up!",
+              "Please set a passcode that you can use to log in"
+            );
             // go to update pin
             navigation.push("updatepin", {
               mobile_no: mobile,
             });
           })
           .catch((err) => {
-            Alert.alert(err.error);
+            Alert.alert(err.message);
           });
       })
       .catch((err) => {
