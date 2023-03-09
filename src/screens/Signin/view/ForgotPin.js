@@ -10,7 +10,7 @@ import { Text, Button, useTheme, HelperText } from "react-native-paper";
 import { TextInput as MaterialTextInput } from "react-native-paper";
 import { validateMobile } from "../helper/validateMobile";
 import firebase from "firebase/compat/app";
-import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
+import {  FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 import { firebaseConfig } from "../../../constants/FirebaseConfig";
 import { AntDesign } from "@expo/vector-icons";
 
@@ -67,10 +67,12 @@ function ForgotPin({ navigation }) {
 
   return (
     <>
-      <FirebaseRecaptchaVerifierModal
+    
+    <FirebaseRecaptchaVerifierModal
         ref={recaptchaVeri}
         firebaseConfig={firebaseConfig}
       />
+    
       <View style={styles.sogoBg}>
         <Text variant="displayMedium" style={styles.head}>
           {" "}

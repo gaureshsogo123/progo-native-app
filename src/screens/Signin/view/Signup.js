@@ -117,8 +117,9 @@ function SignUp({ navigation }) {
           ...styles.container,
           backgroundColor: theme.colors.background,
         }}
-        onStartShouldSetResponder={() => setDropdownShown(false)}
+        onStartShouldSetResponder={() => setDropdownShown(false)} 
       >
+        
         <FirebaseRecaptchaVerifierModal
           ref={recaptchaVeri}
           firebaseConfig={firebaseConfig}
