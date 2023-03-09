@@ -14,7 +14,9 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
@@ -33,11 +35,11 @@
     "web": {
       "favicon": "./assets/app-icon.png"
     },
+    "owner": "pattabi",
     "extra": {
       "eas": {
         "projectId": "a09fd19d-a4df-4975-a892-e67a5f37ec16"
       }
-    },
-    "owner": "pattabi"
+    }
   }
 }
