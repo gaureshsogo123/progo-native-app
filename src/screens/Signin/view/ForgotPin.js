@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   StyleSheet,
@@ -10,7 +10,7 @@ import { Text, Button, useTheme, HelperText } from "react-native-paper";
 import { TextInput as MaterialTextInput } from "react-native-paper";
 import { validateMobile } from "../helper/validateMobile";
 import firebase from "firebase/compat/app";
-import {  FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
+import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 import { firebaseConfig } from "../../../constants/FirebaseConfig";
 import { AntDesign } from "@expo/vector-icons";
 
@@ -24,6 +24,17 @@ function ForgotPin({ navigation }) {
   const recaptchaVeri = useRef(null);
   const [otp, setOtp] = useState("");
   const [veriId, setVeriId] = useState(null);
+  // need timeout to render captcha modal to prevent crash on load
+  // not needed when captcha is visible
+  const [isInit, setIsInit] = useState(false);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsInit(true);
+    }, 200);
+
+    return () => clearTimeout(timeout);
+  }, []);
 
   const handleGetOtp = () => {
     setErrors({});
@@ -67,12 +78,15 @@ function ForgotPin({ navigation }) {
 
   return (
     <>
-    
-    <FirebaseRecaptchaVerifierModal
-        ref={recaptchaVeri}
-        firebaseConfig={firebaseConfig}
-      />
-    
+      {isInit && (
+        <FirebaseRecaptchaVerifierModal
+          ref={recaptchaVeri}
+          firebaseConfig={firebaseConfig}
+          // invisible captcha
+          attemptInvisibleVerification={true}
+        />
+      )}
+
       <View style={styles.sogoBg}>
         <Text variant="displayMedium" style={styles.head}>
           {" "}
