@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import {
   Dimensions,
   StyleSheet,
@@ -9,10 +9,8 @@ import {
 import { Text, Button, useTheme, HelperText } from "react-native-paper";
 import { TextInput as MaterialTextInput } from "react-native-paper";
 import { validateMobile } from "../helper/validateMobile";
-import firebase from "firebase/compat/app";
-import {  FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
-import { firebaseConfig } from "../../../constants/FirebaseConfig";
 import { AntDesign } from "@expo/vector-icons";
+import supabase from "../../../constants/Supabase";
 
 const { height } = Dimensions.get("screen");
 
@@ -21,11 +19,9 @@ function ForgotPin({ navigation }) {
   const [mobileNumber, setMobileNumber] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [errors, setErrors] = useState({});
-  const recaptchaVeri = useRef(null);
   const [otp, setOtp] = useState("");
-  const [veriId, setVeriId] = useState(null);
 
-  const handleGetOtp = () => {
+  const handleGetOtp = async () => {
     setErrors({});
     if (!validateMobile(mobileNumber)) {
       setErrors((prev) => ({
@@ -34,31 +30,43 @@ function ForgotPin({ navigation }) {
       }));
       return;
     }
-    const phoneProvider = new firebase.auth.PhoneAuthProvider();
-    phoneProvider
-      .verifyPhoneNumber("+91" + mobileNumber, recaptchaVeri.current)
-      .then(setVeriId)
-      .catch((error) => {
-        Alert.alert("Error", error.message);
-      })
-      .finally(() => {
-        setErrors({});
-        setOtpSent(true);
+    setOtp("");
+    try {
+      const { data, error } = await supabase.auth.signInWithOtp({
+        phone: `91${mobileNumber}`,
       });
+      if (error) {
+        Alert.alert("Error", error.message);
+        return;
+      }
+      setOtpSent(true);
+    } catch (error) {
+      Alert.alert("Error", error.message);
+    }
   };
 
   const handleOTP = async () => {
-    const cred = firebase.auth.PhoneAuthProvider.credential(veriId, otp);
-    await firebase
-      .auth()
-      .signInWithCredential(cred)
-      .then(() => {
-        setOtp("");
-        navigation.push("updatepin", { mobile_no: mobileNumber });
-      })
-      .catch((err) => {
-        Alert.alert("Otp Not Matched");
+    if (!otp) {
+      Alert.alert("Error", "OTP cannot be empty");
+      return;
+    }
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone: `91${mobileNumber}`,
+        token: otp,
+        type: "sms",
       });
+      if (error) {
+        Alert.alert("Error", error.message);
+        return;
+      }
+      if (data?.session?.access_token) {
+        navigation.push("updatepin", { mobile_no: mobileNumber });
+      }
+    } catch (error) {
+      Alert.alert("Error", error.message);
+    }
+    setOtp("");
   };
 
   const backToSignIn = () => {
@@ -67,12 +75,6 @@ function ForgotPin({ navigation }) {
 
   return (
     <>
-    
-    <FirebaseRecaptchaVerifierModal
-        ref={recaptchaVeri}
-        firebaseConfig={firebaseConfig}
-      />
-    
       <View style={styles.sogoBg}>
         <Text variant="displayMedium" style={styles.head}>
           {" "}
@@ -150,9 +152,12 @@ function ForgotPin({ navigation }) {
                 }
               }}
             />
-            <HelperText type="error" visible={errors.mobile}>
-              {errors.mobile}{" "}
-            </HelperText>
+            {errors.mobile && (
+              <HelperText type="error" visible={errors.mobile}>
+                {errors.mobile}{" "}
+              </HelperText>
+            )}
+
             <Button
               mode="contained"
               style={{ ...styles.button, marginTop: "6%" }}

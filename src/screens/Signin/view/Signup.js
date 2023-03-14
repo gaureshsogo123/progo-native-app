@@ -10,9 +10,6 @@ import {
 import { Button, HelperText, Text, useTheme } from "react-native-paper";
 import { AntDesign } from "@expo/vector-icons";
 import { TextInput as MaterialTextInput } from "react-native-paper";
-import firebase from "firebase/compat/app";
-import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
-import { firebaseConfig } from "../../../constants/FirebaseConfig";
 import { adminAddRetailer } from "../helper/SigninHelper";
 import useCities from "../../../hooks/useCities";
 import { validateMobile } from "../helper/validateMobile";
@@ -27,8 +24,6 @@ function SignUp({ navigation }) {
   const [shopName, setShopName] = useState("");
   const [city, setCity] = useState("");
   const [otp, setOtp] = useState("");
-  const [veriId, setVeriId] = useState(null);
-  const recaptchaVeri = useRef(null);
   const [errors, setErrors] = useState({});
   const [search, setSearch] = useState("");
   const [dropdownShown, setDropdownShown] = useState(false);
@@ -47,18 +42,6 @@ function SignUp({ navigation }) {
         mobile: "Please enter a valid mobile no",
       }));
       return;
-    } else {
-      const phoneProvider = new firebase.auth.PhoneAuthProvider();
-      phoneProvider
-        .verifyPhoneNumber("+91" + mobile, recaptchaVeri.current)
-        .then(setVeriId)
-        .catch((error) => {
-          Alert.alert("Error", error.message);
-        })
-        .finally(() => {
-          setErrors({});
-          setStep(2);
-        });
     }
   };
 
@@ -74,33 +57,10 @@ function SignUp({ navigation }) {
   });
 
   const handleOTP = async () => {
-    const cred = firebase.auth.PhoneAuthProvider.credential(veriId, otp);
-    await firebase
-      .auth()
-      .signInWithCredential(cred) // verify firebase otp
-      .then(() => {
-        adminAddRetailer(mobile, shopName, city) // add retailer
-          .then((res) => {
-            if (res.error) {
-              Alert.alert("Error", res.error);
-              return;
-            }
-            Alert.alert(
-              "Signed up!",
-              "Please set a passcode that you can use to log in"
-            );
-            // go to update pin
-            navigation.push("updatepin", {
-              mobile_no: mobile,
-            });
-          })
-          .catch((err) => {
-            Alert.alert(err.message);
-          });
-      })
-      .catch((err) => {
-        Alert.alert("Otp Not Matched");
-      });
+    // go to update pin
+    navigation.push("updatepin", {
+      mobile_no: mobile,
+    });
   };
 
   return (
@@ -117,13 +77,8 @@ function SignUp({ navigation }) {
           ...styles.container,
           backgroundColor: theme.colors.background,
         }}
-        onStartShouldSetResponder={() => setDropdownShown(false)} 
+        onStartShouldSetResponder={() => setDropdownShown(false)}
       >
-        
-        <FirebaseRecaptchaVerifierModal
-          ref={recaptchaVeri}
-          firebaseConfig={firebaseConfig}
-        />
         {step === 1 ? (
           <>
             <MaterialTextInput
