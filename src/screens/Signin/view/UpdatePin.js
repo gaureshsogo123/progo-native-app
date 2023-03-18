@@ -3,13 +3,14 @@ import { Text, HelperText, Button, useTheme } from "react-native-paper";
 import { TextInput as MaterialTextInput } from "react-native-paper";
 import { Alert, View, StyleSheet, Dimensions } from "react-native";
 import { updatePin } from "../helper/SigninHelper";
+import { useAuthContext } from "../../../context/UserAuthContext";
 
 const { height } = Dimensions.get("screen");
+
 function UpdatePin({ navigation, route }) {
   const theme = useTheme();
-
   const { mobile_no } = route.params;
-
+  const { isLoggedIn } = useAuthContext();
   const [pin, setPin] = useState();
   const [confirmPin, setConfirmPin] = useState();
   const [errors, setErrors] = useState({});
@@ -41,7 +42,11 @@ function UpdatePin({ navigation, route }) {
         .then((res) => {
           if (!res.error) {
             Alert.alert("Success", res.message);
-            navigation.goBack();
+            if (isLoggedIn()) {
+              navigation.goBack();
+            } else {
+              navigation.navigate("userauth", { screen: "signin" });
+            }
           } else Alert.alert("Error", res.error);
         })
         .catch((err) => {
@@ -66,12 +71,13 @@ function UpdatePin({ navigation, route }) {
           backgroundColor: theme.colors.background,
         }}
       >
+        <Text variant="titleMedium">Please set a PIN</Text>
         <MaterialTextInput
           style={styles.textInput}
           mode="outlined"
           label={
             <Text style={{ backgroundColor: "white", color: "gray" }}>
-              New PIN
+              Enter PIN
             </Text>
           }
           value={pin}

@@ -36,3 +36,19 @@ export const updatePin = async ({ mobile_no, pin }) => {
       return { error: err.response?.data?.message || err.message, data: {} };
     });
 };
+
+export const adminAddRetailer = async (mobile, firstName, city) => {
+  return await axiosInstance
+    .post("/retailer/adminAddRetailer", {
+      mobile: mobile,
+      firstName: firstName,
+      city: city,
+    })
+    .then((res) => {
+      const data = res.data.data;
+      return { data: data };
+    })
+    .catch((err) => {
+      return { error: err.response?.data?.message || err.message };
+    });
+};
