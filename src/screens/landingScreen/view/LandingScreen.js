@@ -45,7 +45,7 @@ export default function LandingScreen({ navigation }) {
 
   useEffect(() => {
     if (routeName == "UpdateOrder") {
-      const unsubscribeFocus = navigation.addListener("focus", () => {
+       const unsubscribeFocus = navigation.addListener("focus", () => {
         navi.reset({
           index: 0,
           routes: [{ name: "Orders" }],

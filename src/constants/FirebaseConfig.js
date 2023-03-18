@@ -3,13 +3,13 @@ import 'firebase/compat/auth';
 import 'firebase/compat/firestore'
 
 export const firebaseConfig = {
-    apiKey: "AIzaSyD3zQ5N7Q-X1iIlOs8VxR58a_3OlDORy0c",
-    authDomain: "otp-validation-f84d2.firebaseapp.com",
-    projectId: "otp-validation-f84d2",
-    storageBucket: "otp-validation-f84d2.appspot.com",
-    messagingSenderId: "1059269265861",
-    appId: "1:1059269265861:web:2fdf1cc103d16fa380a3ac",
-    measurementId: "G-36NMREFKQ6"
+  apiKey: "AIzaSyAdKDNH8JCsZ1oRqgr1FEALF7epF09alUQ",
+  authDomain: "final-otp-validation.firebaseapp.com",
+  projectId: "final-otp-validation",
+  storageBucket: "final-otp-validation.appspot.com",
+  messagingSenderId: "577840032711",
+  appId: "1:577840032711:web:3bf76f648b6b8e95dbc7e2",
+  measurementId: "G-X31S4FKYN3"
   };
 
   if(!firebase.apps.length){

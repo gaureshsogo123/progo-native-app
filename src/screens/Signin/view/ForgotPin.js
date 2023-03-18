@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   StyleSheet,
@@ -24,7 +24,11 @@ function ForgotPin({ navigation }) {
   const recaptchaVeri = useRef(null);
   const [otp, setOtp] = useState("");
   const [veriId, setVeriId] = useState(null);
+  const [otpinProgress,setOtpInProgress]=useState(false);
+  const [timer,setTimer]=useState(45);
 
+
+  
   const handleGetOtp = () => {
     setErrors({});
     if (!validateMobile(mobileNumber)) {
@@ -35,8 +39,9 @@ function ForgotPin({ navigation }) {
       return;
     }
     const phoneProvider = new firebase.auth.PhoneAuthProvider();
+
     phoneProvider
-      .verifyPhoneNumber("+91" + mobileNumber, recaptchaVeri.current)
+      .verifyPhoneNumber("+91" + mobileNumber,recaptchaVeri.current)
       .then(setVeriId)
       .catch((error) => {
         Alert.alert("Error", error.message);
@@ -44,6 +49,13 @@ function ForgotPin({ navigation }) {
       .finally(() => {
         setErrors({});
         setOtpSent(true);
+        setTimeout(()=>{
+          setOtpInProgress(true)
+        },45000)
+         setInterval(()=>{
+          setTimer((prev)=>prev-1)
+        },1000)
+
       });
   };
 
@@ -67,12 +79,13 @@ function ForgotPin({ navigation }) {
 
   return (
     <>
-    
     <FirebaseRecaptchaVerifierModal
-        ref={recaptchaVeri}
-        firebaseConfig={firebaseConfig}
-      />
-    
+          ref={recaptchaVeri}
+          firebaseConfig={firebaseConfig}
+          attemptInvisibleVerification={true}
+          androidHardwareAccelerationDisabled={true}
+          androidLayerType="software"
+        />
       <View style={styles.sogoBg}>
         <Text variant="displayMedium" style={styles.head}>
           {" "}
@@ -114,7 +127,7 @@ function ForgotPin({ navigation }) {
             >
               Submit OTP
             </Button>
-            <TouchableOpacity
+           {otpinProgress? <TouchableOpacity
               onPress={handleGetOtp}
               style={{ marginTop: "1%" }}
             >
@@ -127,7 +140,12 @@ function ForgotPin({ navigation }) {
               >
                 Resend OTP
               </Text>
-            </TouchableOpacity>
+            </TouchableOpacity>:<Text style={{
+                  color: theme.colors.primary,
+                  fontWeight: "600",
+                  marginTop:"1%"
+                }}
+                variant="bodyLarge">Time Remaining: {timer}</Text>}
           </>
         ) : (
           <>
