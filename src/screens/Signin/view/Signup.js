@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -33,7 +33,8 @@ function SignUp({ navigation }) {
   const [search, setSearch] = useState("");
   const [dropdownShown, setDropdownShown] = useState(false);
   const [showCity, setShowCity] = useState(false);
-
+  const [otpinProgress, setOtpInProgress] = useState(false);
+  const [timer, setTimer] = useState(45);
   const { cities } = useCities();
 
   const handleSignup = () => {
@@ -58,6 +59,13 @@ function SignUp({ navigation }) {
         .finally(() => {
           setErrors({});
           setStep(2);
+
+          setTimeout(() => {
+            setOtpInProgress(true);
+          }, 45000);
+          setInterval(() => {
+            setTimer((prev) => prev - 1);
+          }, 1000);
         });
     }
   };
@@ -105,6 +113,14 @@ function SignUp({ navigation }) {
 
   return (
     <>
+      <FirebaseRecaptchaVerifierModal
+        ref={recaptchaVeri}
+        firebaseConfig={firebaseConfig}
+        attemptInvisibleVerification={true}
+        androidHardwareAccelerationDisabled={true}
+        androidLayerType="software"
+      />
+
       <View style={styles.sogoBg}>
         <Text variant="displayMedium" style={styles.head}>
           {" "}
@@ -117,13 +133,8 @@ function SignUp({ navigation }) {
           ...styles.container,
           backgroundColor: theme.colors.background,
         }}
-        onStartShouldSetResponder={() => setDropdownShown(false)} 
+        onStartShouldSetResponder={() => setDropdownShown(false)}
       >
-        
-        <FirebaseRecaptchaVerifierModal
-          ref={recaptchaVeri}
-          firebaseConfig={firebaseConfig}
-        />
         {step === 1 ? (
           <>
             <MaterialTextInput
@@ -271,20 +282,33 @@ function SignUp({ navigation }) {
             >
               Submit OTP
             </Button>
-            <TouchableOpacity
-              onPress={handleSignup}
-              style={{ marginTop: "1%" }}
-            >
+            {otpinProgress ? (
+              <TouchableOpacity
+                onPress={handleSignup}
+                style={{ marginTop: "1%" }}
+              >
+                <Text
+                  style={{
+                    color: theme.colors.primary,
+                    fontWeight: "600",
+                  }}
+                  variant="bodyLarge"
+                >
+                  Resend OTP
+                </Text>
+              </TouchableOpacity>
+            ) : (
               <Text
                 style={{
                   color: theme.colors.primary,
                   fontWeight: "600",
+                  marginTop: "1%",
                 }}
                 variant="bodyLarge"
               >
-                Resend OTP
+                Time Remaining: {timer}
               </Text>
-            </TouchableOpacity>
+            )}
           </>
         )}
       </View>
