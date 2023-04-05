@@ -193,7 +193,7 @@ function Cart({ navigation }) {
             </Text>
             <Text variant="titleMedium" style={{ paddingRight: 10 }}>
               {distributorInfo.action == "update"
-                ? `ID: ${distributorInfo.orderId.substring(0,12)}`
+                ? `ID: ${distributorInfo.orderId}`
                 : null}
             </Text>
           </View>

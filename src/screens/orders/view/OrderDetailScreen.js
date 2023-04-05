@@ -155,12 +155,12 @@ function OrderDetailScreen({ navigation, route }) {
         <View style={styles.flexContainer}>
           <Text variant="titleMedium" style={{ width: "70%" }}>
             <Text style={{ color: "gray" }}>Supplier: </Text>
-            {order.distributorname}aaaa
+            {order.distributorname}
           </Text>
 
           <Text variant="titleMedium">
             <Text variant="titleMedium" style={{color:"gray"}}>ID:</Text>
-            {order.orderid.substring(0,9)}
+            {order.orderid}
           </Text>
         </View>
         <View style={styles.flexContainer}>
