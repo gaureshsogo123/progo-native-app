@@ -18,6 +18,7 @@ const { height } = Dimensions.get("screen");
 
 function SignIn({ navigation }) {
   const theme = useTheme();
+  const [loading, setLoading] = useState(false);
   const [mobileNumber, setMobileNumber] = useState();
   const [pin, setPin] = useState();
   const [errors, setErrors] = useState({});
@@ -43,6 +44,8 @@ function SignIn({ navigation }) {
       }));
       return;
     }
+    if (loading) return;
+    setLoading(true);
 
     signIn({ mobile_no: mobileNumber, pin: pin })
       .then((res) => {
@@ -60,7 +63,8 @@ function SignIn({ navigation }) {
           Alert.alert("Error", res.error);
         }
       })
-      .catch((err) => setErrors({ ...errors, pin: err.message }));
+      .catch((err) => setErrors({ ...errors, pin: err.message }))
+      .finally(() => setLoading(false));
   };
 
   const handleForgotPin = () => {
@@ -126,8 +130,13 @@ function SignIn({ navigation }) {
           >
             {errors.pin}{" "}
           </HelperText>
-          <Button style={styles.button} mode="contained" onPress={handleSignIn}>
-            Sign In
+          <Button
+            style={styles.button}
+            mode="contained"
+            loading={loading}
+            onPress={!loading && handleSignIn}
+          >
+            {!loading && "Sign In"}
           </Button>
           <View
             style={{
