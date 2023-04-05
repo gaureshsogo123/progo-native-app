@@ -7,8 +7,6 @@ const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
 const styles = StyleSheet.create({
   product: {
-    margin: 5,
-    padding: 5,
     display: "flex",
     flexDirection: "row",
     flex: 1,
@@ -28,9 +26,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "flex-end",
+    width:width*25/100
   },
   unitInput: {
-    width: 70,
+    width: "60%",
     height: 40,
     textAlign: "center",
     paddingHorizontal: 1,
@@ -72,11 +71,16 @@ function Product({ item }) {
       style={{
         ...styles.product,
         borderBottomColor: "silver",
-        paddingBottom: "3%",
+        paddingBottom: "2%",
         backgroundColor: "#fafafa",
+        paddingTop:"2%"
       }}
     >
-      <View style={{ width: "70%", display: "flex", flexDirection: "row" }}>
+
+
+<View style={{display:"flex",flexDirection:"row",justifyContent:"space-between",width:width*100/100,paddingLeft:width*2/100,paddingRight:width*2/100}}>
+
+      <View style={{ width:width*70/100, display: "flex", flexDirection: "row" }}>
         <Image
           source={{
             uri:
@@ -112,7 +116,6 @@ function Product({ item }) {
                 {item.mrp}
               </Text>
             </Text>
-
             <Text style={styles.pricecontainer}>
               <Text style={styles.price} variant="titleSmall">
                 {" "}
@@ -139,7 +142,9 @@ function Product({ item }) {
           </Text>
         </View>
       </View>
+
       <View style={styles.unitSection}>
+      <Text variant="labelLarge" >Qty: </Text>
         <TextInput
           keyboardType="number-pad"
           style={styles.unitInput}
@@ -155,8 +160,9 @@ function Product({ item }) {
             else return;
           }}
         />
-        <Text variant="labelLarge"> units</Text>
       </View>
+</View>
+
     </View>
   );
 }
