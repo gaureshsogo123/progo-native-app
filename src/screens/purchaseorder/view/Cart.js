@@ -13,6 +13,7 @@ import { saveOrder } from "../helper/Purchasehelper";
 import { editOrder } from "../../updateorder/helper/UpdateOrderHelper";
 import { useAuthContext } from "../../../context/UserAuthContext";
 import { useCartContext } from "../../../context/CartContext";
+import { useNavigation } from "@react-navigation/native";
 
 const styles = StyleSheet.create({
   container: {
@@ -66,6 +67,8 @@ const { height } = Dimensions.get("screen");
 function Cart({ navigation }) {
   const theme = useTheme();
   const { user } = useAuthContext();
+  const [currentTokens,setCurrentTokens]=useState("");
+  const navi = useNavigation();
   const { cartItems, setCartItems, distributorInfo, clearContext } =
     useCartContext();
   const [errors, setErrors] = useState({});
@@ -110,19 +113,24 @@ function Cart({ navigation }) {
         );
         navigation.pop(1);
         navigation.navigate("My Orders", { screen: "Orders" });
+        navi.reset({
+          index: 0,
+          routes: [{ name: "Landing Screen" }],
+        });
         clearContext();
       } else {
         Alert.alert("Error", result.error);
       }
     } catch (error) {
       Alert.alert("Error", error.message);
-      setErrors({ ...errors, saveOrder: "Failed to save order" });
+      setErrors({ ...errors, saveOrder: "Failed to save order"});
     }
   };
 
   const deleteHandlePress = (index) => {
     setCartItems((prev) => prev.filter((val, i) => index !== i));
   };
+
 
   useEffect(() => {
     if (cartItems.length == 0) {
@@ -185,7 +193,7 @@ function Cart({ navigation }) {
             </Text>
             <Text variant="titleMedium" style={{ paddingRight: 10 }}>
               {distributorInfo.action == "update"
-                ? `ID: ${distributorInfo.orderId}`
+                ? `ID: ${distributorInfo.orderId.substring(0,12)}`
                 : null}
             </Text>
           </View>
@@ -209,7 +217,7 @@ function Cart({ navigation }) {
               <Text variant="titleMedium" style={{ paddingRight: 10 }}>
                 <Text style={{ color: "gray" }}>Total: </Text>
                 {`\u20B9`}
-                {totalAmount}
+                {Number (totalAmount).toFixed(2)}
               </Text>
             </View>
           </View>
@@ -280,7 +288,7 @@ function Cart({ navigation }) {
                     marginBottom: 10,
                   }}
                 >
-                  <Text>Qty : </Text>
+                  <Text style={{alignSelf:"center"}}>Qty: </Text>
                   <View
                     style={{
                       width: "40%",

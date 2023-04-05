@@ -6,11 +6,14 @@ import {
   FlatList,
   Alert,
   RefreshControl,
+  Dimensions,
 } from "react-native";
 import { useTheme, Text, Button,HelperText } from "react-native-paper";
 import { useAuthContext } from "../../../context/UserAuthContext";
 import { getOrderDetailsRetailer } from "../helper/OrderHelper";
 
+
+const {width} = Dimensions.get("screen")
 
 
 const styles = StyleSheet.create({
@@ -27,8 +30,6 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   product: {
-    margin: 5,
-    padding: 5,
     display: "flex",
     flexDirection: "row",
     flex: 1,
@@ -40,6 +41,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "flex-end",
+    width:width*25/100
   },
   unitInput: {
     width: 70,
@@ -99,7 +101,9 @@ function OrderDetailScreen({ navigation, route }) {
           backgroundColor: "#fafafa",
         }}
       >
-        <View style={{ width: "70%" }}>
+
+        <View style={{display:"flex",flexDirection:"row",justifyContent:"space-between",width:width*100/100,paddingLeft:10,paddingRight:10}}>
+        <View style={{width:width*70/100}}>
           <Text variant="titleMedium">{item.productname}</Text>
           <Text style={styles.price} variant="titleSmall">
             Price : {`\u20B9`} {item.productprice}
@@ -110,10 +114,10 @@ function OrderDetailScreen({ navigation, route }) {
           </Text>
         </View>
         <View style={styles.unitSection}>
-          <Text>Qty : </Text>
+          <Text>Qty: </Text>
           <View
             style={{
-              width: 70,
+              width: "60%",
               height: 40,
               backgroundColor: theme.colors.secondaryContainer,
               justifyContent: "center",
@@ -123,6 +127,8 @@ function OrderDetailScreen({ navigation, route }) {
           >
             <Text variant="titleSmall">{item.productquantity}</Text>
           </View>
+        </View>
+
         </View>
       </View>
     );
@@ -149,12 +155,12 @@ function OrderDetailScreen({ navigation, route }) {
         <View style={styles.flexContainer}>
           <Text variant="titleMedium" style={{ width: "70%" }}>
             <Text style={{ color: "gray" }}>Supplier: </Text>
-            {order.distributorname}
+            {order.distributorname}aaaa
           </Text>
 
           <Text variant="titleMedium">
             <Text variant="titleMedium" style={{color:"gray"}}>ID:</Text>
-            {order.orderid}
+            {order.orderid.substring(0,9)}
           </Text>
         </View>
         <View style={styles.flexContainer}>

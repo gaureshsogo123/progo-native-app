@@ -112,14 +112,17 @@ function PurchaseOrderScreen({ route, navigation }) {
         </TouchableOpacity>*/}
         </View>
       </View>
-      <TextInput
+      <View style={{width:"100%",paddingLeft:width*2/100,paddingRight:width*2/100}}>      
+        <TextInput
         value={searchFilter}
         mode="outlined"
         theme={{ roundness: 10 }}
-        style={{ marginBottom: 3, marginHorizontal: 8 }}
+        style={{ marginBottom: 3,}}
         placeholder="Search Products"
         onChangeText={(text) => setSearchFilter(text)}
       />
+      </View>
+
       <View
         style={{
           backgroundColor: "white",
@@ -129,7 +132,7 @@ function PurchaseOrderScreen({ route, navigation }) {
           justifyContent: "center",
         }}
       >
-        <ScrollView horizontal={true} contentContainerStyle={{ padding: 10 }}>
+        <ScrollView horizontal={true} contentContainerStyle={{ padding:width*2/100 }}>
           {productCategories.map((val, i) => {
             return (
               <TouchableOpacity
@@ -217,7 +220,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   heading: {
-    padding: 10,
+    padding: width*2/100,
   },
   product: {
     margin: 5,
