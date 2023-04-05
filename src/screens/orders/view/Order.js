@@ -24,7 +24,7 @@ function Order({ item, showCancelPopup, handlepress }) {
       >
         {item.distributorname}
       </Text>
-      <Text style={{ marginBottom: 5 }}>Order ID: {item.orderid.substring(0,14)}</Text>
+      <Text style={{ marginBottom: 5 }}>Order ID: {item.orderid}</Text>
       <Text>Order Date : {format(new Date(item.orderdate), "dd-MM-yyyy")}</Text>
 
       <View style={styles.rightitems}>
