@@ -63,10 +63,12 @@ const styles = StyleSheet.create({
 });
 
 const { height } = Dimensions.get("screen");
+
 function Cart({ navigation }) {
   const theme = useTheme();
   const { user } = useAuthContext();
-  const { cartItems, setCartItems, distributorInfo, clearContext } =
+  const [uploading, setUploading] = useState(false);
+  const { cartItems, setCartItems, clearContext, distributorInfo } =
     useCartContext();
   const [errors, setErrors] = useState({});
   const totalItems = cartItems.reduce((acc, curr) => {
@@ -92,15 +94,17 @@ function Cart({ navigation }) {
       (total, item) => total + item.quantity * item.price,
       0
     );
+    if (uploading) return;
     try {
+      setUploading(true);
       const result = await saveOrder(
         user.userId,
         cartItems.length,
-        total - (total * distributorInfo.discount) / 100,
+        Number(total - (total * distributorInfo.discount) / 100).toFixed(2),
         "cash",
         distributorInfo.distributorId,
         distributorInfo.discount,
-        total,
+        Number(total).toFixed(2),
         cartItems
       );
       if (!result.error) {
@@ -110,13 +114,15 @@ function Cart({ navigation }) {
         );
         navigation.pop(1);
         navigation.navigate("My Orders", { screen: "Orders" });
-        clearContext();
+        setCartItems([]);
       } else {
         Alert.alert("Error", result.error);
       }
     } catch (error) {
       Alert.alert("Error", error.message);
       setErrors({ ...errors, saveOrder: "Failed to save order" });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -129,6 +135,7 @@ function Cart({ navigation }) {
       navigation.goBack();
     }
   }, [cartItems]);
+
   const updateOrder = async () => {
     setErrors({ ...errors, saveOrder: "" });
     if (cartItems.length === 0) {
@@ -142,7 +149,9 @@ function Cart({ navigation }) {
       (total, item) => total + item.quantity * item.price,
       0
     );
+    if (uploading) return;
     try {
+      setUploading(true);
       const result = await editOrder(
         user.userId,
         cartItems.length,
@@ -164,6 +173,8 @@ function Cart({ navigation }) {
       } else setErrors({ ...errors, updateOrder: result.error });
     } catch (error) {
       Alert.alert("Error", "There was an error");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -301,17 +312,19 @@ function Cart({ navigation }) {
       </View>
       {distributorInfo.action === "update" ? (
         <Button
-          onPress={updateOrder}
+          onPress={!uploading && updateOrder}
           style={styles.orderButton}
           mode="contained"
+          loading={uploading}
         >
           Update Order
         </Button>
       ) : (
         <Button
-          onPress={placeOrder}
+          onPress={!uploading && placeOrder}
           style={styles.orderButton}
           mode="contained"
+          loading={uploading}
         >
           Place Order
         </Button>

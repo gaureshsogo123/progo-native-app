@@ -14,14 +14,13 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "versionCode": 3,
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/app-icon.png",
         "backgroundColor": "#FFFFFF"
@@ -35,6 +34,19 @@
     "web": {
       "favicon": "./assets/app-icon.png"
     },
+    "notification": {
+      "icon": "./assets/notification-icon.png",
+      "color": "#7fc9a2"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#7fc9a2"
+        }
+      ]
+    ],
     "owner": "pattabi",
     "extra": {
       "eas": {
