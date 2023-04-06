@@ -43,6 +43,20 @@ export default function LandingScreen({ navigation }) {
     return unsubscribeFocus;
   }, [cartItems]);
 
+
+  useEffect(() => {
+    let unsubscribeFocus = ()=>{};
+    if (routeName == "UpdateOrder") {
+        unsubscribeFocus = navigation.addListener("focus", () => {
+        navi.reset({
+          index: 1,
+          routes: [{ name: "Orders" }],
+        });
+      });
+    }
+    return unsubscribeFocus;
+  }, [navigation]);
+
   useEffect(() => {
     let unsubscribeFocus = ()=>{};
     if (routeName == "UpdateOrder") {
