@@ -44,22 +44,23 @@ export default function LandingScreen({ navigation }) {
   }, [cartItems]);
 
   useEffect(() => {
+    let unsubscribeFocus = ()=>{};
     if (routeName == "UpdateOrder") {
-       const unsubscribeFocus = navigation.addListener("focus", () => {
+        unsubscribeFocus = navigation.addListener("focus", () => {
         navi.reset({
           index: 0,
           routes: [{ name: "Orders" }],
         });
       });
-      return unsubscribeFocus;
     }
-  }, [navigation]);
+    return unsubscribeFocus;
+  }, [navigation,routeName]);
 
   const filterDistributor = distributors.filter((item) => {
     if (item.name === "") {
       return item;
     }
-    return item.name.toLowerCase().includes(filterText.toLocaleLowerCase());
+    return item.name.toLowerCase().includes(filterText.toLowerCase());
   });
 
   const handlePress = (item) => {

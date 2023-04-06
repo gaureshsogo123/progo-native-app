@@ -19,7 +19,7 @@ function Order({ item, showCancelPopup, handlepress }) {
         style={{
           marginBottom: 5,
           paddingBottom: 3,
-          width: "50%",
+          width: width*30/100,
         }}
       >
         {item.distributorname}
@@ -77,7 +77,7 @@ export default Order;
 
 const styles = StyleSheet.create({
   listcontainer: {
-    width: "95%",
+    width: width*95/100,
     minHeight: (height * 15) / 100,
     backgroundColor: "#fafafa",
     borderRadius: 12,

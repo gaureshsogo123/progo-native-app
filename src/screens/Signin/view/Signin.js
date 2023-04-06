@@ -14,7 +14,11 @@ import { useAuthContext } from "../../../context/UserAuthContext";
 import { signIn } from "../helper/SigninHelper";
 import { validateMobile } from "../helper/validateMobile";
 
+
+
 const { height } = Dimensions.get("screen");
+
+
 
 function SignIn({ navigation }) {
   const theme = useTheme();
@@ -70,6 +74,8 @@ function SignIn({ navigation }) {
   const handleForgotPin = () => {
     navigation.push("forgotpin");
   };
+
+
 
   return (
     <>
