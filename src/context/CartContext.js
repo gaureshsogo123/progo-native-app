@@ -8,7 +8,9 @@ const CartContextProvider = ({ children }) => {
 
   const clearContext = () => {
     setCartItems([]);
-    setDistributorInfo({});
+    setDistributorInfo({
+      discount: 0,
+    });
   };
 
   return (

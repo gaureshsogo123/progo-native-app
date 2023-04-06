@@ -14,9 +14,7 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true
     },
@@ -36,6 +34,19 @@
     "web": {
       "favicon": "./assets/app-icon.png"
     },
+    "notification": {
+      "icon": "./assets/notification-icon.png",
+      "color": "#f9a472"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#f9a472"
+        }
+      ]
+    ],
     "owner": "pattabi",
     "extra": {
       "eas": {

@@ -91,25 +91,6 @@ function PurchaseOrderScreen({ route, navigation }) {
             <Text style={{ color: "gray" }}>Supplier: </Text>
             {distributorName}
           </Text>
-          {/*<TouchableOpacity
-          style={{ width: "5%", alignSelf: "center" }}
-          onPress={cartHandlePress}
-        >
-          <AntDesign name="shoppingcart" size={28} />
-  </TouchableOpacity>*/}
-          {/*<TouchableOpacity
-          style={{
-            width: "5%",
-            borderRadius: 30,
-            backgroundColor: theme.colors.primary,
-            height: 30,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-          onPress={cartHandlePress}
-        >
-          <Text style={{ color: "white" }}>{cartItems.length}</Text>
-        </TouchableOpacity>*/}
         </View>
       </View>
       <View style={{width:"100%",paddingLeft:width*2/100,paddingRight:width*2/100}}>      

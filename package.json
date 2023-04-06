@@ -22,6 +22,7 @@
     "date-fns": "^2.29.3",
     "expo": "~47.0.12",
     "expo-constants": "~14.0.2",
+    "expo-dev-client": "~2.0.1",
     "expo-firebase-recaptcha": "^2.3.1",
     "expo-status-bar": "~1.4.0",
     "expo-updates": "~0.15.6",
