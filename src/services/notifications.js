@@ -48,8 +48,7 @@ export async function registerForPushNotificationsAsync() {
       finalStatus = status;
     }
     if (finalStatus !== "granted") {
-      alert("Permission is required to receive notifications");
-      return;
+    //
     }
     token = (await Notifications.getDevicePushTokenAsync()).data;
   } else {
