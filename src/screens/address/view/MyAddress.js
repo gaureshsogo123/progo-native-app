@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
+import { Text } from "react-native-paper";
 import useAddress from "./../helper/useAddress";
 import EditAddress from "./EditAddress";
 import { Button } from "react-native-paper";
@@ -26,20 +27,20 @@ const MyAddress = ({ navigation }) => {
             {address && (
               <>
                 <View style={styles.addressContainer}>
-                  <Text style={styles.label}>Address: </Text>
-                  <Text style={styles.value}>
+                  <Text style={styles.label} variant="titleMedium">Address: </Text>
+                  <Text style={styles.value} variant="bodyLarge">
                     {address.street1},{" "}
                     {address.street2 && `${address.street2}, `}
                     {address.city}
                   </Text>
-                  <Text style={styles.label}>District: </Text>
-                  <Text style={styles.value}>{address.district}</Text>
-                  <Text style={styles.label}>State: </Text>
-                  <Text style={styles.value}>{address.state}</Text>
-                  <Text style={styles.label}>Landmark: </Text>
-                  <Text style={styles.value}>{address.landmark}</Text>
-                  <Text style={styles.label}>PIN Code: </Text>
-                  <Text style={styles.value}>{address.zipcode}</Text>
+                  <Text style={styles.label} variant="titleMedium">District: </Text>
+                  <Text style={styles.value} variant="bodyLarge">{address.district}</Text>
+                  <Text style={styles.label} variant="titleMedium">State: </Text>
+                  <Text style={styles.value} variant="bodyLarge">{address.state}</Text>
+                  <Text style={styles.label} variant="titleMedium">Landmark: </Text>
+                  <Text style={styles.value} variant="bodyLarge">{address.landmark}</Text>
+                  <Text style={styles.label} variant="titleMedium">PIN Code: </Text>
+                  <Text style={styles.value} variant="bodyLarge">{address.zipcode}</Text>
                 </View>
                 <View
                   style={{
@@ -87,12 +88,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   label: {
-    fontSize: 18,
-    fontWeight: "bold",
     marginBottom: 5,
+    fontWeight:"600"
   },
   value: {
-    fontSize: 16,
     marginBottom: 10,
   },
 });

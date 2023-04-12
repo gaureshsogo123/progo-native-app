@@ -1,7 +1,6 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Signout from "../../component/Signout";
 import Menu from "../../Menu";
-import EditAddress from "../../screens/address/view/EditAddress";
 import MyAddress from "../../screens/address/view/MyAddress";
 import UpdatePin from "../../screens/Signin/view/UpdatePin";
 
