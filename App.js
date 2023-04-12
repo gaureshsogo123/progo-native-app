@@ -1,5 +1,4 @@
 import AuthContextProvider from "./src/context/UserAuthContext";
-import "expo-dev-client";
 import Routes from "./src/Routes";
 import {
   SafeAreaProvider,
