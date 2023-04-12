@@ -155,7 +155,7 @@ function EditAddress({ setEditMode, address, setAddress }) {
                   fontSize: (height * 1.9) / 100,
                 }}
               >
-                {newAddress?.city || "Select Category"}
+                {newAddress?.city || "Select City"}
               </Text>
               <MaterialIcons name="arrow-drop-down" size={23} color="gray" />
             </View>
