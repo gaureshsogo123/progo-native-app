@@ -1,8 +1,9 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Signout from "../../component/Signout";
 import Menu from "../../Menu";
+import EditAddress from "../../screens/address/view/EditAddress";
+import MyAddress from "../../screens/address/view/MyAddress";
 import UpdatePin from "../../screens/Signin/view/UpdatePin";
-
 
 const MenuStack = createNativeStackNavigator();
 
@@ -13,9 +14,8 @@ const MenuNavigator = () => {
         name="MenuList"
         component={Menu}
         options={{ title: "Menu" }}
-
       />
-    
+      <MenuStack.Screen name="My Address" component={MyAddress} />
       <MenuStack.Screen name="SignOut" component={Signout} />
       <MenuStack.Screen
         name="UpdatePin"

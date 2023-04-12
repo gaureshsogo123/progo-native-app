@@ -93,15 +93,21 @@ function PurchaseOrderScreen({ route, navigation }) {
           </Text>
         </View>
       </View>
-      <View style={{width:"100%",paddingLeft:width*2/100,paddingRight:width*2/100}}>      
+      <View
+        style={{
+          width: "100%",
+          paddingLeft: (width * 2) / 100,
+          paddingRight: (width * 2) / 100,
+        }}
+      >
         <TextInput
-        value={searchFilter}
-        mode="outlined"
-        theme={{ roundness: 10 }}
-        style={{ marginBottom: 3,}}
-        placeholder="Search Products"
-        onChangeText={(text) => setSearchFilter(text)}
-      />
+          value={searchFilter}
+          mode="outlined"
+          theme={{ roundness: 10 }}
+          style={{ marginBottom: 3 }}
+          placeholder="Search Products"
+          onChangeText={(text) => setSearchFilter(text)}
+        />
       </View>
 
       <View
@@ -113,7 +119,10 @@ function PurchaseOrderScreen({ route, navigation }) {
           justifyContent: "center",
         }}
       >
-        <ScrollView horizontal={true} contentContainerStyle={{ padding:width*2/100 }}>
+        <ScrollView
+          horizontal={true}
+          contentContainerStyle={{ padding: (width * 2) / 100 }}
+        >
           {productCategories.map((val, i) => {
             return (
               <TouchableOpacity
@@ -169,7 +178,7 @@ function PurchaseOrderScreen({ route, navigation }) {
         data={products}
         renderItem={renderProduct}
         onEndReached={handleEndReached}
-        onEndReachedThreshold={2}
+        onEndReachedThreshold={3}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -201,7 +210,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   heading: {
-    padding: width*2/100,
+    padding: (width * 2) / 100,
   },
   product: {
     margin: 5,
