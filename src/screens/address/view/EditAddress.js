@@ -133,7 +133,7 @@ function EditAddress({ setEditMode, address, setAddress }) {
             State
           </HelperText>
         </Input>
-        <Text style={styles.label}>City</Text>
+        <Text style={styles.label} variant="titleMedium">City</Text>
         <View style={{ width: "100%" }}>
           <TouchableOpacity onPress={() => setShowCityPopup(true)}>
             <View
@@ -241,7 +241,7 @@ const Input = ({
   ...props
 }) => (
   <>
-    <Text style={styles.label}>{label}</Text>
+    <Text style={styles.label} variant="titleMedium">{label}</Text>
     <TextInput
       mode="outlined"
       theme={{ roundness: 10 }}
@@ -264,8 +264,7 @@ const Input = ({
 
 const styles = StyleSheet.create({
   label: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontWeight:"600"
   },
   container: {
     width: "100%",
