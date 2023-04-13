@@ -27,20 +27,38 @@ const MyAddress = ({ navigation }) => {
             {address && (
               <>
                 <View style={styles.addressContainer}>
-                  <Text style={styles.label} variant="titleMedium">Address: </Text>
+                  <Text style={styles.label} variant="titleMedium">
+                    Address:{" "}
+                  </Text>
                   <Text style={styles.value} variant="bodyLarge">
                     {address.street1},{" "}
                     {address.street2 && `${address.street2}, `}
                     {address.city}
                   </Text>
-                  <Text style={styles.label} variant="titleMedium">District: </Text>
-                  <Text style={styles.value} variant="bodyLarge">{address.district}</Text>
-                  <Text style={styles.label} variant="titleMedium">State: </Text>
-                  <Text style={styles.value} variant="bodyLarge">{address.state}</Text>
-                  <Text style={styles.label} variant="titleMedium">Landmark: </Text>
-                  <Text style={styles.value} variant="bodyLarge">{address.landmark}</Text>
-                  <Text style={styles.label} variant="titleMedium">PIN Code: </Text>
-                  <Text style={styles.value} variant="bodyLarge">{address.zipcode}</Text>
+                  <Text style={styles.label} variant="titleMedium">
+                    District:{" "}
+                  </Text>
+                  <Text style={styles.value} variant="bodyLarge">
+                    {address.district}
+                  </Text>
+                  <Text style={styles.label} variant="titleMedium">
+                    State:{" "}
+                  </Text>
+                  <Text style={styles.value} variant="bodyLarge">
+                    {address.state}
+                  </Text>
+                  <Text style={styles.label} variant="titleMedium">
+                    Landmark:{" "}
+                  </Text>
+                  <Text style={styles.value} variant="bodyLarge">
+                    {address.landmark}
+                  </Text>
+                  <Text style={styles.label} variant="titleMedium">
+                    PIN Code:{" "}
+                  </Text>
+                  <Text style={styles.value} variant="bodyLarge">
+                    {address.zipcode}
+                  </Text>
                 </View>
                 <View
                   style={{
@@ -49,11 +67,15 @@ const MyAddress = ({ navigation }) => {
                     flexDirection: "row",
                   }}
                 >
-                  <Button onPress={!loading && (() => navigation.pop(1))}>
+                  <Button
+                    style={styles.button}
+                    onPress={!loading && (() => navigation.pop(1))}
+                  >
                     Back
                   </Button>
                   <Button
                     mode="contained"
+                    style={styles.button}
                     onPress={!loading && (() => setEditMode(true))}
                   >
                     Edit
@@ -89,9 +111,12 @@ const styles = StyleSheet.create({
   },
   label: {
     marginBottom: 5,
-    fontWeight:"600"
+    fontWeight: "600",
   },
   value: {
     marginBottom: 10,
+  },
+  button: {
+    width: 100,
   },
 });

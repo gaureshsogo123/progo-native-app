@@ -133,7 +133,9 @@ function EditAddress({ setEditMode, address, setAddress }) {
             State
           </HelperText>
         </Input>
-        <Text style={styles.label} variant="titleMedium">City</Text>
+        <Text style={styles.label} variant="titleMedium">
+          City
+        </Text>
         <View style={{ width: "100%" }}>
           <TouchableOpacity onPress={() => setShowCityPopup(true)}>
             <View
@@ -196,9 +198,7 @@ function EditAddress({ setEditMode, address, setAddress }) {
                 setEditMode(false);
               })
             }
-            style={{
-              marginBottom: 25,
-            }}
+            style={styles.button}
           >
             Cancel
           </Button>
@@ -206,9 +206,7 @@ function EditAddress({ setEditMode, address, setAddress }) {
             onPress={!loading && handleUpdateAddress}
             mode="contained"
             loading={loading}
-            style={{
-              marginBottom: 25,
-            }}
+            style={styles.button}
           >
             Save
           </Button>
@@ -241,7 +239,9 @@ const Input = ({
   ...props
 }) => (
   <>
-    <Text style={styles.label} variant="titleMedium">{label}</Text>
+    <Text style={styles.label} variant="titleMedium">
+      {label}
+    </Text>
     <TextInput
       mode="outlined"
       theme={{ roundness: 10 }}
@@ -264,11 +264,15 @@ const Input = ({
 
 const styles = StyleSheet.create({
   label: {
-    fontWeight:"600"
+    fontWeight: "600",
   },
   container: {
     width: "100%",
     paddingHorizontal: "2%",
     paddingVertical: "3%",
+  },
+  button: {
+    width: 100,
+    marginBottom: 25,
   },
 });
