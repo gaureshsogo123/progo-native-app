@@ -10,8 +10,14 @@ function Menu({ navigation }) {
   return (
     <>
       <List.Item
+        title="My Address"
+        left={(props) => <AntDesign name="home" size={22} {...props} />}
+        onPress={() => navigation.push("My Address")}
+        style={styles.listItem}
+      />
+      <List.Item
         title="Update Pin"
-        left={(props) => <AntDesign name="edit" {...props} />}
+        left={(props) => <AntDesign name="edit" size={22} {...props} />}
         onPress={() =>
           navigation.push("UpdatePin", { mobile_no: user.mobileNo })
         }
@@ -19,7 +25,7 @@ function Menu({ navigation }) {
       />
       <List.Item
         title="Sign Out"
-        left={(props) => <AntDesign name="logout" {...props} />}
+        left={(props) => <AntDesign name="logout" size={22} {...props} />}
         onPress={logoutUser}
         style={styles.listItem}
       />

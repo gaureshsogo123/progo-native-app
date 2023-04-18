@@ -8,7 +8,8 @@ const theme = {
     background: "#FBFFFF",
     secondary: "#fde3d5",
     secondaryContainer: "#fde3d5",
-    surfaceVariant: "#C8DBFF",
+    surfaceVariant: "#fde3d5",
+    surface: "#fde3d5",
   },
 };
 

@@ -21,15 +21,15 @@ function Popup({
   onDismiss,
   valueField = "value",
   value,
-  setValue,
+  onItemPress,
   data,
   showSearch,
 }) {
   const theme = useTheme();
   const [search, setSearch] = useState("");
 
-  const updateValue = (value) => {
-    setValue(value);
+  const handleItemPress = (value) => {
+    onItemPress(value);
     onDismiss();
   };
 
@@ -50,7 +50,7 @@ function Popup({
     return (
       <View style={{ marginLeft: (width * 4) / 100 }}>
         <TouchableOpacity
-          onPress={() => updateValue(item[valueField])}
+          onPress={() => handleItemPress(item[valueField])}
           style={{
             paddingBottom: (height * 2) / 100,
             paddingTop: (height * 2) / 100,
@@ -87,6 +87,7 @@ function Popup({
                   height: (height * 6) / 100,
                   marginBottom: (height * 1.6) / 100,
                 }}
+                theme={theme}
                 onChangeText={(val) => setSearch(val)}
                 placeholder="Search"
               />
@@ -114,4 +115,5 @@ const containerStyle = {
   minHeight: (height * 30) / 100,
   borderRadius: 10,
   alignContent: "center",
+  maxHeight: (height * 70) / 100,
 };
