@@ -11,6 +11,7 @@ import {
 import { useTheme, Text, Button,HelperText } from "react-native-paper";
 import { useAuthContext } from "../../../context/UserAuthContext";
 import { getOrderDetailsRetailer } from "../helper/OrderHelper";
+import { calculateCartTotals, getDiscountedTaxedPrice } from "../../purchaseorder/helper/Purchasehelper";
 
 
 const {width} = Dimensions.get("screen")
@@ -71,13 +72,25 @@ function OrderDetailScreen({ navigation, route }) {
   const [errors,setErrors]=useState({});
 
   const {user} = useAuthContext();
+  const {totalAmount}=calculateCartTotals(orderDetail)
+
 
   const getOrderInfo = async () => {
     setRefreshing(true);
     try{
       const result = await getOrderDetailsRetailer(order.orderid,user.userId);
       if(!result.error){
-        setOrderDetail(result.data);
+        setOrderDetail(result.data?.map((item) => ({
+          discount: item.discount || 0,
+          price: item.productprice,
+          gstrate: item.productgstrate,
+          productid: item.productid,
+          productname: item.productname,
+          manufacturer: item.manufacturer || null,
+          quantity: item.productquantity || 0,
+          retailerId: user.userId,
+          ...item,
+        })));
         setErrors({...errors,getorderinfo:""})
       }else setErrors({...errors,getorderinfo:"Failed to fetch Products"})
     }catch(err){
@@ -92,6 +105,7 @@ function OrderDetailScreen({ navigation, route }) {
   }, [user.userId, order.orderid]);
 
   const getProducts = ({ item }) => {
+    const productPrice = getDiscountedTaxedPrice(item, item);
     return (
       <View
         style={{
@@ -106,11 +120,11 @@ function OrderDetailScreen({ navigation, route }) {
         <View style={{width:width*70/100}}>
           <Text variant="titleMedium">{item.productname}</Text>
           <Text style={styles.price} variant="titleSmall">
-            Price : {`\u20B9`} {item.productprice}
+            Price : {`\u20B9`} {productPrice}
           </Text>
           <Text>
             Amount : {`\u20B9`}{" "}
-            {(Number(item.productquantity) * item.productprice).toFixed(2)}
+             {Number(productPrice * item.quantity).toFixed(2)}
           </Text>
         </View>
         <View style={styles.unitSection}>
@@ -125,7 +139,7 @@ function OrderDetailScreen({ navigation, route }) {
               borderRadius: 8,
             }}
           >
-            <Text variant="titleSmall">{item.productquantity}</Text>
+            <Text variant="titleSmall">{item.quantity}</Text>
           </View>
         </View>
 
@@ -145,10 +159,10 @@ function OrderDetailScreen({ navigation, route }) {
     return acc;
   }, 0);
 
-  const totalAmount = orderDetail.reduce((acc, curr) => {
+  {const totalAmount = orderDetail.reduce((acc, curr) => {
     acc = acc + Number(curr.productquantity) * curr.productprice;
     return acc;
-  }, 0);
+  }, 0);}
   return (
     <>
       <View style={styles.heading}>

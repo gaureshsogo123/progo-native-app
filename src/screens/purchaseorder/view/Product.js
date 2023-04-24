@@ -2,6 +2,7 @@ import React, { useCallback } from "react";
 import { Dimensions, Image, StyleSheet, View } from "react-native";
 import { useTheme, Text, TextInput } from "react-native-paper";
 import { useCartContext } from "../../../context/CartContext";
+import { getDiscountedTaxedPrice } from "../helper/Purchasehelper";
 
 const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
@@ -40,10 +41,14 @@ const styles = StyleSheet.create({
 
 function Product({ item }) {
   const { cartItems, setCartItems } = useCartContext();
-  const productQuantity =
-    cartItems?.find((product) => product.productid === item.productid)
-      ?.quantity || 0;
+  
+      const cartItem = cartItems?.find(
+        (product) => product.productid === item.productid
+      );
 
+      const productQuantity = cartItem ? cartItem.quantity : 0;
+
+    
   const updateQuantity = useCallback((amount, item) => {
     setCartItems((prev) => {
       let obj = [...prev];
@@ -56,13 +61,14 @@ function Product({ item }) {
         obj.push({
           discount: item.discount || 0,
           price: item.price,
+          gstrate: item.gstrate,
           productid: item.productid,
           productname: item.productname,
           manufacturer: item.manufacturer || null,
           quantity: amount || 0,
         });
       }
-      return obj.filter((item) => item.quantity > 0);
+      return obj
     });
   }, []);
 
@@ -103,7 +109,8 @@ function Product({ item }) {
             <Text variant="titleSmall">
               {" "}
               {`\u20B9`}
-              {Number(item.price).toFixed(2)}
+              {/*Number(item.price).toFixed(2)*/}
+              {getDiscountedTaxedPrice(item,cartItem)}
             </Text>
           </Text>
           <Text style={{ display: "flex", flexDirection: "row", width: "80%" }}>
@@ -122,7 +129,7 @@ function Product({ item }) {
                 Margin:{" "}
               </Text>
               <Text variant="titleSmall">
-                {Number(((item.mrp - item.price) / item.price) * 100).toFixed(
+                {Number(((item.mrp - getDiscountedTaxedPrice(item,cartItem)) / getDiscountedTaxedPrice(item,cartItem)) * 100).toFixed(
                   1
                 )}
                 %
@@ -135,9 +142,9 @@ function Product({ item }) {
             </Text>{" "}
             <Text variant="titleSmall">
               {`\u20B9`}
-              {Number((item.price - item.discount) * productQuantity).toFixed(
-                2
-              )}
+              {Number(
+                getDiscountedTaxedPrice(item, cartItem) * productQuantity
+              ).toFixed(2)}
             </Text>
           </Text>
         </View>
