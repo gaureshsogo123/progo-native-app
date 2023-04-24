@@ -137,8 +137,13 @@ function Cart({ navigation }) {
     }
   };
 
+  /** set quantity to 0 so its not visible, but retains other properties like discount, gstrate */
   const deleteHandlePress = (index) => {
-    setCartItems((prev) => prev.filter((val, i) => index !== i));
+    setCartItems((prev) => {
+      const obj = { ...prev[index], quantity: 0 };
+      prev[index] = obj;
+      return [...prev];
+    });
   };
 
   useEffect(() => {
