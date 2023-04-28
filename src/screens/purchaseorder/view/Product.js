@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { Dimensions, Image, StyleSheet, View } from "react-native";
-import { useTheme, Text, TextInput } from "react-native-paper";
+import { Text, TextInput } from "react-native-paper";
 import { useCartContext } from "../../../context/CartContext";
 import { getDiscountedTaxedPrice } from "../helper/Purchasehelper";
 
