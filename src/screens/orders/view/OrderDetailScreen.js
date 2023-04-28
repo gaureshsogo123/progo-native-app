@@ -2,9 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
-  TouchableOpacity,
   FlatList,
-  Alert,
   RefreshControl,
   Dimensions,
 } from "react-native";

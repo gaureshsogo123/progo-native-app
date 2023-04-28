@@ -161,10 +161,6 @@ function Cart({ navigation }) {
       );
       return;
     }
-    const total = cartItems.reduce(
-      (total, item) => total + item.quantity * item.price,
-      0
-    );
     if (uploading) return;
     try {
       setUploading(true);
