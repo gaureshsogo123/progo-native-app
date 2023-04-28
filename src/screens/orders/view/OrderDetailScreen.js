@@ -8,13 +8,15 @@ import {
   RefreshControl,
   Dimensions,
 } from "react-native";
-import { useTheme, Text, Button,HelperText } from "react-native-paper";
+import { useTheme, Text, Button, HelperText } from "react-native-paper";
 import { useAuthContext } from "../../../context/UserAuthContext";
 import { getOrderDetailsRetailer } from "../helper/OrderHelper";
+import {
+  calculateCartTotals,
+  getDiscountedTaxedPrice,
+} from "../../purchaseorder/helper/Purchasehelper";
 
-
-const {width} = Dimensions.get("screen")
-
+const { width } = Dimensions.get("screen");
 
 const styles = StyleSheet.create({
   container: {
@@ -41,7 +43,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "flex-end",
-    width:width*25/100
+    width: (width * 25) / 100,
   },
   unitInput: {
     width: 70,
@@ -68,21 +70,34 @@ function OrderDetailScreen({ navigation, route }) {
   const { order } = route.params;
   const [orderDetail, setOrderDetail] = useState([]);
   const [refreshing, setRefreshing] = useState(true);
-  const [errors,setErrors]=useState({});
+  const [errors, setErrors] = useState({});
 
-  const {user} = useAuthContext();
+  const { user } = useAuthContext();
+  const { totalAmount } = calculateCartTotals(orderDetail);
 
   const getOrderInfo = async () => {
     setRefreshing(true);
-    try{
-      const result = await getOrderDetailsRetailer(order.orderid,user.userId);
-      if(!result.error){
-        setOrderDetail(result.data);
-        setErrors({...errors,getorderinfo:""})
-      }else setErrors({...errors,getorderinfo:"Failed to fetch Products"})
-    }catch(err){
-      setErrors({...errors,getorderinfo:"Failed to fetch Products"})
-    }finally{
+    try {
+      const result = await getOrderDetailsRetailer(order.orderid, user.userId);
+      if (!result.error) {
+        setOrderDetail(
+          result.data?.map((item) => ({
+            discount: item.discount || 0,
+            price: item.productprice,
+            gstrate: item.productgstrate,
+            productid: item.productid,
+            productname: item.productname,
+            manufacturer: item.manufacturer || null,
+            quantity: item.productquantity || 0,
+            retailerId: user.userId,
+            ...item,
+          }))
+        );
+        setErrors({ ...errors, getorderinfo: "" });
+      } else setErrors({ ...errors, getorderinfo: "Failed to fetch Products" });
+    } catch (err) {
+      setErrors({ ...errors, getorderinfo: "Failed to fetch Products" });
+    } finally {
       setRefreshing(false);
     }
   };
@@ -92,6 +107,7 @@ function OrderDetailScreen({ navigation, route }) {
   }, [user.userId, order.orderid]);
 
   const getProducts = ({ item }) => {
+    const productPrice = getDiscountedTaxedPrice(item, item);
     return (
       <View
         style={{
@@ -101,34 +117,41 @@ function OrderDetailScreen({ navigation, route }) {
           backgroundColor: "#fafafa",
         }}
       >
-
-        <View style={{display:"flex",flexDirection:"row",justifyContent:"space-between",width:width*100/100,paddingLeft:10,paddingRight:10}}>
-        <View style={{width:width*70/100}}>
-          <Text variant="titleMedium">{item.productname}</Text>
-          <Text style={styles.price} variant="titleSmall">
-            Price : {`\u20B9`} {item.productprice}
-          </Text>
-          <Text>
-            Amount : {`\u20B9`}{" "}
-            {(Number(item.productquantity) * item.productprice).toFixed(2)}
-          </Text>
-        </View>
-        <View style={styles.unitSection}>
-          <Text>Qty: </Text>
-          <View
-            style={{
-              width: "60%",
-              height: 40,
-              backgroundColor: theme.colors.secondaryContainer,
-              justifyContent: "center",
-              alignItems: "center",
-              borderRadius: 8,
-            }}
-          >
-            <Text variant="titleSmall">{item.productquantity}</Text>
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            width: (width * 100) / 100,
+            paddingLeft: 10,
+            paddingRight: 10,
+          }}
+        >
+          <View style={{ width: (width * 70) / 100 }}>
+            <Text variant="titleMedium">{item.productname}</Text>
+            <Text style={styles.price} variant="titleSmall">
+              Price : {`\u20B9`} {productPrice}
+            </Text>
+            <Text>
+              Amount : {`\u20B9`}{" "}
+              {Number(productPrice * item.quantity).toFixed(2)}
+            </Text>
           </View>
-        </View>
-
+          <View style={styles.unitSection}>
+            <Text>Qty: </Text>
+            <View
+              style={{
+                width: "60%",
+                height: 40,
+                backgroundColor: theme.colors.secondaryContainer,
+                justifyContent: "center",
+                alignItems: "center",
+                borderRadius: 8,
+              }}
+            >
+              <Text variant="titleSmall">{item.quantity}</Text>
+            </View>
+          </View>
         </View>
       </View>
     );
@@ -145,10 +168,6 @@ function OrderDetailScreen({ navigation, route }) {
     return acc;
   }, 0);
 
-  const totalAmount = orderDetail.reduce((acc, curr) => {
-    acc = acc + Number(curr.productquantity) * curr.productprice;
-    return acc;
-  }, 0);
   return (
     <>
       <View style={styles.heading}>
@@ -159,7 +178,9 @@ function OrderDetailScreen({ navigation, route }) {
           </Text>
 
           <Text variant="titleMedium">
-            <Text variant="titleMedium" style={{color:"gray"}}>ID:</Text>
+            <Text variant="titleMedium" style={{ color: "gray" }}>
+              ID:
+            </Text>
             {order.orderid}
           </Text>
         </View>
@@ -182,7 +203,7 @@ function OrderDetailScreen({ navigation, route }) {
         >
           <Text variant="titleMedium">
             <Text style={{ color: "gray" }}>Total Amount:</Text> {`\u20B9`}{" "}
-            {totalAmount.toFixed(2)}
+            {Number(totalAmount).toFixed(2)}
           </Text>
           <Text variant="titleMedium">
             <Text style={{ color: "gray" }}>Items:</Text> {totalItems}
@@ -215,11 +236,10 @@ function OrderDetailScreen({ navigation, route }) {
           ) : null}
         </View>
         {errors.getorderinfo && (
-            <HelperText visible={errors.getorderinfo} type="error">
-              {errors.getorderinfo}{" "}
-            </HelperText>
-          )}
-    
+          <HelperText visible={errors.getorderinfo} type="error">
+            {errors.getorderinfo}{" "}
+          </HelperText>
+        )}
       </View>
 
       <FlatList

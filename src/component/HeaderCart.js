@@ -13,7 +13,7 @@ function HeaderCart() {
   const { cartItems,distributorInfo } = useCartContext();
 
   const handlePress = () => {
-    if (cartItems.length > 0) {
+    if (cartItems.filter((item) => item.quantity > 0).length > 0) {
       if(distributorInfo.action == "place"){
       navigation.navigate("Home", {
         screen: "Cart",
@@ -25,7 +25,7 @@ function HeaderCart() {
       })
     }
     } else {
-      Alert.alert("", "Sorry Your Cart is Empty Please Add Some Products...");
+      Alert.alert("Empty Cart", "Sorry Your Cart is Empty Please Add Some Products...");
     }
   };
 
@@ -49,7 +49,7 @@ function HeaderCart() {
             top: 0,
           }}
         >
-          <Text style={{ color: "white" }}>{cartItems.length}</Text>
+          <Text style={{ color: "white" }}>{cartItems.filter((item) => item.quantity > 0).length}</Text>
         </View>
       </TouchableOpacity>
     </View>
