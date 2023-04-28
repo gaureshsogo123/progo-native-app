@@ -9,7 +9,11 @@ import {
 } from "react-native";
 import { Text, useTheme, Button } from "react-native-paper";
 import { AntDesign } from "@expo/vector-icons";
-import { saveOrder } from "../helper/Purchasehelper";
+import {
+  calculateCartTotals,
+  getDiscountedTaxedPrice,
+  saveOrder,
+} from "../helper/Purchasehelper";
 import { editOrder } from "../../updateorder/helper/UpdateOrderHelper";
 import { useAuthContext } from "../../../context/UserAuthContext";
 import { useCartContext } from "../../../context/CartContext";
@@ -74,16 +78,15 @@ function Cart({ navigation }) {
   const [errors, setErrors] = useState({});
   const navi = useNavigation();
 
-  
-  const totalItems = cartItems.reduce((acc, curr) => {
-    acc = acc + Number(curr.quantity);
-    return acc;
-  }, 0);
+  const { totalAmount, totalDiscount, totalTax } =
+    calculateCartTotals(cartItems);
 
-  const totalAmount = cartItems.reduce((acc, curr) => {
-    acc = acc + Number(curr.quantity) * curr.price;
-    return acc;
-  }, 0);
+  const totalItems = cartItems
+    .filter((item) => item.quantity > 0)
+    .reduce((acc, curr) => {
+      acc = acc + Number(curr.quantity);
+      return acc;
+    }, 0);
 
   const placeOrder = async () => {
     setErrors({ ...errors, saveOrder: "" });
@@ -103,13 +106,13 @@ function Cart({ navigation }) {
       setUploading(true);
       const result = await saveOrder(
         user.userId,
-        cartItems.length,
-        Number(total - (total * distributorInfo.discount) / 100).toFixed(2),
+        cartItems.filter((item) => item.quantity > 0).length,
+        totalAmount,
         "cash",
         distributorInfo.distributorId,
-        distributorInfo.discount,
-        Number(total).toFixed(2),
-        cartItems
+        totalDiscount,
+        totalAmount - totalTax,
+        cartItems.filter((item) => item.quantity > 0)
       );
       if (!result.error) {
         Alert.alert(
@@ -134,10 +137,14 @@ function Cart({ navigation }) {
     }
   };
 
+  /** set quantity to 0 so its not visible, but retains other properties like discount, gstrate */
   const deleteHandlePress = (index) => {
-    setCartItems((prev) => prev.filter((val, i) => index !== i));
+    setCartItems((prev) => {
+      const obj = { ...prev[index], quantity: 0 };
+      prev[index] = obj;
+      return [...prev];
+    });
   };
-
 
   useEffect(() => {
     if (cartItems.length == 0) {
@@ -163,12 +170,12 @@ function Cart({ navigation }) {
       setUploading(true);
       const result = await editOrder(
         user.userId,
-        cartItems.length,
-        Number(total - (total * distributorInfo.discount) / 100).toFixed(2),
+        cartItems.filter((item) => item.quantity > 0).length,
+        totalAmount,
         "cash",
-        Number(total).toFixed(2),
-        cartItems,
-        distributorInfo.discount,
+        totalAmount - totalTax,
+        cartItems.filter((item) => item.quantity > 0),
+        totalDiscount,
         distributorInfo.orderId,
         distributorInfo.distributorId
       );
@@ -221,19 +228,77 @@ function Cart({ navigation }) {
             <View style={styles.flexContainer}>
               <Text variant="titleMedium">
                 <Text style={{ color: "gray" }}>Products: </Text>
-                {cartItems.length}
+                {cartItems.filter((item) => item.quantity > 0).length}
               </Text>
             </View>
+            {totalTax !== "0.00" ? (
+              <View style={styles.flexContainer}>
+                <Text variant="titleMedium" style={{ paddingRight: 10 }}>
+                  <Text style={{ color: "gray" }}>Subtotal: </Text>
+                  {`\u20B9`}
+                  {Number(totalAmount - totalTax).toFixed(2)}
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.flexContainer}></View>
+            )}
+          </View>
 
+          <View
+            style={{
+              display:
+                totalDiscount !== "0.00" || totalTax !== "0.00"
+                  ? "flex"
+                  : "none",
+              flexDirection: "row",
+              width: "100%",
+              justifyContent: "space-between",
+            }}
+          >
+            {totalDiscount !== "0.00" ? (
+              <View style={styles.flexContainer}>
+                <Text variant="titleMedium" style={{ paddingRight: 10 }}>
+                  <Text style={{ color: "gray" }}>Discounts: </Text>
+                  {`\u20B9`}
+                  {Number(totalDiscount).toFixed(2)}
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.flexContainer}></View>
+            )}
+
+            {totalTax !== "0.00" ? (
+              <Text variant="titleMedium" style={{ paddingRight: 10 }}>
+                <Text style={{ color: "gray" }}>GST: </Text>
+                {`\u20B9`}
+                {Number(totalTax).toFixed(2)}
+              </Text>
+            ) : (
+              <Text style={{ paddingRight: 10 }}></Text>
+            )}
+          </View>
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              width: "100%",
+              justifyContent: "space-between",
+              borderTopColor: "black",
+              borderTopWidth: 1,
+            }}
+          >
             <View style={styles.flexContainer}>
               <Text variant="titleMedium" style={{ paddingRight: 10 }}>
-                <Text style={{ color: "gray" }}>Total: </Text>
-                {`\u20B9`}
-                {Number (totalAmount).toFixed(2)}
+                <Text style={{ color: "gray" }}>Grand Total: </Text>
               </Text>
             </View>
+            <Text variant="titleMedium" style={{ paddingRight: 10 }}>
+              {`\u20B9`}
+              {Number(totalAmount).toFixed(2)}
+            </Text>
           </View>
         </View>
+
         <ScrollView
           style={{
             marginTop: "1%",
@@ -241,82 +306,86 @@ function Cart({ navigation }) {
             marginBottom: (height * 6) / 100,
           }}
         >
-          {cartItems.map((val, i) => (
-            <View style={styles.productcontainer} key={i}>
-              <View
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Text
-                  style={{ marginLeft: 10, marginTop: 10, width: "85%" }}
-                  variant="titleMedium"
+          {cartItems
+            .filter((item) => item.quantity > 0)
+            .map((val, i) => (
+              <View style={styles.productcontainer} key={i}>
+                <View
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
                 >
-                  {val.productname}
-                </Text>
-                <TouchableOpacity
-                  style={{ alignSelf: "center", marginRight: 10 }}
-                  onPress={() => deleteHandlePress(i)}
-                >
-                  <AntDesign name="delete" size={20} />
-                </TouchableOpacity>
-              </View>
-              <Text
-                style={{
-                  marginLeft: 10,
-                  marginTop: 10,
-                  color: "#424242",
-                  width: "85%",
-                }}
-                variant="titleSmall"
-              >
-                price : {`\u20B9`}
-                {val.price}
-              </Text>
-              <View
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
+                  <Text
+                    style={{ marginLeft: 10, marginTop: 10, width: "85%" }}
+                    variant="titleMedium"
+                  >
+                    {val.productname}
+                  </Text>
+                  <TouchableOpacity
+                    style={{ alignSelf: "center", marginRight: 10 }}
+                    onPress={() => deleteHandlePress(i)}
+                  >
+                    <AntDesign name="delete" size={20} />
+                  </TouchableOpacity>
+                </View>
                 <Text
-                  style={{ marginLeft: 10, marginTop: 10 }}
+                  style={{
+                    marginLeft: 10,
+                    marginTop: 10,
+                    color: "#424242",
+                    width: "85%",
+                  }}
                   variant="titleSmall"
                 >
-                  Amount : {`\u20B9`}
-                  {(Number(val.quantity) * val.price).toFixed(2)}
+                  price : {`\u20B9`}
+                  {getDiscountedTaxedPrice(val, val)}
                 </Text>
                 <View
                   style={{
                     display: "flex",
                     flexDirection: "row",
-                    marginTop: 10,
-                    justifyContent: "flex-end",
-                    alignItems: "flex-end",
-                    marginRight: 10,
-                    marginBottom: 10,
+                    justifyContent: "space-between",
                   }}
                 >
-                  <Text style={{alignSelf:"center"}}>Qty: </Text>
+                  <Text
+                    style={{ marginLeft: 10, marginTop: 10 }}
+                    variant="titleSmall"
+                  >
+                    Amount : {`\u20B9`}
+                    {(
+                      Number(getDiscountedTaxedPrice(val, val)) * val.quantity
+                    ).toFixed(2)}
+                  </Text>
                   <View
                     style={{
-                      width: "40%",
-                      height: 35,
-                      justifyContent: "center",
-                      backgroundColor: theme.colors.primary,
-                      alignItems: "center",
-                      borderRadius: 15,
+                      display: "flex",
+                      flexDirection: "row",
+                      marginTop: 10,
+                      justifyContent: "flex-end",
+                      alignItems: "flex-end",
+                      marginRight: 10,
+                      marginBottom: 10,
                     }}
                   >
-                    <Text>{val.quantity}</Text>
+                    <Text style={{ alignSelf: "center" }}>Qty: </Text>
+                    <View
+                      style={{
+                        width: "40%",
+                        height: 35,
+                        justifyContent: "center",
+                        backgroundColor: theme.colors.primary,
+                        alignItems: "center",
+                        borderRadius: 15,
+                      }}
+                    >
+                      <Text>{val.quantity}</Text>
+                    </View>
                   </View>
                 </View>
               </View>
-            </View>
-          ))}
+            ))}
         </ScrollView>
       </View>
       {distributorInfo.action === "update" ? (

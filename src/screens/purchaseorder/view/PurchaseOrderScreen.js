@@ -65,12 +65,12 @@ function PurchaseOrderScreen({ route, navigation }) {
   };
 
   const cartHandlePress = () => {
-    if (cartItems.length > 0) {
+    if (cartItems.filter((item) => item.quantity > 0).length > 0) {
       navigation.navigate("Home", {
         screen: "Cart",
       });
     } else {
-      Alert.alert("", "Sorry Your Cart is Empty Please Add Some Products...");
+      Alert.alert("Empty Cart", "Sorry Your Cart is Empty Please Add Some Products...");
     }
   };
 

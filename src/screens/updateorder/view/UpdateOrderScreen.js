@@ -104,6 +104,7 @@ function UpdateOrder({ route, navigation }) {
         productname: item.productname,
         orderstatus: item.orderstatus,
         manufacturer: item.manufacturer,
+        gstrate: item.productgstrate
       }));
       setCartItems(cart);
     } catch (err) {
@@ -120,12 +121,12 @@ function UpdateOrder({ route, navigation }) {
   );
 
   const cartHandlePress = () => {
-    if (cartItems.length > 0) {
+    if (cartItems.filter((item) => item.quantity > 0).length > 0) {
       navigation.navigate("My Orders", {
         screen: "Cart",
       });
     } else {
-      Alert.alert("", "Sorry Your Cart is Empty Please Add Some Products...");
+      Alert.alert("Empty Cart", "Sorry Your Cart is Empty Please Add Some Products...");
     }
   };
 
