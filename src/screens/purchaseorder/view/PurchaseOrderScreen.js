@@ -17,6 +17,7 @@ import Product from "./Product";
 import useDistributorProductCategories from "../../../hooks/useDistributorProductCategories";
 import useDebounce from "../../../hooks/useDebounce";
 import { useCartContext } from "../../../context/CartContext";
+import ProductDetail from "./ProductDetail";
 
 const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
@@ -26,7 +27,8 @@ const PAGE_SIZE = 15;
 function PurchaseOrderScreen({ route, navigation }) {
   const { distributorId, distributorName } = route.params;
   const theme = useTheme();
-  const { cartItems, setDistributorInfo, clearContext } = useCartContext();
+  const { cartItems, setDistributorInfo, clearContext, showSingleProduct } =
+    useCartContext();
   const [searchFilter, setSearchFilter] = useState("");
   const debounceSearch = useDebounce(searchFilter);
   const [categoryId, setCategoryId] = useState(0);
@@ -70,7 +72,10 @@ function PurchaseOrderScreen({ route, navigation }) {
         screen: "Cart",
       });
     } else {
-      Alert.alert("Empty Cart", "Sorry Your Cart is Empty Please Add Some Products...");
+      Alert.alert(
+        "Empty Cart",
+        "Sorry Your Cart is Empty Please Add Some Products..."
+      );
     }
   };
 
@@ -193,6 +198,7 @@ function PurchaseOrderScreen({ route, navigation }) {
       >
         Add to Cart
       </Button>
+      {showSingleProduct && <ProductDetail />}
     </>
   );
 }

@@ -218,7 +218,7 @@ function OrderDetailScreen({ navigation, route }) {
           }}
         >
           <Text variant="titleMedium">Products:</Text>
-          {order.orderstatus == "Placed" ? (
+          {order.orderstatus === "Placed" && order.ispaid == false && (
             <Button
               style={{
                 width: "50%",
@@ -231,7 +231,7 @@ function OrderDetailScreen({ navigation, route }) {
             >
               Update Order
             </Button>
-          ) : null}
+          )}
         </View>
         {errors.getorderinfo && (
           <HelperText visible={errors.getorderinfo} type="error">
