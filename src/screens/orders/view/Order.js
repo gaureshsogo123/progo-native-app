@@ -18,13 +18,13 @@ function Order({ item, showCancelPopup, handlepress }) {
         variant="titleMedium"
         style={{
           marginBottom: 5,
-          paddingBottom: 3,
-          width: width*30/100,
+          paddingBottom: 5,
+          width: (width * 30) / 100,
         }}
       >
         {item.distributorname}
       </Text>
-      <Text style={{ marginBottom: 5 }}>Order ID: {item.orderid}</Text>
+      <Text style={{ paddingBottom: 5 }}>Order ID: {item.orderid}</Text>
       <Text>Order Date : {format(new Date(item.orderdate), "dd-MM-yyyy")}</Text>
 
       <View style={styles.rightitems}>
@@ -62,12 +62,35 @@ function Order({ item, showCancelPopup, handlepress }) {
         <Text
           variant="titleSmall"
           style={{
-            paddingTop: 10,
+            paddingTop: 5,
             textAlign: "right",
+            paddingBottom: 3,
           }}
         >
           Amt: {`\u20B9`} {Number(item.totalamount).toFixed(2)}
         </Text>
+
+        <View
+          style={{
+            paddingVertical: 2,
+            alignSelf: "flex-end",
+            paddingHorizontal: 12,
+            justifyContent: "center",
+            borderWidth: item.ispaid ? 0 : 1.5,
+            borderRadius: 8,
+            backgroundColor: item.ispaid ? "#50C878" : "white",
+            borderColor: item.ispaid ? "#008069" : "gray",
+          }}
+        >
+          <Text
+            style={{
+              fontWeight: "bold",
+              color: item.ispaid ? "white" : "gray",
+            }}
+          >
+            {item.ispaid == true ? "PAID" : "UNPAID"}
+          </Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -77,7 +100,7 @@ export default Order;
 
 const styles = StyleSheet.create({
   listcontainer: {
-    width: width*95/100,
+    width: (width * 95) / 100,
     minHeight: (height * 15) / 100,
     backgroundColor: "#fafafa",
     borderRadius: 12,

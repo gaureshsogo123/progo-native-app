@@ -5,6 +5,8 @@ const CartContext = createContext();
 const CartContextProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [distributorInfo, setDistributorInfo] = useState({});
+  const [showSingleProduct, setShowSingleProduct] = useState(false);
+  const [singleProduct, setSingleProduct] = useState({});
 
   const clearContext = () => {
     setCartItems([]);
@@ -21,6 +23,10 @@ const CartContextProvider = ({ children }) => {
         distributorInfo,
         setDistributorInfo,
         clearContext,
+        showSingleProduct,
+        setShowSingleProduct,
+        singleProduct,
+        setSingleProduct,
       }}
     >
       {children}

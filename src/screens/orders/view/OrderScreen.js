@@ -26,7 +26,7 @@ export default function Orders({ navigation }) {
   const theme = useTheme();
 
   const [status, setStatus] = useState("All");
-  const [startDate, setStartDate] = useState(subDays(new Date(), 2));
+  const [startDate, setStartDate] = useState(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState(new Date());
   const [shown, setShown] = useState(false);
   const [orders, setOrders] = useState([]);

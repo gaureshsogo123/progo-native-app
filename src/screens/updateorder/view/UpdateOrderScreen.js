@@ -20,6 +20,7 @@ import Product from "../../purchaseorder/view/Product";
 import useDistributorProductCategories from "../../../hooks/useDistributorProductCategories";
 import { useCartContext } from "../../../context/CartContext";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import ProductDetail from "../../purchaseorder/view/ProductDetail";
 
 const { height, width } = Dimensions.get("screen");
 const PAGE_SIZE = 15;
@@ -28,7 +29,8 @@ function UpdateOrder({ route, navigation }) {
   const { order } = route.params;
   const { user, setRouteName } = useAuthContext();
 
-  const { cartItems, setCartItems, setDistributorInfo } = useCartContext();
+  const { cartItems, setCartItems, setDistributorInfo, showSingleProduct } =
+    useCartContext();
   const [searchFilter, setSearchFilter] = useState("");
   const debounceSearch = useDebounce(searchFilter);
   const [categoryId, setCategoryId] = useState(0);
@@ -104,7 +106,7 @@ function UpdateOrder({ route, navigation }) {
         productname: item.productname,
         orderstatus: item.orderstatus,
         manufacturer: item.manufacturer,
-        gstrate: item.productgstrate
+        gstrate: item.productgstrate,
       }));
       setCartItems(cart);
     } catch (err) {
@@ -126,7 +128,10 @@ function UpdateOrder({ route, navigation }) {
         screen: "Cart",
       });
     } else {
-      Alert.alert("Empty Cart", "Sorry Your Cart is Empty Please Add Some Products...");
+      Alert.alert(
+        "Empty Cart",
+        "Sorry Your Cart is Empty Please Add Some Products..."
+      );
     }
   };
 
@@ -237,6 +242,7 @@ function UpdateOrder({ route, navigation }) {
       >
         Proceed
       </Button>
+      {showSingleProduct && <ProductDetail />}
     </>
   );
 }

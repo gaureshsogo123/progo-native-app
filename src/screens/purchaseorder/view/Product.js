@@ -1,8 +1,15 @@
 import React, { useCallback } from "react";
-import { Dimensions, Image, StyleSheet, View } from "react-native";
+import {
+  Dimensions,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { Text, TextInput } from "react-native-paper";
 import { useCartContext } from "../../../context/CartContext";
 import { getDiscountedTaxedPrice } from "../helper/Purchasehelper";
+import { DEFAULT_PRODUCT_IMAGE } from "../../../constants/constants";
 
 const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
@@ -40,7 +47,8 @@ const styles = StyleSheet.create({
 });
 
 function Product({ item }) {
-  const { cartItems, setCartItems } = useCartContext();
+  const { cartItems, setCartItems, setShowSingleProduct, setSingleProduct } =
+    useCartContext();
 
   const cartItem = cartItems?.find(
     (product) => product.productid === item.productid
@@ -71,6 +79,11 @@ function Product({ item }) {
     });
   }, []);
 
+  const imageHandlepress = () => {
+    setShowSingleProduct(true);
+    setSingleProduct(item);
+  };
+
   return (
     <View
       style={{
@@ -98,19 +111,26 @@ function Product({ item }) {
             flexDirection: "row",
           }}
         >
-          <Image
-            source={{
-              uri:
-                item.image ||
-                "https://cdn-icons-png.flaticon.com/512/679/679922.png",
-            }}
+          <TouchableOpacity
             style={{
               width: (width * 15) / 100,
               height: (height * 10) / 100,
               alignSelf: "center",
               marginRight: (width * 1.5) / 100,
             }}
-          />
+            onPress={imageHandlepress}
+          >
+            <Image
+              source={{
+                uri: item.image || DEFAULT_PRODUCT_IMAGE,
+              }}
+              style={{
+                width: (width * 15) / 100,
+                height: (height * 10) / 100,
+                alignSelf: "center",
+              }}
+            />
+          </TouchableOpacity>
           <View style={{ width: "100%" }}>
             <Text variant="titleMedium">{item.productname}</Text>
             <Text style={styles.pricecontainer}>
