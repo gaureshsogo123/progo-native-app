@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -43,11 +43,10 @@ export default function LandingScreen({ navigation }) {
     return unsubscribeFocus;
   }, [cartItems]);
 
-
   useEffect(() => {
-    let unsubscribeFocus = ()=>{};
+    let unsubscribeFocus = () => {};
     if (routeName == "UpdateOrder") {
-        unsubscribeFocus = navigation.addListener("focus", () => {
+      unsubscribeFocus = navigation.addListener("focus", () => {
         navi.reset({
           index: 1,
           routes: [{ name: "Orders" }],
@@ -58,9 +57,9 @@ export default function LandingScreen({ navigation }) {
   }, [navigation]);
 
   useEffect(() => {
-    let unsubscribeFocus = ()=>{};
+    let unsubscribeFocus = () => {};
     if (routeName == "UpdateOrder") {
-        unsubscribeFocus = navigation.addListener("focus", () => {
+      unsubscribeFocus = navigation.addListener("focus", () => {
         navi.reset({
           index: 0,
           routes: [{ name: "Orders" }],
@@ -68,14 +67,21 @@ export default function LandingScreen({ navigation }) {
       });
     }
     return unsubscribeFocus;
-  }, [navigation,routeName]);
+  }, [navigation, routeName]);
 
-  const filterDistributor = distributors.filter((item) => {
-    if (item.name === "") {
-      return item;
-    }
-    return item.name.toLowerCase().includes(filterText.toLowerCase());
-  });
+  const filterDistributor = useMemo(
+    () =>
+      distributors?.filter((item) => {
+        if (item.name === "") {
+          return item;
+        }
+        return (
+          item.name.toLowerCase().includes(filterText.toLowerCase()) ||
+          item.mobileno?.includes(filterText.toLowerCase())
+        );
+      }),
+    [distributors, filterText]
+  );
 
   const handlePress = (item) => {
     navigation.navigate(`purchaseorder`, {
@@ -147,6 +153,7 @@ export default function LandingScreen({ navigation }) {
                   marginTop: "5%",
                   fontWeight: "600",
                 }}
+                variant="titleMedium"
               >
                 {val.name}
               </Text>

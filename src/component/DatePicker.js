@@ -34,7 +34,7 @@ function DatePicker({ date, setDate, text, showFlag = false }) {
         }}
       >
         <TouchableOpacity onPress={showDatePicker}>
-          <Text variant="bodyLarge">
+          <Text variant="bodyLarge" style={{ color: "black" }}>
             {flag ? `${day}-${month}-${year}` : text}
           </Text>
         </TouchableOpacity>

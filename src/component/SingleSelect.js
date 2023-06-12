@@ -28,6 +28,7 @@ function SingleSelect({
     textStyles: {
       paddingBottom: (height * 2) / 100,
       paddingTop: (height * 1) / 100,
+      color: "black",
       ...textStyles,
     },
   };
@@ -39,7 +40,7 @@ function SingleSelect({
           ? {
               ...styles.textStyles,
               ...selectedItemStyles,
-              color: theme.colors.primary,
+              color: "#f9a374",
             }
           : styles.textStyles;
       return (
@@ -69,7 +70,7 @@ function SingleSelect({
         <View
           style={{
             padding: "3%",
-            backgroundColor: theme.colors.secondaryContainer,
+            backgroundColor: "#f0f0f0",
             borderRadius: 10,
             ...headerContainerStyles,
           }}

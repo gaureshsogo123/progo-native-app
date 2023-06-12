@@ -112,7 +112,7 @@ const containerStyle = {
   width: "90%",
   marginLeft: "5.5%",
   display: "flex",
-  minHeight: (height * 30) / 100,
+  maxHeight: (height * 30) / 100,
   borderRadius: 10,
   alignContent: "center",
   maxHeight: (height * 70) / 100,
