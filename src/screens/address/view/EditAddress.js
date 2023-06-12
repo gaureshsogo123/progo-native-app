@@ -219,7 +219,7 @@ function EditAddress({ setEditMode, address, setAddress }) {
           value={newAddress.city}
           data={cities.map((city) => ({ city: city }))}
           valueField={"city"}
-          showSearch={true}
+          showSearch={cities.length > 7 ? true : false}
           onItemPress={(val) => handleAddressAttributeChange("city", val)}
         />
       )}

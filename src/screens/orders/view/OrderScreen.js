@@ -98,9 +98,10 @@ export default function Orders({ navigation }) {
         if (val.distributorname === "") {
           return val;
         }
-        return val.distributorname
-          .toLowerCase()
-          .includes(textinput.toLowerCase());
+        return (
+          val.distributorname.toLowerCase().includes(textinput.toLowerCase()) ||
+          val.mobileno?.includes(textinput.toLowerCase())
+        );
       }),
     [orders, textinput]
   );

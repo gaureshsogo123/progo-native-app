@@ -58,7 +58,9 @@ function CancelOrderPopup({
           contentContainerStyle={cancelStatusContainer}
         >
           <View>
-            <Text>Do You Want to Cancel the Order ?</Text>
+            <Text style={{ color: "black" }}>
+              Do You Want to Cancel the Order ?
+            </Text>
             <View
               style={{
                 display: "flex",
@@ -88,7 +90,9 @@ function CancelOrderPopup({
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setCancelOrderData()}>
-                <Text variant="titleSmall">No</Text>
+                <Text variant="titleSmall" style={{ color: "black" }}>
+                  No
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

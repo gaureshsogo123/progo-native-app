@@ -1,11 +1,11 @@
-import { format } from "date-fns";
+import { endOfDay, format, startOfDay } from "date-fns";
 import axiosInstance from "../../../axiosInstance";
 
 export const getOrders = async (userId, fdate, tdate, status) => {
-  const fromDate = format(fdate, "MM-dd-yyyy");
-  const toDate = format(tdate, "MM-dd-yyyy");
+  const fromDate = startOfDay(new Date(fdate));
+  const toDate = endOfDay(new Date(tdate));
   return axiosInstance
-    .post("/order/retailerOrders", {
+    .post("/order/retailerOrders_v2", {
       user_id: userId,
       fromDate,
       toDate,
