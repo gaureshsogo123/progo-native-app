@@ -92,19 +92,14 @@ export default function Orders({ navigation }) {
     });
   };
 
-  const filterorders = useMemo(
-    () =>
-      orders?.filter((val) => {
-        if (val.distributorname === "") {
-          return val;
-        }
-        return (
-          val.distributorname.toLowerCase().includes(textinput.toLowerCase()) ||
-          val.mobileno?.includes(textinput.toLowerCase())
-        );
-      }),
-    [orders, textinput]
-  );
+  const filterorders = useMemo(() => {
+    return orders?.filter(
+      (order) =>
+        textinput === "" ||
+        order.distributorname.toLowerCase().includes(textinput.toLowerCase()) ||
+        order.mobileno?.includes(textinput)
+    );
+  }, [orders, textinput]);
 
   const filterHandlePress = () => {
     setShown(true);

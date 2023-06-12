@@ -69,19 +69,17 @@ export default function LandingScreen({ navigation }) {
     return unsubscribeFocus;
   }, [navigation, routeName]);
 
-  const filterDistributor = useMemo(
-    () =>
-      distributors?.filter((item) => {
-        if (item.name === "") {
-          return item;
-        }
-        return (
+  const filterDistributor = useMemo(() => {
+    return (
+      distributors &&
+      distributors.filter(
+        (item) =>
+          filterText === "" ||
           item.name.toLowerCase().includes(filterText.toLowerCase()) ||
-          item.mobileno?.includes(filterText.toLowerCase())
-        );
-      }),
-    [distributors, filterText]
-  );
+          item.mobileno?.includes(filterText)
+      )
+    );
+  }, [filterText, distributors]);
 
   const handlePress = (item) => {
     navigation.navigate(`purchaseorder`, {
