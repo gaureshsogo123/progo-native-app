@@ -10,6 +10,7 @@ import { Text, TextInput } from "react-native-paper";
 import { useCartContext } from "../../../context/CartContext";
 import { getDiscountedTaxedPrice } from "../helper/Purchasehelper";
 import { DEFAULT_PRODUCT_IMAGE } from "../../../constants/constants";
+import { validatePriceFormat } from "../../../services/utils";
 
 const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
@@ -63,7 +64,7 @@ function Product({ item }) {
         (cItem) => cItem.productid === item.productid
       );
       if (index > -1) {
-        obj[index].quantity = parseInt(amount || 0);
+        obj[index].quantity = amount || 0;
       } else {
         obj.push({
           discount: item.discount || 0,
@@ -193,15 +194,11 @@ function Product({ item }) {
             keyboardType="number-pad"
             style={styles.unitInput}
             variant="flat"
-            value={productQuantity === 0 ? "" : productQuantity + ""}
+            value={productQuantity === 0 ? "" : productQuantity}
             onChangeText={(text) => {
               if (text.includes("-")) return;
-              if (
-                text == "" ||
-                (Number.isInteger(parseInt(text)) && parseInt(text) > 0)
-              )
-                updateQuantity(text, item);
-              else return;
+              if (!validatePriceFormat(text)) return;
+              updateQuantity(text, item);
             }}
           />
         </View>
