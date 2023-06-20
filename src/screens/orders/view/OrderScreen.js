@@ -17,6 +17,7 @@ import { useAuthContext } from "../../../context/UserAuthContext";
 import OrderFilters from "./OrderFilters";
 import CancelOrderPopup from "./CancelOrderPopup";
 import Order from "./Order";
+import { useSearchContext } from "../../../context/SearchContext";
 
 const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
@@ -28,13 +29,13 @@ export default function Orders({ navigation }) {
   const [status, setStatus] = useState("All");
   const [startDate, setStartDate] = useState(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState(new Date());
-  const [shown, setShown] = useState(false);
   const [orders, setOrders] = useState([]);
   const [statuslist, setStatuslist] = useState([]);
   const [errors, setErrors] = useState({});
   const [refreshing, setRefreshing] = useState(true);
   const [textinput, setTextinput] = useState("");
   const [cancelOrderData, setCancelOrderData] = useState();
+  const { search, shown, setShown } = useSearchContext();
 
   useEffect(() => {
     const unsubscribeFocus = navigation.addListener("focus", fetchOrders);
@@ -95,11 +96,11 @@ export default function Orders({ navigation }) {
   const filterorders = useMemo(() => {
     return orders?.filter(
       (order) =>
-        textinput === "" ||
-        order.distributorname.toLowerCase().includes(textinput.toLowerCase()) ||
-        order.mobileno?.includes(textinput)
+        search === "" ||
+        order.distributorname.toLowerCase().includes(search.toLowerCase()) ||
+        order.mobileno?.includes(search)
     );
-  }, [orders, textinput]);
+  }, [orders, search]);
 
   const filterHandlePress = () => {
     setShown(true);
@@ -122,6 +123,7 @@ export default function Orders({ navigation }) {
     <>
       <View style={styles.container}>
         <View style={styles.pagecontainer}>
+          {/*
           <View
             style={{
               display: "flex",
@@ -156,16 +158,7 @@ export default function Orders({ navigation }) {
                 </Text>
               </TouchableOpacity>
             </View>
-          </View>
-
-          <View
-            style={{
-              width: "100%",
-              borderBottomWidth: 1,
-              marginTop: 10,
-              borderColor: "silver",
-            }}
-          ></View>
+          </View>*/}
         </View>
       </View>
 
@@ -204,7 +197,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     alignItems: "flex-start",
     width: "100%",
-    padding: 10,
   },
   pagecontainer: {
     width: "100%",

@@ -21,6 +21,8 @@ import useDistributorProductCategories from "../../../hooks/useDistributorProduc
 import { useCartContext } from "../../../context/CartContext";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import ProductDetail from "../../purchaseorder/view/ProductDetail";
+import ProductCategories from "../../purchaseorder/view/productCategories";
+import { useSearchContext } from "../../../context/SearchContext";
 
 const { height, width } = Dimensions.get("screen");
 const PAGE_SIZE = 15;
@@ -32,12 +34,9 @@ function UpdateOrder({ route, navigation }) {
   const { cartItems, setCartItems, setDistributorInfo, showSingleProduct } =
     useCartContext();
   const [searchFilter, setSearchFilter] = useState("");
-  const debounceSearch = useDebounce(searchFilter);
+  const { debounceSearch } = useSearchContext();
   const [categoryId, setCategoryId] = useState(0);
   const [pageNo, setPageNo] = useState(1);
-  const { productCategories } = useDistributorProductCategories(
-    order.distributorid
-  );
   const [errors, setErrors] = useState({});
   const navi = useNavigation();
   const updateOrderRoute = useRoute();
@@ -150,7 +149,7 @@ function UpdateOrder({ route, navigation }) {
               <Text variant="titleMedium">ID:{order.orderid}</Text>
             </View>
           </View>
-
+          {/*
           <TextInput
             value={searchFilter}
             mode="outlined"
@@ -158,66 +157,12 @@ function UpdateOrder({ route, navigation }) {
             style={{ marginBottom: 3, marginHorizontal: 8 }}
             placeholder="Search products"
             onChangeText={(text) => setSearchFilter(text)}
+  />*/}
+          <ProductCategories
+            distributorId={order.distributorid}
+            categoryId={categoryId}
+            setCategoryId={setCategoryId}
           />
-          <View
-            style={{
-              backgroundColor: "white",
-              height: (height * 12) / 100,
-              marginBottom: 10,
-              marginTop: 10,
-              justifyContent: "center",
-            }}
-          >
-            <ScrollView
-              horizontal={true}
-              contentContainerStyle={{ padding: 10 }}
-            >
-              {productCategories.map((val, i) => {
-                return (
-                  <TouchableOpacity
-                    style={{
-                      marginRight: 20,
-                      justifyContent: "center",
-                      borderTopWidth: val.categoryid == categoryId ? 6 : null,
-                      borderTopColor:
-                        val.categoryid == categoryId
-                          ? theme.colors.primary
-                          : null,
-                    }}
-                    key={i}
-                    onPress={() => setCategoryId(val.categoryid)}
-                  >
-                    <Image
-                      source={{
-                        uri:
-                          val.image ||
-                          "https://cdn-icons-png.flaticon.com/512/679/679922.png",
-                      }}
-                      style={{
-                        width: (width * 14) / 100,
-                        height: (height * 6) / 100,
-                        marginBottom: 5,
-                        alignSelf: "center",
-                      }}
-                    />
-                    <Text
-                      style={{
-                        alignSelf: "center",
-                        fontSize: (height * 1.5) / 100,
-                        color:
-                          val.categoryid == categoryId
-                            ? theme.colors.primary
-                            : null,
-                      }}
-                      adjustsFontSizeToFit={true}
-                    >
-                      {val.categoryname}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-          </View>
         </View>
       </View>
       <FlatList
@@ -260,7 +205,8 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   heading: {
-    padding: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
   product: {
     margin: 5,

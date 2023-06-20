@@ -18,6 +18,8 @@ import useDistributorProductCategories from "../../../hooks/useDistributorProduc
 import useDebounce from "../../../hooks/useDebounce";
 import { useCartContext } from "../../../context/CartContext";
 import ProductDetail from "./ProductDetail";
+import { useSearchContext } from "../../../context/SearchContext";
+import ProductCategories from "./productCategories";
 
 const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
@@ -29,8 +31,7 @@ function PurchaseOrderScreen({ route, navigation }) {
   const theme = useTheme();
   const { cartItems, setDistributorInfo, clearContext, showSingleProduct } =
     useCartContext();
-  const [searchFilter, setSearchFilter] = useState("");
-  const debounceSearch = useDebounce(searchFilter);
+  const { debounceSearch } = useSearchContext();
   const [categoryId, setCategoryId] = useState(0);
   const [pageNo, setPageNo] = useState(1);
   const { productCategories } = useDistributorProductCategories(distributorId);
@@ -105,6 +106,7 @@ function PurchaseOrderScreen({ route, navigation }) {
           paddingRight: (width * 2) / 100,
         }}
       >
+        {/*
         <TextInput
           value={searchFilter}
           mode="outlined"
@@ -112,66 +114,13 @@ function PurchaseOrderScreen({ route, navigation }) {
           style={{ marginBottom: 3 }}
           placeholder="Search Products"
           onChangeText={(text) => setSearchFilter(text)}
-        />
+      />*/}
       </View>
-
-      <View
-        style={{
-          backgroundColor: "white",
-          height: (height * 12) / 100,
-          marginBottom: 10,
-          marginTop: 10,
-          justifyContent: "center",
-        }}
-      >
-        <ScrollView
-          horizontal={true}
-          contentContainerStyle={{ padding: (width * 2) / 100 }}
-        >
-          {productCategories.map((val, i) => {
-            return (
-              <TouchableOpacity
-                style={{
-                  marginRight: 20,
-                  justifyContent: "center",
-                  borderTopWidth: val.categoryid == categoryId ? 6 : null,
-                  borderTopColor:
-                    val.categoryid == categoryId ? theme.colors.primary : null,
-                }}
-                key={i}
-                onPress={() => setCategoryId(val.categoryid)}
-              >
-                <Image
-                  source={{
-                    uri:
-                      val.image ||
-                      "https://cdn-icons-png.flaticon.com/512/679/679922.png",
-                  }}
-                  style={{
-                    width: (width * 14) / 100,
-                    height: (height * 6) / 100,
-                    marginBottom: 5,
-                    alignSelf: "center",
-                  }}
-                />
-                <Text
-                  style={{
-                    alignSelf: "center",
-                    fontSize: (height * 1.5) / 100,
-                    color:
-                      val.categoryid == categoryId
-                        ? theme.colors.primary
-                        : null,
-                  }}
-                  adjustsFontSizeToFit={true}
-                >
-                  {val.categoryname}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
+      <ProductCategories
+        categoryId={categoryId}
+        setCategoryId={setCategoryId}
+        distributorId={distributorId}
+      />
       {errors.products && (
         <HelperText visible={errors.products} type="error">
           {errors.products}{" "}
