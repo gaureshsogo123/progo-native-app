@@ -5,6 +5,8 @@ import UpdateOrder from "../../screens/updateorder/view/UpdateOrderScreen";
 import OrderDetailScreen from "../../screens/orders/view/OrderDetailScreen";
 import Cart from "../../screens/purchaseorder/view/Cart";
 import HeaderCart from "../../component/HeaderCart";
+import FilterIcon from "../../component/FilterIcon";
+import SearchBox from "../../component/SearchBox";
 
 const OrderStackNavigator = createNativeStackNavigator();
 
@@ -16,6 +18,9 @@ const OrdersNavigator = () => {
         component={Orders}
         options={{
           title: "My Orders",
+          headerRight: () => <FilterIcon />,
+          headerLeft: () => <SearchBox placeHolder={"Search Brands"} />,
+          headerTitle: () => null,
         }}
       />
       <OrderStackNavigator.Screen
@@ -28,6 +33,8 @@ const OrdersNavigator = () => {
         options={{
           title: "Update Order",
           headerRight: () => <HeaderCart />,
+          headerLeft: () => <SearchBox placeHolder={"Search Products"} />,
+          headerTitle: () => null,
         }}
       />
       <OrderStackNavigator.Screen name="Cart" component={Cart} />

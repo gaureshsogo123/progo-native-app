@@ -10,6 +10,7 @@ import OfflineProtected from "./src/component/OfflineProtected";
 import * as Notifications from "expo-notifications";
 import CartContextProvider from "./src/context/CartContext";
 import { useState, useEffect, useRef } from "react";
+import SearchContextProvider from "./src/context/SearchContext";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -47,7 +48,9 @@ export default function App() {
         <AuthContextProvider>
           <OfflineProtected>
             <CartContextProvider>
-              <Routes />
+              <SearchContextProvider>
+                <Routes />
+              </SearchContextProvider>
             </CartContextProvider>
           </OfflineProtected>
         </AuthContextProvider>

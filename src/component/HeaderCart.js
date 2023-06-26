@@ -10,27 +10,29 @@ const { width, height } = Dimensions.get("screen");
 function HeaderCart() {
   const navigation = useNavigation();
   const theme = useTheme();
-  const { cartItems,distributorInfo } = useCartContext();
+  const { cartItems, distributorInfo } = useCartContext();
 
   const handlePress = () => {
     if (cartItems.filter((item) => item.quantity > 0).length > 0) {
-      if(distributorInfo.action == "place"){
-      navigation.navigate("Home", {
-        screen: "Cart",
-      });
-    }
-    else{
-      navigation.navigate("My Orders",{
-        screen: "Cart"
-      })
-    }
+      if (distributorInfo.action == "place") {
+        navigation.navigate("Home", {
+          screen: "Cart",
+        });
+      } else {
+        navigation.navigate("My Orders", {
+          screen: "Cart",
+        });
+      }
     } else {
-      Alert.alert("Empty Cart", "Sorry Your Cart is Empty Please Add Some Products...");
+      Alert.alert(
+        "Empty Cart",
+        "Sorry Your Cart is Empty Please Add Some Products..."
+      );
     }
   };
 
   return (
-    <View>
+    <View style={{ marginRight: -(width * 3) / 100 }}>
       <TouchableOpacity onPress={handlePress}>
         <Text style={{ marginRight: (width * 4) / 100 }}>
           <AntDesign name="shoppingcart" size={25} />
@@ -49,7 +51,9 @@ function HeaderCart() {
             top: 0,
           }}
         >
-          <Text style={{ color: "white" }}>{cartItems.filter((item) => item.quantity > 0).length}</Text>
+          <Text style={{ color: "white" }}>
+            {cartItems.filter((item) => item.quantity > 0).length}
+          </Text>
         </View>
       </TouchableOpacity>
     </View>

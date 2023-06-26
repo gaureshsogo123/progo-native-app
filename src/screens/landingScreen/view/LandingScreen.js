@@ -13,6 +13,7 @@ import { getDistributors } from "../helper/LandingScreenHelper";
 import { Text } from "react-native-paper";
 import { useCartContext } from "../../../context/CartContext";
 import { useNavigation } from "@react-navigation/native";
+import { useSearchContext } from "../../../context/SearchContext";
 
 const { height } = Dimensions.get("screen");
 const { width } = Dimensions.get("screen");
@@ -22,6 +23,7 @@ export default function LandingScreen({ navigation }) {
   const [distributors, setDistributors] = useState([]);
   const [filterText, setFilterText] = useState("");
   const { cartItems, setCartItems } = useCartContext();
+  const { search } = useSearchContext();
   const navi = useNavigation();
 
   useEffect(() => {
@@ -74,12 +76,12 @@ export default function LandingScreen({ navigation }) {
       distributors &&
       distributors.filter(
         (item) =>
-          filterText === "" ||
-          item.name.toLowerCase().includes(filterText.toLowerCase()) ||
-          item.mobileno?.includes(filterText)
+          search === "" ||
+          item.name.toLowerCase().includes(search.toLowerCase()) ||
+          item.mobileno?.includes(search)
       )
     );
-  }, [filterText, distributors]);
+  }, [search, distributors]);
 
   const handlePress = (item) => {
     navigation.navigate(`purchaseorder`, {
@@ -92,6 +94,7 @@ export default function LandingScreen({ navigation }) {
     <>
       <View style={styles.container}>
         <View style={styles.pagecontainer}>
+          {/*
           <Text
             style={{
               fontWeight: "600",
@@ -101,8 +104,8 @@ export default function LandingScreen({ navigation }) {
             }}
           >
             {user.userName}
-          </Text>
-
+          </Text>*/}
+          {/*
           <TextInput
             style={styles.input}
             mode="outlined"
@@ -111,7 +114,7 @@ export default function LandingScreen({ navigation }) {
             value={filterText}
             onChangeText={(text) => setFilterText(text)}
             keyboardType={"name-phone-pad"}
-          />
+          />*/}
         </View>
       </View>
 
