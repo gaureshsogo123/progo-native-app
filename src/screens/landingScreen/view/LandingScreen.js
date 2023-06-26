@@ -21,9 +21,8 @@ const { width } = Dimensions.get("screen");
 export default function LandingScreen({ navigation }) {
   const { user, routeName } = useAuthContext();
   const [distributors, setDistributors] = useState([]);
-  const [filterText, setFilterText] = useState("");
   const { cartItems, setCartItems } = useCartContext();
-  const { search } = useSearchContext();
+  const { search, setSearch } = useSearchContext();
   const navi = useNavigation();
 
   useEffect(() => {
@@ -59,6 +58,14 @@ export default function LandingScreen({ navigation }) {
   }, [navigation]);
 
   useEffect(() => {
+    let unsubscribeFocus = navigation.addListener("focus", () => {
+      setSearch("");
+    });
+
+    return unsubscribeFocus;
+  }, [navigation]);
+
+  useEffect(() => {
     let unsubscribeFocus = () => {};
     if (routeName == "UpdateOrder") {
       unsubscribeFocus = navigation.addListener("focus", () => {
@@ -88,6 +95,7 @@ export default function LandingScreen({ navigation }) {
       distributorName: item.name,
       distributorId: item.userid,
     });
+    setSearch("");
   };
 
   return (

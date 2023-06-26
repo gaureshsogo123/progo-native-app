@@ -35,7 +35,7 @@ export default function Orders({ navigation }) {
   const [refreshing, setRefreshing] = useState(true);
   const [textinput, setTextinput] = useState("");
   const [cancelOrderData, setCancelOrderData] = useState();
-  const { search, shown, setShown } = useSearchContext();
+  const { search, shown, setShown, setSearch } = useSearchContext();
 
   useEffect(() => {
     const unsubscribeFocus = navigation.addListener("focus", fetchOrders);
@@ -91,6 +91,7 @@ export default function Orders({ navigation }) {
     navigation.navigate("Order Details", {
       order: item,
     });
+    setSearch("");
   };
 
   const filterorders = useMemo(() => {
@@ -101,6 +102,14 @@ export default function Orders({ navigation }) {
         order.mobileno?.includes(search)
     );
   }, [orders, search]);
+
+  useEffect(() => {
+    let unsubscribeFocus = navigation.addListener("focus", () => {
+      setSearch("");
+    });
+
+    return unsubscribeFocus;
+  }, [navigation]);
 
   const filterHandlePress = () => {
     setShown(true);
