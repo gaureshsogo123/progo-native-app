@@ -212,17 +212,15 @@ function EditAddress({ setEditMode, address, setAddress }) {
           </Button>
         </View>
       </ScrollView>
-      {showCityPopup && (
-        <Popup
-          visible={showCityPopup}
-          onDismiss={() => setShowCityPopup(false)}
-          value={newAddress.city}
-          data={cities.map((city) => ({ city: city }))}
-          valueField={"city"}
-          showSearch={cities.length > 7 ? true : false}
-          onItemPress={(val) => handleAddressAttributeChange("city", val)}
-        />
-      )}
+      <Popup
+        visible={showCityPopup}
+        onDismiss={() => setShowCityPopup(false)}
+        value={newAddress.city}
+        data={cities.map((city) => ({ city: city }))}
+        valueField={"city"}
+        showSearch={cities.length > 7 ? true : false}
+        onItemPress={(val) => handleAddressAttributeChange("city", val)}
+      />
     </>
   );
 }
