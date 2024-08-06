@@ -11,7 +11,7 @@ import { Button, HelperText, Text, useTheme } from "react-native-paper";
 import { AntDesign } from "@expo/vector-icons";
 import { TextInput as MaterialTextInput } from "react-native-paper";
 import firebase from "firebase/compat/app";
-import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
+//import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 import { firebaseConfig } from "../../../constants/FirebaseConfig";
 import { adminAddRetailer } from "../helper/SigninHelper";
 import useCities from "../../../hooks/useCities";

@@ -47,10 +47,10 @@ export const saveOrder = async (
       return { data: res.data.data };
     })
     .catch((err) => {
+      console.log(err.response?.data?.message || err.message);
       return { error: err.response?.data?.message || err.message };
     });
 };
-
 
 export function getDiscountedTaxedPrice(item, cartItem) {
   const basePrice = Number(item.price);
@@ -61,7 +61,6 @@ export function getDiscountedTaxedPrice(item, cartItem) {
     ((basePrice * (100 - discount)) / 100) * (1 + gstRate / 100)
   ).toFixed(2);
 }
-
 
 export function getProductTax(item) {
   const discountAmount = (item.price * item.discount) / 100;
