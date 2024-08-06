@@ -14,11 +14,7 @@ import { useAuthContext } from "../../../context/UserAuthContext";
 import { signIn } from "../helper/SigninHelper";
 import { validateMobile } from "../helper/validateMobile";
 
-
-
 const { height } = Dimensions.get("screen");
-
-
 
 function SignIn({ navigation }) {
   const theme = useTheme();
@@ -74,8 +70,6 @@ function SignIn({ navigation }) {
   const handleForgotPin = () => {
     navigation.push("forgotpin");
   };
-
-
 
   return (
     <>
@@ -144,6 +138,7 @@ function SignIn({ navigation }) {
           >
             {!loading && "Sign In"}
           </Button>
+          {/*
           <View
             style={{
               display: "flex",
@@ -153,6 +148,7 @@ function SignIn({ navigation }) {
               marginTop: "1%",
             }}
           >
+            
             <TouchableOpacity onPress={handleForgotPin}>
               <Text
                 style={{ color: theme.colors.primary, fontWeight: "600" }}
@@ -160,7 +156,7 @@ function SignIn({ navigation }) {
               >
                 Forgot pin ?
               </Text>
-            </TouchableOpacity>
+          </TouchableOpacity>
             <TouchableOpacity onPress={() => navigation.navigate("signup")}>
               <Text
                 style={{ color: theme.colors.primary, fontWeight: "600" }}
@@ -168,8 +164,9 @@ function SignIn({ navigation }) {
               >
                 Sign up
               </Text>
-          </TouchableOpacity>
+            </TouchableOpacity>
           </View>
+          */}
         </>
       </View>
     </>

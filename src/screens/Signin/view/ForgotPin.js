@@ -10,7 +10,7 @@ import { Text, Button, useTheme, HelperText } from "react-native-paper";
 import { TextInput as MaterialTextInput } from "react-native-paper";
 import { validateMobile } from "../helper/validateMobile";
 import firebase from "firebase/compat/app";
-import {  FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
+//import {  FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 import { firebaseConfig } from "../../../constants/FirebaseConfig";
 import { AntDesign } from "@expo/vector-icons";
 
@@ -24,11 +24,9 @@ function ForgotPin({ navigation }) {
   const recaptchaVeri = useRef(null);
   const [otp, setOtp] = useState("");
   const [veriId, setVeriId] = useState(null);
-  const [otpinProgress,setOtpInProgress]=useState(false);
-  const [timer,setTimer]=useState(45);
+  const [otpinProgress, setOtpInProgress] = useState(false);
+  const [timer, setTimer] = useState(45);
 
-
-  
   const handleGetOtp = () => {
     setErrors({});
     if (!validateMobile(mobileNumber)) {
@@ -41,7 +39,7 @@ function ForgotPin({ navigation }) {
     const phoneProvider = new firebase.auth.PhoneAuthProvider();
 
     phoneProvider
-      .verifyPhoneNumber("+91" + mobileNumber,recaptchaVeri.current)
+      .verifyPhoneNumber("+91" + mobileNumber, recaptchaVeri.current)
       .then(setVeriId)
       .catch((error) => {
         Alert.alert("Error", error.message);
@@ -49,13 +47,12 @@ function ForgotPin({ navigation }) {
       .finally(() => {
         setErrors({});
         setOtpSent(true);
-        setTimeout(()=>{
-          setOtpInProgress(true)
-        },45000)
-         setInterval(()=>{
-          setTimer((prev)=>prev-1)
-        },1000)
-
+        setTimeout(() => {
+          setOtpInProgress(true);
+        }, 45000);
+        setInterval(() => {
+          setTimer((prev) => prev - 1);
+        }, 1000);
       });
   };
 
@@ -79,13 +76,13 @@ function ForgotPin({ navigation }) {
 
   return (
     <>
-    <FirebaseRecaptchaVerifierModal
-          ref={recaptchaVeri}
-          firebaseConfig={firebaseConfig}
-          attemptInvisibleVerification={true}
-          androidHardwareAccelerationDisabled={true}
-          androidLayerType="software"
-        />
+      <FirebaseRecaptchaVerifierModal
+        ref={recaptchaVeri}
+        firebaseConfig={firebaseConfig}
+        attemptInvisibleVerification={true}
+        androidHardwareAccelerationDisabled={true}
+        androidLayerType="software"
+      />
       <View style={styles.sogoBg}>
         <Text variant="displayMedium" style={styles.head}>
           {" "}
@@ -127,25 +124,33 @@ function ForgotPin({ navigation }) {
             >
               Submit OTP
             </Button>
-           {otpinProgress? <TouchableOpacity
-              onPress={handleGetOtp}
-              style={{ marginTop: "1%" }}
-            >
+            {otpinProgress ? (
+              <TouchableOpacity
+                onPress={handleGetOtp}
+                style={{ marginTop: "1%" }}
+              >
+                <Text
+                  style={{
+                    color: theme.colors.primary,
+                    fontWeight: "600",
+                  }}
+                  variant="bodyLarge"
+                >
+                  Resend OTP
+                </Text>
+              </TouchableOpacity>
+            ) : (
               <Text
                 style={{
                   color: theme.colors.primary,
                   fontWeight: "600",
+                  marginTop: "1%",
                 }}
                 variant="bodyLarge"
               >
-                Resend OTP
+                Time Remaining: {timer}
               </Text>
-            </TouchableOpacity>:<Text style={{
-                  color: theme.colors.primary,
-                  fontWeight: "600",
-                  marginTop:"1%"
-                }}
-                variant="bodyLarge">Time Remaining: {timer}</Text>}
+            )}
           </>
         ) : (
           <>
